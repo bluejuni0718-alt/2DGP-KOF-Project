@@ -110,8 +110,44 @@ def get_frame_list(image_name):
                 # frame_list에 추가
                 frame_list.append([new_x, bottom_left_y, new_w, h])
     # y 좌표 기준으로 정렬 (위에서 아래로), 그 다음 x 좌표 기준으로 정렬 (왼쪽에서 오른쪽으로)
-    frame_list.sort(key=lambda frame: (-(frame[1] + frame[3]), frame[0]))
-    return frame_list
+    #frame_list.sort(key=lambda frame: (-(frame[1] + frame[3]), frame[0]))
+    #return frame_list
+
+    # 정렬 규칙:
+    # - 프레임 박스 위치 판단은 '좌하 (left_x, bottom_y)' 좌표를 사용
+    # - 화면의 왼쪽-상단 프레임이 인덱스 0, 오른쪽-하단이 마지막이 되도록 정렬
+    # 구현 방법:
+    # 1) bottom_y(좌하의 y)가 큰 값이 위쪽이므로, bottom_y 내림차순으로 예비 정렬
+    # 2) 같은 행으로 간주되는 프레임들은 bottom_y 차이가 작음(row_tolerance)
+    # 3) 각 행 내부는 left_x 오름차순 정렬
+    if not frame_list:
+        return frame_list
+
+    # 1) 예비 정렬: bottom_y 내림차순(위->아래), left_x 오름차순(왼->오)
+    frame_list.sort(key=lambda f: (-f[1], f[0]))
+
+    # 2) 행 그룹화 (bottom_y 차이가 작으면 같은 행)
+    rows = []
+    row_tolerance = 10  # 필요 시 조정
+    for f in frame_list:
+        left_x, bottom_y, w, h = f
+        if not rows:
+            rows.append([f])
+            continue
+        last_row = rows[-1]
+        avg_bottom = sum(r[1] for r in last_row) / len(last_row)
+        if abs(bottom_y - avg_bottom) <= row_tolerance:
+            last_row.append(f)
+        else:
+            rows.append([f])
+
+    # 3) 각 행 내부 정렬(왼->오) 후 평탄화
+    sorted_list = []
+    for row in rows:
+        row.sort(key=lambda r: r[0])
+        sorted_list.extend(row)
+
+    return sorted_list
 
 
 if __name__ == "__main__":
