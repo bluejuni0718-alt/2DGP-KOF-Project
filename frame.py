@@ -57,49 +57,60 @@ def process_image(input_path, output_path):
     cv2.imwrite(output_path, output_image)
     print(f"처리된 이미지가 저장되었습니다: {output_path}")
 
-def get_frame_list(image_path):
-    """
-    이미지 파일에서 초록색 프레임 박스를 찾아 각 프레임의 좌하(x, y), 너비, 높이를 리스트로 반환합니다.
+def get_frame_list(image_name):
+    frame_list = []  # 리스트 초기화
+    image = cv2.imread(image_name)
+    if image is None:
+        print("이미지를 불러올 수 없습니다. 파일 경로를 확인하세요.")
+        return
 
-    반환 형식: [[x_left, y_bottom, width, height], ...]
-    - x_left, y_bottom: 좌하(왼쪽 아래) 좌표 (정수 픽셀)
-    - width, height: 바운딩 박스의 너비와 높이 (정수 픽셀)
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-    주의:
-    - 기존의 process_image 함수를 변경하지 않습니다.
-    - 이미지의 초록색 계열(HSV H 약 60)로 마스크를 만들어 검출합니다. 이미지 압축에 따라 범위를 넉넉히 잡았습니다.
-    - 작은 노이즈는 무시합니다.
-    """
-    img = cv2.imread(image_path)
-    if img is None:
-        print(f"Error: 이미지를 로드할 수 없습니다: {image_path}")
-        return []
+    # 초록색의 HSV 범위 정의
+    lower_green = np.array([35, 100, 100])
+    upper_green = np.array([85, 255, 255])
 
-    # 초록색 마스크 생성 (HSV 기준). 그린 박스는 대체로 순수한 녹색이므로 H~60 범위를 사용.
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    lower_green = np.array([50, 100, 50])
-    upper_green = np.array([70, 255, 255])
     mask = cv2.inRange(hsv, lower_green, upper_green)
 
-    # 작은 노이즈 제거 및 연결을 위해 모폴로지 연산 사용 (선 굵기가 1인 테두리이므로 과도한 확장은 피함)
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=1)
-
+    # 윤곽선 찾기
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    frame_list = []
-    min_area = 10  # 매우 작은 잡음 제거
-    for cnt in contours:
-        x, y, w, h = cv2.boundingRect(cnt)
-        if w * h < min_area:
-            continue
-        # OpenCV의 y는 상단 기준이므로 좌하(y_bottom)는 y + h
-        y_bottom = y + h
-        frame_list.append([int(x), int(y_bottom), int(w), int(h)])
+    # 이미지 높이
+    img_height = image.shape[0]
 
-    # 안정성을 위해 좌하 y를 기준으로 내림차순(화면 아래부터) 정렬하고, 같은 줄에서는 x 오름차순
-    frame_list.sort(key=lambda r: (-r[1], r[0]))
+    # 찾은 윤곽선을 기반으로 프레임 정보 저장
+    for contour in contours:
+        # 윤곽선을 감싸는 최소 사각형 계산
+        x, y, w, h = cv2.boundingRect(contour)
 
+        # 영역 내에서 세로 초록색 선을 찾아 분할
+        region_mask = mask[y:y+h, x:x+w]
+        vertical_projection = np.sum(region_mask, axis=0)
+
+        # 높이의 80% 이상이 초록색인 경우 분할선으로 간주
+        split_threshold = h * 255 * 0.8
+        split_points = [0] + [i for i, val in enumerate(vertical_projection) if val >= split_threshold] + [w]
+
+        # 중복 제거 및 정렬
+        split_points = sorted(list(set(split_points)))
+
+        # 분할점을 기준으로 프레임 생성
+        for i in range(len(split_points) - 1):
+            start_x = split_points[i]
+            end_x = split_points[i+1]
+
+            # 분할된 영역의 너비가 5픽셀 이상인 경우에만 추가 (작은 노이즈 제거)
+            if end_x - start_x > 5:
+                new_w = end_x - start_x
+                new_x = x + start_x
+
+                # 좌하단 y좌표 계산
+                bottom_left_y = img_height - (y + h)
+
+                # frame_list에 추가
+                frame_list.append([new_x, bottom_left_y, new_w, h])
+    # y 좌표 기준으로 정렬 (위에서 아래로), 그 다음 x 좌표 기준으로 정렬 (왼쪽에서 오른쪽으로)
+    frame_list.sort(key=lambda frame: (-(frame[1] + frame[3]), frame[0]))
     return frame_list
 
 
