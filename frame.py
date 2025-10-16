@@ -109,7 +109,7 @@ def get_frame_list(image_name):
                 bottom_left_y = img_height - (y + h)
 
                 # frame_list에 추가
-                frame_list.append([new_x, bottom_left_y, new_w, h])
+                frame_list.append([new_x, bottom_left_y + 1, new_w, h])
     # y 좌표 기준으로 정렬 (위에서 아래로), 그 다음 x 좌표 기준으로 정렬 (왼쪽에서 오른쪽으로)
     #frame_list.sort(key=lambda frame: (-(frame[1] + frame[3]), frame[0]))
     #return frame_list
