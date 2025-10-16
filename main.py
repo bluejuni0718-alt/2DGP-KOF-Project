@@ -22,5 +22,4 @@ while True:
     test_image.clip_draw(frame_list[frame_num][0], frame_list[frame_num][1], frame_list[frame_num][2], frame_list[frame_num][3], 400, 200)
     update_canvas()
     pass
-
 close_canvas()
