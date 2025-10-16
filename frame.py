@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import os
+from PIL import Image
 
 def process_image(input_path, output_path):
     # 이미지 읽기
@@ -149,8 +150,27 @@ def get_frame_list(image_name):
 
     return sorted_list
 
+def change_color(input_path, output_path):
+    img = Image.open(input_path).convert('RGBA')
+
+    # 픽셀 데이터 가져오기
+    pixels = img.load()
+
+    width, height = img.size
+
+    for y in range(height):
+        for x in range(width):
+            r, g, b, a = pixels[x, y]
+            # 마젠타색(255, 0, 255)이거나 검정색(10, 10, 10)으로 변경
+            if r == 255 and g == 0 and b == 255:
+                pixels[x, y] = (255, 255, 255, 1)
+    # 새 파일로 저장
+    img.save(output_path)
+
 
 if __name__ == "__main__":
     input_file = "CharacterSpriteSheet_Origin/Neo Geo _ NGCD - The King of Fighters '98 - Fighters - Kim.png"
     output_file = "CharacterSpriteSheet_Modified/Kim_frame_box.png"
+    output_file_alpha = "CharacterSpriteSheet_Modified/Kim_frames_alpha1.png"
+    change_color(input_file, output_file_alpha)
     process_image(input_file, output_file)
