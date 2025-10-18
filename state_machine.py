@@ -8,6 +8,7 @@ class StateMachine:
         pass
 
     def update(self):
+        self.cur_state.do()
         pass
 
     def handle_state_event(self, event):
