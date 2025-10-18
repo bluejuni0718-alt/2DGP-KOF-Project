@@ -3,7 +3,9 @@ from frame import *
 from state_machine import *
 from character_frame import *
 
-
+class Idle:
+    def __init__(self, character):
+        pass
 
 class Character:
     def __init__(self, image_data):
