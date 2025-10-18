@@ -24,5 +24,8 @@ class Character:
         self.face_dir = 1
         self.dir = 1
         self.image=image_data
+
+        self.IDLE = Idle(self)
+
         pass
 
