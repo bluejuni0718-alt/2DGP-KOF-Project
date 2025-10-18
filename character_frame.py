@@ -5,8 +5,8 @@ class KimFrameInfo:
     def __init__(self,frame_list_path='CharacterSpriteSheet_Modified/Kim_frame_box.png', print_image_path='CharacterSpriteSheet_Modified/Kim_frames_alpha1.png'):
         self.frame_list = get_frame_list(frame_list_path)
         self.print_image = load_image(print_image_path)
-        self.idle_frame_start= 0
-        self.idle_frames = 0
+        self.idle_frame_start= 307
+        self.idle_frames = 6
         pass
     def draw_by_frame_num(self,frame_num, x,y,scale_x=None,scale_y=None):
         fx,fy,fw,fh=self.frame_list[frame_num]
