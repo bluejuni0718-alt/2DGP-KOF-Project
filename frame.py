@@ -167,6 +167,48 @@ def change_color(input_path, output_path):
     # 새 파일로 저장
     img.save(output_path)
 
+# 프레임별 번호 매기기
+def annotate_frames(input_path: str, output_path: str, start_index: int = 0,
+                    font_scale: float = 0.5, padding: int = 2) -> bool:
+    """
+    input_path의 프레임 리스트를 불러와 각 프레임 좌상단에 번호를 붙여 output_path로 저장.
+    반환값: 저장 성공 True, 실패 False
+    """
+    img = cv2.imread(input_path)
+    if img is None:
+        print("이미지를 불러올 수 없습니다:", input_path)
+        return False
+
+    frames = get_frame_list(input_path)
+    if not frames:
+        # 프레임이 없으면 원본을 그대로 저장
+        os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+        cv2.imwrite(output_path, img)
+        return True
+
+    h_img = img.shape[0]
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    thickness = 1
+
+    for idx, (left_x, bottom_y, w, h) in enumerate(frames, start=start_index):
+        top_y = int(h_img - (bottom_y + h))
+        x = int(left_x)
+        y = int(top_y)
+
+        text = str(idx)
+        (tw, th) = cv2.getTextSize(text, font, font_scale, thickness)[0]
+        tx = x + padding
+        ty = y + th + padding
+
+        # 배경 사각형(가독성)
+        cv2.rectangle(img, (tx - padding, ty - th - padding), (tx + tw + padding, ty + padding), (0, 0, 0), cv2.FILLED)
+        # 텍스트(흰색)
+        cv2.putText(img, text, (tx, ty), font, font_scale, (255, 255, 255), thickness, cv2.LINE_AA)
+
+    os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+    cv2.imwrite(output_path, img)
+    return True
+
 
 if __name__ == "__main__":
     input_file = "CharacterSpriteSheet_Origin/Neo Geo _ NGCD - The King of Fighters '98 - Fighters - Kim.png"
