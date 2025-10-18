@@ -33,7 +33,5 @@ class Character:
 
         )
 
-        self.IDLE = Idle(self)
-
         pass
 
