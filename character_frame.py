@@ -18,13 +18,17 @@ class KimFrameInfo:
         fx,fy,fw,fh=self.frame_list[frame_num]
         self.print_image.clip_composite_draw(fx,fy,fw,fh,0,'h',x,y,scale_x, scale_y)
         pass
-    def draw_idle_by_frame_num(self,frame,x,y):
+    def draw_idle_by_frame_num(self,frame, x, y,face_dir):
         self.delXPos=0
         self.delYPos=0
         if frame==4:
-            self.delXPos+=8
+            self.delXPos+=8 * face_dir
         elif frame==5:
             self.delYPos+=8
+            pass
         fx, fy, fw, fh = self.frame_list[self.idle_frame_start + frame]
-        self.print_image.clip_draw(fx, fy, fw, fh, x + self.delXPos, y + self.delYPos)
+        if face_dir == 1:
+            self.print_image.clip_draw(fx, fy, fw, fh, x + self.delXPos, y + self.delYPos)
+        else:
+            self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', x + self.delXPos, y + self.delYPos, fw, fh)
         pass

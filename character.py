@@ -13,7 +13,7 @@ class Idle:
         self.character.frame = (self.character.frame + 1) % self.character.image.idle_frames
         pass
     def draw(self):
-        self.character.image.draw_idle_by_frame_num(self.character.frame, self.character.xPos, self.character.yPos)
+        self.character.image.draw_idle_by_frame_num(self.character.frame, self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
 class Character:
@@ -21,7 +21,7 @@ class Character:
         self.xPos = 400
         self.yPos = 90
         self.frame = 0
-        self.face_dir = 1
+        self.face_dir = -1
         self.dir = 1
         self.image=image_data
 
