@@ -18,3 +18,5 @@ class KimFrameInfo:
         fx,fy,fw,fh=self.frame_list[frame_num]
         self.print_image.clip_composite_draw(fx,fy,fw,fh,0,'h',x,y,scale_x, scale_y)
         pass
+    def draw_idle_by_frame_num(self,frame,x,y):
+        pass
