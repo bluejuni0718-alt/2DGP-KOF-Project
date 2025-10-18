@@ -7,6 +7,8 @@ class KimFrameInfo:
         self.print_image = load_image(print_image_path)
         self.idle_frame_start= 307
         self.idle_frames = 6
+        self.delXPos=0
+        self.delYPos=0
         pass
     def draw_by_frame_num(self,frame_num, x,y,scale_x=None,scale_y=None):
         fx,fy,fw,fh=self.frame_list[frame_num]
