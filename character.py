@@ -13,7 +13,7 @@ class Idle:
         self.character.frame = (self.character.frame + 1) % self.character.image.idle_frames
         pass
     def draw(self):
-        self.character.image.draw_by_frame_num(self.character.image.idle_frame_start + self.character.frame, self.character.xPos, self.character.yPos)
+        self.character.image.draw_idle_by_frame_num(self.character.frame, self.character.xPos, self.character.yPos)
         pass
 
 class Character:
