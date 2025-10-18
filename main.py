@@ -20,6 +20,12 @@ def handle_events():
     pass
 
 def reset_world():
+    global world
+    global test_character
+
+    world = []
+
+    world.append(test_character)
     pass
 
 def update_world():
