@@ -1,5 +1,9 @@
 from pico2d import *
 from frame import *
+from state_machine import *
+from character_frame import *
+
+
 
 class Character:
     def __init__(self, image_data):
@@ -10,3 +14,4 @@ class Character:
         self.dir = 1
         self.image=image_data
         pass
+
