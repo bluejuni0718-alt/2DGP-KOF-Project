@@ -2,7 +2,9 @@ from pico2d import *
 from frame import *
 
 class KimFrameInfo:
-    def __init__(self):
+    def __init__(self,frame_list_path='CharacterSpriteSheet_Modified/Kim_frame_box.png', print_image_path='CharacterSpriteSheet_Modified/Kim_frames_alpha1.png'):
+        self.frame_list = get_frame_list(frame_list_path)
+        self.print_image = load_image(print_image_path)
         pass
     def draw_by_frame_num(self,frame_num, x,y,scale_x=None,scale_y=None):
         pass
