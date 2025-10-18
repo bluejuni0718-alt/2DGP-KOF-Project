@@ -30,8 +30,13 @@ class Character:
             self.IDLE,{
                 self.IDLE:{}
             }
-
         )
+        def update(self):
+            pass
+        def draw(self):
+            pass
+        def handle_event(self,event):
+            pass
 
         pass
 
