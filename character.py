@@ -5,10 +5,12 @@ from character_frame import *
 
 class Idle:
     def __init__(self, character):
+        self.character =character
         pass
     def enter(self, e):
         pass
     def do(self):
+        self.character.frame = (self.character.frame + 1) % self.character.image.idle_frames
         pass
     def draw(self):
         pass
