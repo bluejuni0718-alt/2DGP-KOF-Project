@@ -31,12 +31,9 @@ class Character:
                 self.IDLE:{}
             }
         )
-        def update(self):
-            pass
-        def draw(self):
-            pass
-        def handle_event(self,event):
-            pass
-
-        pass
-
+    def update(self):
+        self.state_machine.update()
+    def draw(self):
+        self.state_machine.draw()
+    def handle_event(self,event):
+        self.state_machine.handle_state_event(('INPUT', event))
