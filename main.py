@@ -5,6 +5,7 @@ from character import *
 isRun = True
 
 open_canvas()
+test_character = Character(KimFrameInfo())
 
 
 close_canvas()
