@@ -7,6 +7,8 @@ class KimFrameInfo:
         self.print_image = load_image(print_image_path)
         pass
     def draw_by_frame_num(self,frame_num, x,y,scale_x=None,scale_y=None):
+        fx,fy,fw,fh=self.frame_list[frame_num]
+        self.print_image.draw_rect(fx, fy, fw, fh, x, y,scale_x, scale_y)
         pass
     def draw_by_frame_num_composite(self,frame_num,x,y,scale_x=None,scale_y=None):
         pass
