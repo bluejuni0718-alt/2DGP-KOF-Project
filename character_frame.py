@@ -11,4 +11,6 @@ class KimFrameInfo:
         self.print_image.draw_rect(fx, fy, fw, fh, x, y,scale_x, scale_y)
         pass
     def draw_by_frame_num_composite(self,frame_num,x,y,scale_x=None,scale_y=None):
+        fx,fy,fw,fh=self.frame_list[frame_num]
+        self.print_image.draw_clip_composite(fx,fy,fw,fh,0,'h',x,y,scale_x, scale_y)
         pass
