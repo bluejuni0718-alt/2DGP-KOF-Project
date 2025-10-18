@@ -19,12 +19,12 @@ class KimFrameInfo:
         self.print_image.clip_composite_draw(fx,fy,fw,fh,0,'h',x,y,scale_x, scale_y)
         pass
     def draw_idle_by_frame_num(self,frame,x,y):
+        self.delXPos=0
+        self.delYPos=0
         if frame==4:
-            pass
+            self.delXPos+=8
         elif frame==5:
-            pass
-        else:
-            pass
+            self.delYPos+=8
         fx, fy, fw, fh = self.frame_list[self.idle_frame_start + frame]
         self.print_image.clip_draw(fx, fy, fw, fh, x + self.delXPos, y + self.delYPos)
         pass
