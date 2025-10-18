@@ -29,9 +29,16 @@ def reset_world():
     pass
 
 def update_world():
+    for o in world:
+        o.update()
+    pass
     pass
 
 def render_world():
+    clear_canvas()
+    for o in world:
+        o.draw()
+    update_canvas()
     pass
 
 reset_world()
