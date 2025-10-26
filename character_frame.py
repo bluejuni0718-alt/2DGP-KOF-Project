@@ -7,6 +7,8 @@ class KimFrameInfo:
         self.print_image = load_image(print_image_path)
         self.idle_frame_start= 307
         self.idle_frames = 6
+        self.walk_frame_start = 85
+        self.walk_frames = 6
         self.delXPos=0
         self.delYPos=0
         pass
