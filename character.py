@@ -31,10 +31,10 @@ class Walk:
         pass
     def do(self):
         self.character.frame=(self.character.frame + 1) % self.character.image.walk_frames
-        self.character.x+=self.character.dir*5
+        self.character.xPos+=self.character.dir*5
         pass
     def draw(self):
-        self.character.image.draw_walk_by_frame_num(self.character.frame, self.character.xPos, self.character.yPos,self.character.face_dir)
+        self.character.image.draw_walk_by_frame_num(self.character.frame, self.character.xPos, self.character.yPos,self.character.face_dir,self.character.dir)
         pass
 
 class Character:
