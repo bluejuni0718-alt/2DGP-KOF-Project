@@ -17,7 +17,7 @@ class Idle:
         pass
 
 class Character:
-    def __init__(self, image_data):
+    def __init__(self, image_data,keymap=None):
         self.xPos = 400
         self.yPos = 90
         self.frame = 0
