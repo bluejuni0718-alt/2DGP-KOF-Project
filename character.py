@@ -20,7 +20,10 @@ class Walk:
     def __init__(self, character):
         self.character=character
     def enter(self, e):
-
+        if self.character.right_down(e):
+            self.character.dir = 1
+        elif self.character.left_down(e):
+            self.character.dir = -1
         pass
     def do(self):
         pass
