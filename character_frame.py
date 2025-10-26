@@ -31,5 +31,5 @@ class KimFrameInfo:
         if face_dir ==1:
             self.print_image.clip_draw(fx, fy, fw, fh, x, y)
         else :
-            self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', x, y)
+            self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h',x + self.delXPos, y + self.delYPos, fw, fh)
         pass
