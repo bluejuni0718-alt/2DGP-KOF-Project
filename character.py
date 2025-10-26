@@ -45,6 +45,7 @@ class Character:
         self.image=image_data
 
         self.IDLE=Idle(self)
+        self.WALK=Walk(self)
 
         def mk_key_pred(key_const, sdl_type):
             def pred(e):
@@ -58,7 +59,8 @@ class Character:
 
         self.state_machine = StateMachine(
             self.IDLE,{
-                self.IDLE:{}
+                self.IDLE:{self.right_down:self.WALK,self.left_down:self.WALK},
+                self.WALK:{self.right_up:self.IDLE,self.left_up:self.IDLE}
             }
         )
     def update(self):
