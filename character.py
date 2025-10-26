@@ -20,6 +20,7 @@ class Walk:
     def __init__(self, character):
         self.character=character
     def enter(self, e):
+
         pass
     def do(self):
         pass
@@ -44,8 +45,8 @@ class Character:
                 return e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key == key_const
             return pred
 
-        right_down = mk_key_pred(self.keymap['right'], SDL_KEYDOWN)
-        left_down=mk_key_pred(self.keymap['left'], SDL_KEYDOWN)
+        self.right_down = mk_key_pred(self.keymap['right'], SDL_KEYDOWN)
+        self.left_down = mk_key_pred(self.keymap['left'], SDL_KEYDOWN)
 
         self.state_machine = StateMachine(
             self.IDLE,{
