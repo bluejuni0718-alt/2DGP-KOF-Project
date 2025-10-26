@@ -9,6 +9,8 @@ class Idle:
         pass
     def enter(self, e):
         pass
+    def exit(self,e):
+        pass
     def do(self):
         self.character.frame = (self.character.frame + 1) % self.character.image.idle_frames
         pass
@@ -24,6 +26,8 @@ class Walk:
             self.character.dir = 1
         elif self.character.left_down(e):
             self.character.dir = -1
+        pass
+    def exit(self,e):
         pass
     def do(self):
         self.character.frame=(self.character.frame + 1) % self.character.image.walk_frames
