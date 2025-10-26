@@ -17,7 +17,14 @@ class Idle:
         pass
 
 class Walk:
-    pass
+    def __init__(self, character):
+        self.character=character
+    def enter(self, e):
+        pass
+    def do(self):
+        pass
+    def draw(self):
+        pass
 
 class Character:
     def __init__(self, image_data,keymap=None):
