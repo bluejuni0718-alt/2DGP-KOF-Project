@@ -28,6 +28,10 @@ class Character:
         self.image=image_data
 
         self.IDLE=Idle(self)
+
+        def mk_key_pred(key_const, sdl_type):
+            pass
+
         self.state_machine = StateMachine(
             self.IDLE,{
                 self.IDLE:{}
