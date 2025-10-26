@@ -30,7 +30,9 @@ class Character:
         self.IDLE=Idle(self)
 
         def mk_key_pred(key_const, sdl_type):
-            pass
+            def pred(e):
+                return e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key == key_const
+            return pred
 
         self.state_machine = StateMachine(
             self.IDLE,{
