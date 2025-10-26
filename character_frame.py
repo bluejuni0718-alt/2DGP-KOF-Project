@@ -24,3 +24,5 @@ class KimFrameInfo:
         else:
             self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', x + self.delXPos, y + self.delYPos, fw, fh)
         pass
+    def draw_walk_by_frame_num(self,frame, x,y,face_dir, dir):
+        pass
