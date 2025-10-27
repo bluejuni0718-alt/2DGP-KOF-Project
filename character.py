@@ -60,6 +60,7 @@ class Character:
         self.left_down = mk_key_pred(self.keymap['left'], SDL_KEYDOWN)
         self.right_up = mk_key_pred(self.keymap['right'], SDL_KEYUP)
         self.left_up = mk_key_pred(self.keymap['left'], SDL_KEYUP)
+        self.up_down = mk_key_pred(self.keymap['up'], SDL_KEYDOWN)
 
         self.state_machine = StateMachine(
             self.IDLE,{
