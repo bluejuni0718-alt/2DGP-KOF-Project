@@ -56,8 +56,10 @@ class Jump:
     def enter(self, e):
         self.character.anim_tick = 0
         self.character.frame = 0
+        self.character.anim_tick = 6
         pass
     def exit(self,e):
+        self.character.anim_tick=4
         pass
     def do(self):
         self.character.anim_tick += 1
