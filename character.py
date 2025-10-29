@@ -101,7 +101,7 @@ class Character:
 
         self.state_machine = StateMachine(
             self.IDLE,{
-                self.IDLE:{self.right_down:self.WALK,self.left_down:self.WALK},
+                self.IDLE:{self.right_down:self.WALK,self.left_down:self.WALK,self.up_down:self.JUMP},
                 self.WALK:{self.right_up:self.IDLE,self.left_up:self.IDLE}
             }
         )
