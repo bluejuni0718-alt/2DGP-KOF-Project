@@ -66,7 +66,7 @@ class Jump:
             self.character.anim_tick = 0
             self.character.frame = (self.character.frame + 1) % max(1, self.character.image.walk_frames)
             self.character.yPos += 5
-        if get_time() - self.character.wait_time > 3:
+        if self.character.frame == 5:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
         pass
     def draw(self):
