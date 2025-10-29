@@ -54,7 +54,7 @@ class Jump:
     def __init__(self, character):
         self.character=character
     def enter(self, e):
-        self.character.anim_delay = 8
+        self.character.anim_delay = 6
         self.character.anim_tick = 0
         self.character.frame = 0
         pass
