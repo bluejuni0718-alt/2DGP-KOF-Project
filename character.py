@@ -39,7 +39,7 @@ class Walk:
 
 class Jump:
     def __init__(self, character):
-        pass
+        self.character=character
     def enter(self, e):
         pass
     def exit(self,e):
