@@ -60,6 +60,9 @@ class Character:
         self.dir = 1
         self.image=image_data
 
+        self.anim_tick=0
+        self.anim_delay=2
+
         self.IDLE=Idle(self)
         self.WALK=Walk(self)
 
