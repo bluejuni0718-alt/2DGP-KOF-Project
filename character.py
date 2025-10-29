@@ -40,6 +40,7 @@ class Walk:
             self.character.dir = -1
         pass
     def exit(self,e):
+        self.character.dir=0
         pass
     def do(self):
         self.character.anim_tick += 1
@@ -56,7 +57,7 @@ class Jump:
     def __init__(self, character):
         self.character=character
     def enter(self, e):
-        self.character.anim_delay = 7
+        self.character.anim_delay = 6
         self.character.anim_tick = 0
         self.character.frame = self.character.jump_frame
         if self.character.right_down(e):
@@ -75,6 +76,7 @@ class Jump:
         if self.character.anim_tick >= self.character.anim_delay:
             self.character.anim_tick = 0
             self.character.frame = (self.character.frame + 1) % max(1, self.character.image.walk_frames)
+            self.character.xPos+=self.character.dir*5
             if self.character.frame<=2:
                 self.character.yPos += 50
             elif self.character.frame<=4:
@@ -94,7 +96,7 @@ class Character:
         self.yPos = 90
         self.frame = 0
         self.face_dir = -1
-        self.dir = 1
+        self.dir = 0
         self.image=image_data
         self.jump_frame=0
         self.anim_tick=0
