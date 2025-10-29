@@ -78,6 +78,7 @@ class Character:
 
         self.IDLE=Idle(self)
         self.WALK=Walk(self)
+        self.JUMP=Jump(self)
 
         def mk_key_pred(key_const, sdl_type):
             def pred(e):
