@@ -67,7 +67,7 @@ class Jump:
             self.character.yPos += 5
         pass
     def draw(self):
-        self.character.image.draw_jump_by_frame_num(self.character.frame, self.character.xPos, self.character.yPos,self.character.face_dir,self.character.dir)
+        self.character.image.draw_jump_by_frame_num(self.character.frame, self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
 class Character:
@@ -102,7 +102,8 @@ class Character:
         self.state_machine = StateMachine(
             self.IDLE,{
                 self.IDLE:{self.right_down:self.WALK,self.left_down:self.WALK,self.up_down:self.JUMP},
-                self.WALK:{self.right_up:self.IDLE,self.left_up:self.IDLE}
+                self.WALK:{self.right_up:self.IDLE,self.left_up:self.IDLE},
+                self.JUMP:{time_out:self.IDLE}
             }
         )
     def update(self):
