@@ -33,6 +33,7 @@ class Walk:
     def enter(self, e):
         self.character.anim_tick = 0
         self.character.frame = 0
+        self.character.jump_frame = 0
         if self.character.right_down(e):
             self.character.dir = 1
         elif self.character.left_down(e):
