@@ -56,7 +56,7 @@ class Jump:
     def enter(self, e):
         self.character.anim_delay = 7
         self.character.anim_tick = 0
-        self.character.frame = 0
+        self.character.frame = int((self.character.yPos - 90) / 50)
         pass
     def exit(self,e):
         self.character.anim_delay = 4
