@@ -13,6 +13,7 @@ class Idle:
     def enter(self, e):
         self.character.anim_tick=0
         self.character.frame =0
+        self.character.jump_frame=0
         pass
     def exit(self,e):
         pass
@@ -56,7 +57,7 @@ class Jump:
     def enter(self, e):
         self.character.anim_delay = 7
         self.character.anim_tick = 0
-        self.character.frame = int((self.character.yPos - 90) / 50)
+        self.character.frame = self.character.jump_frame
         if self.character.right_down(e):
             self.character.dir = 1
         elif self.character.left_down(e):
@@ -64,6 +65,7 @@ class Jump:
         pass
     def exit(self,e):
         self.character.anim_delay = 4
+        self.character.jump_frame = self.character.frame
         pass
     def do(self):
         self.character.anim_tick += 1
@@ -91,7 +93,7 @@ class Character:
         self.face_dir = -1
         self.dir = 1
         self.image=image_data
-
+        self.jump_frame=0
         self.anim_tick=0
         self.anim_delay=4
 
