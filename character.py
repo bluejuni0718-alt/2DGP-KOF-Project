@@ -110,7 +110,7 @@ class Character:
             self.IDLE,{
                 self.IDLE:{self.right_down:self.WALK,self.left_down:self.WALK,self.up_down:self.JUMP},
                 self.WALK:{self.right_up:self.IDLE,self.left_up:self.IDLE},
-                self.JUMP:{time_out:self.IDLE}
+                self.JUMP:{time_out:self.IDLE,self.right_down:self.JUMP, self.left_down:self.JUMP, self.right_up:self.JUMP,self.left_up:self.JUMP},
             }
         )
     def update(self):
