@@ -56,6 +56,7 @@ class Jump:
     def enter(self, e):
         self.character.anim_tick = 0
         self.character.frame = 0
+        self.character.wait_time = get_time()
         pass
     def exit(self,e):
         pass
@@ -65,6 +66,8 @@ class Jump:
             self.character.anim_tick = 0
             self.character.frame = (self.character.frame + 1) % max(1, self.character.image.walk_frames)
             self.character.yPos += 5
+        if get_time() - self.character.wait_time > 3:
+            self.character.state_machine.handle_state_event(('TIME_OUT', None))
         pass
     def draw(self):
         self.character.image.draw_jump_by_frame_num(self.character.frame, self.character.xPos, self.character.yPos,self.character.face_dir)
