@@ -14,7 +14,10 @@ class Idle:
     def exit(self,e):
         pass
     def do(self):
-        self.character.frame = (self.character.frame + 1) % self.character.image.idle_frames
+        self.character.anim_tick+=1
+        if self.character.anim_tick>=self.character.anim_delay:
+            self.character.anim_tick =0
+            self.character.frame = (self.character.frame + 1) % max(1, self.character.image.idle_frames)
         pass
     def draw(self):
         self.character.image.draw_idle_by_frame_num(self.character.frame, self.character.xPos, self.character.yPos,self.character.face_dir)
