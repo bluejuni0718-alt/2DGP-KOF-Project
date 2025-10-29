@@ -56,7 +56,6 @@ class Jump:
     def enter(self, e):
         self.character.anim_tick = 0
         self.character.frame = 0
-        self.character.wait_time = get_time()
         pass
     def exit(self,e):
         pass
