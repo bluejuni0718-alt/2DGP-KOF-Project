@@ -36,10 +36,11 @@ class Walk:
         pass
     def exit(self,e):
         pass
-    def do(self)
+    def do(self):
         self.character.anim_tick += 1
         if self.character.anim_tick >= self.character.anim_delay:
-            self.character.frame=(self.character.frame + (1*self.character.dir)) % self.character.image.walk_frames
+            self.character.anim_tick = 0
+            self.character.frame=(self.character.frame + 1) % max(1, self.character.image.walk_frames)
             self.character.xPos+=self.character.dir*5
         pass
     def draw(self):
