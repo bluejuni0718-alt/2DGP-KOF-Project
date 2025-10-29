@@ -27,6 +27,8 @@ class Walk:
     def __init__(self, character):
         self.character=character
     def enter(self, e):
+        self.character.anim_tick = 0
+        self.character.frame = 0
         if self.character.right_down(e):
             self.character.dir = 1
         elif self.character.left_down(e):
@@ -34,9 +36,11 @@ class Walk:
         pass
     def exit(self,e):
         pass
-    def do(self):
-        self.character.frame=(self.character.frame + (1*self.character.dir)) % self.character.image.walk_frames
-        self.character.xPos+=self.character.dir*5
+    def do(self)
+        self.character.anim_tick += 1
+        if self.character.anim_tick >= self.character.anim_delay:
+            self.character.frame=(self.character.frame + (1*self.character.dir)) % self.character.image.walk_frames
+            self.character.xPos+=self.character.dir*5
         pass
     def draw(self):
         self.character.image.draw_walk_by_frame_num(self.character.frame, self.character.xPos, self.character.yPos,self.character.face_dir,self.character.dir)
