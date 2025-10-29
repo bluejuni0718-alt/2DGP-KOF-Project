@@ -60,9 +60,9 @@ class Jump:
         self.character.anim_delay = 6
         self.character.anim_tick = 0
         self.character.frame = self.character.jump_frame
-        if self.character.right_down(e):
+        if self.character.right_down(e) or self.character.right_pressed:
             self.character.dir = 1
-        elif self.character.left_down(e):
+        elif self.character.left_down(e) or self.character.left_pressed:
             self.character.dir = -1
         elif self.character.right_up(e) or self.character.left_up(e):
             self.character.dir = 0
@@ -103,6 +103,9 @@ class Character:
         self.anim_tick=0
         self.anim_delay=4
 
+        self.left_pressed = False
+        self.right_pressed = False
+
         self.IDLE=Idle(self)
         self.WALK=Walk(self)
         self.JUMP=Jump(self)
@@ -130,4 +133,14 @@ class Character:
     def draw(self):
         self.state_machine.draw()
     def handle_event(self,event):
+        if event.type == SDL_KEYDOWN:
+            if event.key == self.keymap['left']:
+                self.left_pressed = True
+            elif event.key == self.keymap['right']:
+                self.right_pressed = True
+        elif event.type == SDL_KEYUP:
+            if event.key == self.keymap['left']:
+                self.left_pressed = False
+            elif event.key == self.keymap['right']:
+                self.right_pressed = False
         self.state_machine.handle_state_event(('INPUT', event))
