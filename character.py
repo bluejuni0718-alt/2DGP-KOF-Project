@@ -63,6 +63,8 @@ class Jump:
             self.character.dir = 1
         elif self.character.left_down(e):
             self.character.dir = -1
+        elif self.character.right_up(e) or self.character.left_up(e):
+            self.character.dir = 0
         pass
     def exit(self,e):
         self.character.anim_delay = 4
