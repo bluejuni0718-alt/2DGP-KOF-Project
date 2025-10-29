@@ -9,6 +9,8 @@ class KimFrameInfo:
         self.idle_frames = 6
         self.walk_frame_start = 85
         self.walk_frames = 6
+        self.jump_frame_start = 97
+        self.jump_frames = 5
         self.delXPos=0
         self.delYPos=0
         pass
@@ -34,4 +36,9 @@ class KimFrameInfo:
             self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h',x + self.delXPos, y + self.delYPos, fw, fh)
         pass
     def draw_jump_by_frame_num(self,frame,x,y,face_dir):
+        fx, fy, fw, fh = self.frame_list[self.jump_frame_start + frame]
+        if face_dir == 1:
+            self.print_image.clip_draw(fx, fy, fw, fh, x, y)
+        else:
+            self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', x + self.delXPos, y + self.delYPos, fw, fh)
         pass
