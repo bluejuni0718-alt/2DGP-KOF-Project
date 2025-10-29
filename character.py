@@ -3,6 +3,9 @@ from frame import *
 from state_machine import *
 from character_frame import *
 
+def time_out(e):
+    return e[0] == 'TIME_OUT'
+
 class Idle:
     def __init__(self, character):
         self.character =character
