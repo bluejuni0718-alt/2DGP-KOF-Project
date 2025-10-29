@@ -54,19 +54,19 @@ class Jump:
     def __init__(self, character):
         self.character=character
     def enter(self, e):
+        self.character.anim_delay = 8
         self.character.anim_tick = 0
         self.character.frame = 0
-        self.character.anim_tick = 6
         pass
     def exit(self,e):
-        self.character.anim_tick=4
+        self.character.anim_delay = 4
         pass
     def do(self):
         self.character.anim_tick += 1
         if self.character.anim_tick >= self.character.anim_delay:
             self.character.anim_tick = 0
             self.character.frame = (self.character.frame + 1) % max(1, self.character.image.walk_frames)
-            self.character.yPos += 5
+            self.character.yPos += 10
         if self.character.frame == 5:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
         pass
