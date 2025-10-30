@@ -6,6 +6,9 @@ from character_frame import *
 def time_out(e):
     return e[0] == 'TIME_OUT'
 
+def pressing_key(e):
+    return e[0] == 'Pressing_Key'
+
 class Idle:
     def __init__(self, character):
         self.character =character
@@ -34,9 +37,9 @@ class Walk:
         self.character.anim_tick = 0
         self.character.frame = 0
         self.character.jump_frame = 0
-        if self.character.right_down(e):
+        if self.character.right_down(e) or self.character.right_pressed:
             self.character.dir = 1
-        elif self.character.left_down(e):
+        elif self.character.left_down(e) or self.character.left_pressed:
             self.character.dir = -1
         pass
     def exit(self,e):
@@ -77,15 +80,17 @@ class Jump:
         if self.character.anim_tick >= self.character.anim_delay:
             self.character.anim_tick = 0
             self.character.frame = (self.character.frame + 1) % max(1, self.character.image.jump_frames)
-        if self.character.anim_tick >= self.character.anim_delay/2:
+        if self.character.anim_tick >= self.character.anim_delay/3:
             print(self.character.frame)
             if self.character.frame<=1:
                 self.character.yPos += 20
             elif self.character.frame<=3:
                 self.character.yPos -= 20
-            self.character.xPos += self.character.dir * 7.5
-        if self.character.frame == 4:
+            self.character.xPos += self.character.dir * 5
+        if self.character.frame == 4 and (self.character.left_pressed==False and self.character.right_pressed==False):
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
+        elif self.character.frame == 4 and (self.character.right_pressed==True or self.character.left_pressed==True):
+            self.character.state_machine.handle_state_event(('Pressing_Key', None))
         pass
     def draw(self):
         self.character.image.draw_jump_by_frame_num(self.character.frame, self.character.xPos, self.character.yPos,self.character.face_dir)
@@ -127,7 +132,7 @@ class Character:
             self.IDLE,{
                 self.IDLE:{self.right_down:self.WALK,self.left_down:self.WALK,self.up_down:self.JUMP},
                 self.WALK:{self.right_up:self.IDLE,self.left_up:self.IDLE,self.up_down:self.JUMP},
-                self.JUMP:{time_out:self.IDLE, self.right_down:self.JUMP, self.left_down:self.JUMP}
+                self.JUMP:{time_out: self.IDLE, pressing_key:self.WALK, self.right_down:self.JUMP, self.left_down:self.JUMP}
             }
         )
     def update(self):
