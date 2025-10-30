@@ -108,8 +108,9 @@ class MoveJump:
         self.character.anim_tick += 1
         if self.character.anim_tick >= self.character.anim_delay:
             self.character.anim_tick = 0
-            self.character.frame = (self.character.frame + 1) % max(1, self.character.image.jump_move_frames)
-        if self.character.anim_tick >= self.character.anim_delay / 2:
+            self.character.frame = (self.character.frame + 1) % max(1, self.character.image.jump_move_frames + 1)
+        if self.character.anim_tick >= self.character.anim_delay/2:
+            self.character.xPos += self.character.dir * 5
             if self.character.frame <= 3:
                 self.character.yPos += 17.5
             elif self.character.frame <= 7:
