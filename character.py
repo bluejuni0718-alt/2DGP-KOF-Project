@@ -122,8 +122,23 @@ class MoveJump:
                     self.character.state_machine.handle_state_event(('Pressing_Key', None))
         pass
     def draw(self):
-        self.character.image.draw_by_act_kind(self.character.image.jump_move_frame_start,self.character.image.jump_move_frames ,self.character.frame,self.character.xPos, self.character.yPos,self.character.face_dir)
-        pass
+        frame_count = max(1, self.character.image.jump_move_frames)
+        relative_frame = self.character.frame % frame_count
+
+        if 1 < relative_frame < 6:
+            self.SpecialFrame = 54
+        else:
+            self.SpecialFrame = 0
+
+        draw_frame = relative_frame
+        if self.character.dir == -1:
+            draw_frame = frame_count - 1 - relative_frame
+
+        start = self.character.image.jump_move_frame_start + self.SpecialFrame
+
+        self.character.image.draw_by_act_kind(start, frame_count, draw_frame,
+                                              self.character.xPos, self.character.yPos,
+                                              self.character.face_dir)
 
 class Character:
     def __init__(self, image_data,keymap=None):
