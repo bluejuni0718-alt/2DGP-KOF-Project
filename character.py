@@ -95,6 +95,10 @@ class MoveJump:
     def enter(self, e):
         self.character.anim_tick = 0
         self.character.frame = self.character.jump_frame
+        if self.character.right_pressed:
+            self.character.dir = 1
+        elif self.character.left_pressed:
+            self.character.dir = -1
         pass
     def exit(self,e):
         self.character.jump_frame = self.character.frame
