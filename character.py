@@ -77,11 +77,12 @@ class Jump:
         if self.character.anim_tick >= self.character.anim_delay:
             self.character.anim_tick = 0
             self.character.frame = (self.character.frame + 1) % max(1, self.character.image.walk_frames)
-            self.character.xPos+=self.character.dir* 7.5
+        if self.character.anim_tick >= self.character.anim_delay/2:
             if self.character.frame<=2:
-                self.character.yPos += 50
+                self.character.yPos += 20
             elif self.character.frame<=4:
-                self.character.yPos -= 50
+                self.character.yPos -= 20
+            self.character.xPos += self.character.dir * 7.5
         if self.character.frame == 5:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
         pass
