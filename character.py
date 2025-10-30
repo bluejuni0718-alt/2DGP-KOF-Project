@@ -93,12 +93,10 @@ class MoveJump:
         self.character=character
         self.SpecialFrame= 0
     def enter(self, e):
-        self.character.anim_delay = 8
         self.character.anim_tick = 0
         self.character.frame = self.character.jump_frame
         pass
     def exit(self,e):
-        self.character.anim_delay = 4
         self.character.jump_frame = self.character.frame
         self.character.dir = 0
         pass
