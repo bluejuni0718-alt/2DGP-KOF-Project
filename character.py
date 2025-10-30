@@ -77,9 +77,9 @@ class Jump:
         if self.character.anim_tick >= self.character.anim_delay/3:
             print(self.character.frame)
             if self.character.frame<=1:
-                self.character.yPos += 20
+                self.character.yPos += 12.5
             elif self.character.frame<=3:
-                self.character.yPos -= 20
+                self.character.yPos -= 12.5
         if self.character.frame == 4 and (self.character.left_pressed==False and self.character.right_pressed==False):
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
         elif self.character.frame == 4 and (self.character.right_pressed==True or self.character.left_pressed==True):
