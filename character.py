@@ -63,12 +63,6 @@ class Jump:
         self.character.anim_delay = 8
         self.character.anim_tick = 0
         self.character.frame = self.character.jump_frame
-        if self.character.right_down(e) or self.character.right_pressed:
-            self.character.dir = 1
-        elif self.character.left_down(e) or self.character.left_pressed:
-            self.character.dir = -1
-        elif self.character.right_up(e) or self.character.left_up(e):
-            self.character.dir = 0
         pass
     def exit(self,e):
         self.character.anim_delay = 4
@@ -86,7 +80,6 @@ class Jump:
                 self.character.yPos += 20
             elif self.character.frame<=3:
                 self.character.yPos -= 20
-            self.character.xPos += self.character.dir * 5
         if self.character.frame == 4 and (self.character.left_pressed==False and self.character.right_pressed==False):
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
         elif self.character.frame == 4 and (self.character.right_pressed==True or self.character.left_pressed==True):
@@ -132,7 +125,7 @@ class Character:
             self.IDLE,{
                 self.IDLE:{self.right_down:self.WALK,self.left_down:self.WALK,self.up_down:self.JUMP},
                 self.WALK:{self.right_up:self.IDLE,self.left_up:self.IDLE,self.up_down:self.JUMP},
-                self.JUMP:{time_out: self.IDLE, pressing_key:self.WALK, self.right_down:self.JUMP, self.left_down:self.JUMP}
+                self.JUMP:{time_out: self.IDLE, pressing_key:self.WALK}
             }
         )
     def update(self):
