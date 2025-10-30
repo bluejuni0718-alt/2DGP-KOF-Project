@@ -102,8 +102,19 @@ class MoveJump:
         self.character.dir = 0
         pass
     def do(self):
+        self.character.anim_tick += 1
+        if self.character.anim_tick >= self.character.anim_delay:
+            self.character.anim_tick = 0
+            self.character.frame = (self.character.frame + 1) % max(1, self.character.image.jump_move_frames)
+        if self.character.anim_tick >= self.character.anim_delay / 2:
+            if self.character.frame <= 1:
+                self.character.yPos += 12.5
+            elif self.character.frame <= 3:
+                self.character.yPos -= 12.5
+            self.character.xPos += self.character.dir * 5
         pass
     def draw(self):
+        self.character.image.draw_by_act_kind(self.character.image.jump_move_frame_start,self.character.image.jump_move_frames ,self.character.frame,self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
 class Character:
