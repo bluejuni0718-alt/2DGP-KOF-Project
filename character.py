@@ -89,6 +89,18 @@ class Jump:
         self.character.image.draw_jump_by_frame_num(self.character.frame, self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
+class MoveJump:
+    def __init__(self, character):
+        self.character=character
+    def enter(self, e):
+        pass
+    def exit(self,e):
+        pass
+    def do(self):
+        pass
+    def draw(self):
+        pass
+
 class Character:
     def __init__(self, image_data,keymap=None):
         default = {'left': SDLK_LEFT, 'right': SDLK_RIGHT, 'up': SDLK_UP}
