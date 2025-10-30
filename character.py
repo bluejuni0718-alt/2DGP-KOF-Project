@@ -57,7 +57,7 @@ class Jump:
     def __init__(self, character):
         self.character=character
     def enter(self, e):
-        self.character.anim_delay = 6
+        self.character.anim_delay = 8
         self.character.anim_tick = 0
         self.character.frame = self.character.jump_frame
         if self.character.right_down(e) or self.character.right_pressed:
