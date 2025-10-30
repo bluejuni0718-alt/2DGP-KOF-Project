@@ -12,7 +12,7 @@ class KimFrameInfo:
         self.jump_frame_start = 97
         self.jump_frames = 5
         self.jump_move_frame_start = 97
-        self.jump_move_frames = 7
+        self.jump_move_frames = 8
         self.delXPos=0
         self.delYPos=0
         pass
