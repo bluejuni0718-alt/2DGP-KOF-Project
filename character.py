@@ -50,10 +50,10 @@ class Walk:
         if self.character.anim_tick >= self.character.anim_delay:
             self.character.anim_tick = 0
             self.character.frame=(self.character.frame + 1) % max(1, self.character.image.walk_frames)
-            self.character.xPos+=self.character.dir*5
+            self.character.xPos+=self.character.dir * 5
         pass
     def draw(self):
-        self.character.image.draw_walk_by_frame_num(self.character.frame, self.character.xPos, self.character.yPos,self.character.face_dir,self.character.dir)
+        self.character.image.draw_by_act_kind(self.character.image.walk_frame_start,self.character.image.walk_frames ,self.character.frame,self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
 class Jump:
@@ -75,7 +75,6 @@ class Jump:
             self.character.anim_tick = 0
             self.character.frame = (self.character.frame + 1) % max(1, self.character.image.jump_frames)
         if self.character.anim_tick >= self.character.anim_delay/3:
-            print(self.character.frame)
             if self.character.frame<=1:
                 self.character.yPos += 12.5
             elif self.character.frame<=3:
@@ -86,7 +85,7 @@ class Jump:
             self.character.state_machine.handle_state_event(('Pressing_Key', None))
         pass
     def draw(self):
-        self.character.image.draw_jump_by_frame_num(self.character.frame, self.character.xPos, self.character.yPos,self.character.face_dir)
+        self.character.image.draw_by_act_kind(self.character.image.jump_frame_start,self.character.image.jump_frames ,self.character.frame,self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
 class MoveJump:
