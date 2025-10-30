@@ -107,11 +107,15 @@ class MoveJump:
             self.character.anim_tick = 0
             self.character.frame = (self.character.frame + 1) % max(1, self.character.image.jump_move_frames)
         if self.character.anim_tick >= self.character.anim_delay / 2:
-            if self.character.frame <= 1:
+            if self.character.frame <= 3:
                 self.character.yPos += 12.5
-            elif self.character.frame <= 3:
+            elif self.character.frame <= 6:
                 self.character.yPos -= 12.5
             self.character.xPos += self.character.dir * 5
+        if self.character.frame == 7 and (self.character.left_pressed==False and self.character.right_pressed==False):
+            self.character.state_machine.handle_state_event(('TIME_OUT', None))
+        elif self.character.frame == 7 and (self.character.right_pressed==True or self.character.left_pressed==True):
+            self.character.state_machine.handle_state_event(('Pressing_Key', None))
         pass
     def draw(self):
         self.character.image.draw_by_act_kind(self.character.image.jump_move_frame_start,self.character.image.jump_move_frames ,self.character.frame,self.character.xPos, self.character.yPos,self.character.face_dir)
