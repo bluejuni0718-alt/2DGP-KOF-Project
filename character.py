@@ -140,6 +140,18 @@ class MoveJump:
                                               self.character.xPos, self.character.yPos,
                                               self.character.face_dir)
 
+class Run:
+    def __init__(self, character):
+        self.character=character
+    def enter(self, e):
+        pass
+    def exit(self,e):
+        pass
+    def do(self):
+        pass
+    def draw(self):
+        pass
+
 class Character:
     def __init__(self, image_data,keymap=None):
         default = {'left': SDLK_LEFT, 'right': SDLK_RIGHT, 'up': SDLK_UP}
