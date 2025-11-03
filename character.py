@@ -198,7 +198,7 @@ class Character:
                 return e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key == key_const
             return pred
 
-        def mk_double_tap_pred(key_const, sdl_type):
+        def mk_double_tap_pred(key_const, sdl_type, required_face_dir=None, must_match=True):
             def pred(e):
                 if not (e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key == key_const):
                     return False
@@ -206,9 +206,14 @@ class Character:
                     now = get_time()
                     prev_down = self._last_down.get(key_const, 0)
                     prev_up = self._last_up.get(key_const, 0)
-                    is_double = (prev_down != 0) and ((now - prev_down) <= self.double_tap_interval) and (prev_up > prev_down)
+                    is_double = (prev_down != 0) and ((now - prev_down) <= self.double_tap_interval) and (
+                                prev_up > prev_down)
                     self._last_down[key_const] = now
-                    return is_double
+                    if not is_double:
+                        return False
+                    if required_face_dir is None:
+                        return True
+                    return (self.face_dir == required_face_dir) if must_match else (self.face_dir != required_face_dir)
                 return False
             return pred
 
