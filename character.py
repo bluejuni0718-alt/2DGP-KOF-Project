@@ -205,8 +205,6 @@ class Character:
         self.left_up = mk_key_pred(self.keymap['left'], SDL_KEYUP)
         self.up_down = mk_key_pred(self.keymap['up'], SDL_KEYDOWN)
 
-
-
         self.state_machine = StateMachine(
             self.IDLE,{
                 self.IDLE:{self.right_down:self.WALK,self.left_down:self.WALK,self.up_down:self.JUMP,self.right_double:self.RUN,self.left_double:self.RUN},
@@ -224,11 +222,15 @@ class Character:
         if event.type == SDL_KEYDOWN:
             if event.key == self.keymap['left']:
                 self.left_pressed = True
+                self._released[self.keymap['left']] = False
             elif event.key == self.keymap['right']:
                 self.right_pressed = True
+                self._released[self.keymap['right']] = False
         elif event.type == SDL_KEYUP:
             if event.key == self.keymap['left']:
                 self.left_pressed = False
+                self._released[self.keymap['left']] = True
             elif event.key == self.keymap['right']:
                 self.right_pressed = False
+                self._released[self.keymap['right']] = True
         self.state_machine.handle_state_event(('INPUT', event))
