@@ -179,6 +179,10 @@ class Character:
                 return e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key == key_const
             return pred
 
+        def mk_double_tap_pred(key_const, sdl_type):
+            pass
+
+
         self.right_down = mk_key_pred(self.keymap['right'], SDL_KEYDOWN)
         self.left_down = mk_key_pred(self.keymap['left'], SDL_KEYDOWN)
         self.right_up = mk_key_pred(self.keymap['right'], SDL_KEYUP)
