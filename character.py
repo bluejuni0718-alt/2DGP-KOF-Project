@@ -156,6 +156,11 @@ class Run:
         self.character.dir = 0
         pass
     def do(self):
+        self.character.anim_tick += 1
+        if self.character.anim_tick >= self.character.anim_delay:
+            self.character.anim_tick = 0
+            self.character.frame = (self.character.frame + 1) % max(1, self.character.image.run_frames)
+            self.character.xPos += self.character.dir * 10
         pass
     def draw(self):
         pass
