@@ -194,9 +194,10 @@ class Character:
                     self._last_tap[key_const] = now
                     return last != 0 and (now - last) <= self.double_tap_interval and was_released
                 return False
-
             return pred
 
+        self.right_double = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN)
+        self.left_double = mk_double_tap_pred(self.keymap['left'], SDL_KEYDOWN)
 
         self.right_down = mk_key_pred(self.keymap['right'], SDL_KEYDOWN)
         self.left_down = mk_key_pred(self.keymap['left'], SDL_KEYDOWN)
@@ -204,8 +205,7 @@ class Character:
         self.left_up = mk_key_pred(self.keymap['left'], SDL_KEYUP)
         self.up_down = mk_key_pred(self.keymap['up'], SDL_KEYDOWN)
 
-        self.right_double = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN)
-        self.left_double = mk_double_tap_pred(self.keymap['left'], SDL_KEYDOWN)
+
 
         self.state_machine = StateMachine(
             self.IDLE,{
