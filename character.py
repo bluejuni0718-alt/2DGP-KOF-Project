@@ -165,7 +165,7 @@ class Character:
         self.jump_frame=0
         self.anim_tick=0
         self.anim_delay=4
-
+        self.double_tap_interval=0.3
 
         self.left_pressed = False
         self.right_pressed = False
