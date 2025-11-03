@@ -167,7 +167,7 @@ class Character:
         self.anim_delay=4
         self.double_tap_interval=0.3
         self._last_tap = {}
-        self._release={}
+        self._released={}
 
         self.left_pressed = False
         self.right_pressed = False
@@ -189,10 +189,11 @@ class Character:
                     return False
                 if sdl_type == SDL_KEYDOWN:
                     now = get_time()
-                    last = self._last_tap.get(key_const, 0)
-                    was_released = self._released.get(key_const, True)
-                    self._last_tap[key_const] = now
-                    return last != 0 and (now - last) <= self.double_tap_interval and was_released
+                    prev_down = self._last_down.get(key_const, 0)
+                    prev_up = self._last_up.get(key_const, 0)
+                    is_double = (prev_down != 0) and ((now - prev_down) <= self.double_tap_interval) and (prev_up > prev_down)
+                    self._last_down[key_const] = now
+                    return is_double
                 return False
             return pred
 
