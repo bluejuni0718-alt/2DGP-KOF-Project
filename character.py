@@ -201,6 +201,9 @@ class Character:
         self.left_up = mk_key_pred(self.keymap['left'], SDL_KEYUP)
         self.up_down = mk_key_pred(self.keymap['up'], SDL_KEYDOWN)
 
+        self.right_double = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN)
+        self.left_double = mk_double_tap_pred(self.keymap['left'], SDL_KEYDOWN)
+
         self.state_machine = StateMachine(
             self.IDLE,{
                 self.IDLE:{self.right_down:self.WALK,self.left_down:self.WALK,self.up_down:self.JUMP},
