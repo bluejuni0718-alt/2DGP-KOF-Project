@@ -167,6 +167,7 @@ class Character:
         self.anim_delay=4
         self.double_tap_interval=0.3
         self._last_tap = {}
+        self._release={}
 
         self.left_pressed = False
         self.right_pressed = False
