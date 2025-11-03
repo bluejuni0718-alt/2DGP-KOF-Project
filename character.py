@@ -153,6 +153,7 @@ class Run:
             self.character.dir = -1
         pass
     def exit(self,e):
+        self.character.dir = 0
         pass
     def do(self):
         pass
