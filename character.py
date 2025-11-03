@@ -166,8 +166,9 @@ class Character:
         self.anim_tick=0
         self.anim_delay=4
         self.double_tap_interval=0.3
-        self._last_tap = {}
-        self._released={}
+
+        self._last_down = {}  # key_const -> 마지막 다운 시각
+        self._last_up = {}  # key_const -> 마지막 업 시각
 
         self.left_pressed = False
         self.right_pressed = False
@@ -223,15 +224,13 @@ class Character:
         if event.type == SDL_KEYDOWN:
             if event.key == self.keymap['left']:
                 self.left_pressed = True
-                self._released[self.keymap['left']] = False
             elif event.key == self.keymap['right']:
                 self.right_pressed = True
-                self._released[self.keymap['right']] = False
         elif event.type == SDL_KEYUP:
             if event.key == self.keymap['left']:
                 self.left_pressed = False
-                self._released[self.keymap['left']] = True
+                self._last_up[self.keymap['left']] = get_time()
             elif event.key == self.keymap['right']:
                 self.right_pressed = False
-                self._released[self.keymap['right']] = True
+                self._last_up[self.keymap['right']] = get_time()
         self.state_machine.handle_state_event(('INPUT', event))
