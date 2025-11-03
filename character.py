@@ -217,8 +217,11 @@ class Character:
                 return False
             return pred
 
-        self.right_double = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN)
-        self.left_double = mk_double_tap_pred(self.keymap['left'], SDL_KEYDOWN)
+        self.right_double_fwd = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN, required_face_dir=1, must_match=False)
+        self.right_double_back = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN, required_face_dir=1,must_match=True)
+        # 왼쪽 키: 앞이면 face_dir == -1, 뒤면 face_dir != -1
+        self.left_double_fwd = mk_double_tap_pred(self.keymap['left'], SDL_KEYDOWN, required_face_dir=-1, must_match=False)
+        self.left_double_back = mk_double_tap_pred(self.keymap['left'], SDL_KEYDOWN, required_face_dir=-1, must_match=True)
 
         self.right_down = mk_key_pred(self.keymap['right'], SDL_KEYDOWN)
         self.left_down = mk_key_pred(self.keymap['left'], SDL_KEYDOWN)
