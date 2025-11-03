@@ -160,9 +160,10 @@ class Run:
         if self.character.anim_tick >= self.character.anim_delay:
             self.character.anim_tick = 0
             self.character.frame = (self.character.frame + 1) % max(1, self.character.image.run_frames)
-            self.character.xPos += self.character.dir * 10
+            self.character.xPos += self.character.dir * 25
         pass
     def draw(self):
+        self.character.image.draw_by_act_kind(self.character.image.run_frame_start,self.character.image.run_frames ,self.character.frame,self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
 class Character:
