@@ -144,6 +144,13 @@ class Run:
     def __init__(self, character):
         self.character=character
     def enter(self, e):
+        self.character.anim_tick = 0
+        self.character.frame = 0
+        self.character.jump_frame = 0
+        if self.character.right_down(e) or self.character.right_pressed:
+            self.character.dir = 1
+        elif self.character.left_down(e) or self.character.left_pressed:
+            self.character.dir = -1
         pass
     def exit(self,e):
         pass
