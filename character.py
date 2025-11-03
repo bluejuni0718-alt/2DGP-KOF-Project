@@ -190,8 +190,9 @@ class Character:
                 if sdl_type == SDL_KEYDOWN:
                     now = get_time()
                     last = self._last_tap.get(key_const, 0)
+                    was_released = self._released.get(key_const, True)
                     self._last_tap[key_const] = now
-                    return (now - last) <= self.double_tap_interval
+                    return last != 0 and (now - last) <= self.double_tap_interval and was_released
                 return False
 
             return pred
