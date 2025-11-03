@@ -166,6 +166,7 @@ class Character:
         self.anim_tick=0
         self.anim_delay=4
 
+
         self.left_pressed = False
         self.right_pressed = False
 
@@ -180,7 +181,17 @@ class Character:
             return pred
 
         def mk_double_tap_pred(key_const, sdl_type):
-            pass
+            def pred(e):
+                if not (e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key == key_const):
+                    return False
+                if sdl_type == SDL_KEYDOWN:
+                    now = get_time()
+                    last = self._last_tap.get(key_const, 0)
+                    self._last_tap[key_const] = now
+                    return (now - last) <= self.double_tap_interval
+                return False
+
+            return pred
 
 
         self.right_down = mk_key_pred(self.keymap['right'], SDL_KEYDOWN)
