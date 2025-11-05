@@ -3,16 +3,16 @@ from frame import *
 from character import *
 import game_world
 
-isRun = True
+running = True
 
 def handle_events():
     event_list = get_events()
-    global isRun
+    global running
     for event in event_list:
         if event.type == SDL_QUIT:
-            isRun = False
+            running = False
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
-            isRun = False
+            running = False
         else:
             test_character.handle_event(event)
     pass
