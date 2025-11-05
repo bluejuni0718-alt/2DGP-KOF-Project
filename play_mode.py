@@ -38,12 +38,4 @@ def draw():
 def finish():
     pass
 
-open_canvas()
-reset_world()
 
-while isRun:
-    handle_events()
-    update_world()
-    render_world()
-    delay(0.016)
-close_canvas()
