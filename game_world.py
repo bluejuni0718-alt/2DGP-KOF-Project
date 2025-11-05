@@ -1,4 +1,4 @@
-world =[]
+world =[[],[]]
 
 def add_object(o):
     global world
