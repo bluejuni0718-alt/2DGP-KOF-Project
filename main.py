@@ -6,7 +6,7 @@ import game_world
 isRun = True
 
 open_canvas()
-test_character = Character(KimFrameInfo())
+
 
 def handle_events():
     event_list = get_events()
@@ -21,12 +21,10 @@ def handle_events():
     pass
 
 def reset_world():
-    global world
     global test_character
 
-    world = []
-
-    world.append(test_character)
+    test_character = Character(KimFrameInfo())
+    game_world.add_object(test_character)
     pass
 
 def update_world():
