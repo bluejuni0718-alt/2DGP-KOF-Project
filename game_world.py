@@ -1,8 +1,8 @@
 world =[[],[]]
 
-def add_object(o):
+def add_object(o,depth=0):
     global world
-    world.append(o)
+    world[depth].append(o)
 
 def update():
     for o in world:
