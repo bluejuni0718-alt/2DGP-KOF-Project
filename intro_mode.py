@@ -17,7 +17,11 @@ def update():
     pass
 
 def draw():
+    clear_canvas()
+    image.draw(800, 600)
+    update_canvas()
     pass
 
 def handle_events():
+
     pass
