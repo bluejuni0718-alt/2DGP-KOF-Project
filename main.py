@@ -1,6 +1,7 @@
 from pico2d import *
 from frame import *
 from character import *
+import game_world
 
 isRun = True
 
