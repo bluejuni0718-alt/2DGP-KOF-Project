@@ -14,8 +14,9 @@ def remove_object(o):
             return
 
 def update():
-    for o in world:
-        o.update()
+    for layer in world:
+        for o in layer:
+            o.update()
 
 def render():
     for o in world:
