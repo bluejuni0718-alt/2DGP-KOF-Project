@@ -19,5 +19,6 @@ def update():
             o.update()
 
 def render():
-    for o in world:
-        o.draw()
+    for layer in world:
+        for o in layer:
+            o.draw()
