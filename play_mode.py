@@ -5,9 +5,6 @@ import game_world
 
 isRun = True
 
-
-
-
 def handle_events():
     event_list = get_events()
     global isRun
