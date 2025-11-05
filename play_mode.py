@@ -5,7 +5,7 @@ import game_world
 
 isRun = True
 
-open_canvas()
+
 
 
 def handle_events():
@@ -20,21 +20,25 @@ def handle_events():
             test_character.handle_event(event)
     pass
 
-def reset_world():
+def init():
     global test_character
 
     test_character = Character(KimFrameInfo())
     game_world.add_object(test_character)
     pass
 
-def update_world():
+def update():
     game_world.update()
 
-def render_world():
+def draw():
     clear_canvas()
     game_world.render()
     update_canvas()
 
+def finish():
+    pass
+
+open_canvas()
 reset_world()
 
 while isRun:
