@@ -14,6 +14,8 @@ def finish():
     del image
 
 def update():
+    if running == False:
+        game_framework.quit()
     pass
 
 def draw():
