@@ -174,6 +174,7 @@ class Run:
 class Character:
     def __init__(self, image_data,keymap=None):
         default = {'left': SDLK_LEFT, 'right': SDLK_RIGHT, 'up': SDLK_UP}
+        self.font = load_font('ENCR10B.TTF', 16)
         self.keymap = default if keymap is None else {**default, **keymap}
         self.xPos = 400
         self.yPos = 90
