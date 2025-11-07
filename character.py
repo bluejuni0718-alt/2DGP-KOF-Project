@@ -166,14 +166,10 @@ class Run:
         self.character.dir = 0
         pass
     def do(self):
-        if self.character.anim_tick >= self.character.anim_delay:
-            self.character.frame = (self.character.frame + 1) % self.character.image.walk_frames
-            self.character.anim_tick = 0
-        self.character.anim_tick += 1
+        self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.run_frames
         self.character.xPos += self.character.dir * RUN_SPEED_PPS * game_framework.frame_time
-        pass
     def draw(self):
-        self.character.image.draw_by_act_kind(self.character.image.run_frame_start,self.character.image.run_frames ,self.character.frame,self.character.xPos, self.character.yPos,self.character.face_dir)
+        self.character.image.draw_by_act_kind(self.character.image.run_frame_start,self.character.image.run_frames ,int(self.character.frame),self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
 class Character:
