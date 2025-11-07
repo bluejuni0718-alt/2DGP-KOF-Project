@@ -15,7 +15,7 @@ def handle_events():
             game_framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             running = False
-        else:
+        elif event.type==SDL_KEYDOWN and event.key==SDLK_RETURN:
             game_framework.change_mode(intro_mode)
     pass
 
