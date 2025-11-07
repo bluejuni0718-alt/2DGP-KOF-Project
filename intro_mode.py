@@ -1,12 +1,11 @@
 import game_framework
 from pico2d import*
 
-image = None
-running= True
-
 
 def init():
-    global image, running
+    global image
+    global running
+
     image = load_image('GameMode_Image/Game_Intro_Image.png')
     running = True
 
