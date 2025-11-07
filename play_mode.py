@@ -3,6 +3,7 @@ from frame import *
 import game_framework
 from character import *
 import game_world
+import intro_mode
 
 running = True
 
@@ -15,7 +16,7 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             running = False
         else:
-            test_character.handle_event(event)
+            game_framework.change_mode(intro_mode)
     pass
 
 def init():
