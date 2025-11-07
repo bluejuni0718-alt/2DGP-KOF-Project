@@ -3,6 +3,11 @@ from frame import *
 from state_machine import *
 from character_frame import *
 
+PIXEL_PER_METER = 10.0/0.3 #10 픽셀당 30cm로 설정
+RUN_SPEED_KMPH = 20.0 #시속 20km로 설정
+RUN_SPEED_MPS = (RUN_SPEED_KMPH * 1000.0 / 3600.0) #초속미터 환산
+RUN_SPEED_PPS = (RUN_SPEED_MPS*PIXEL_PER_METER) #초속 픽셀로 환산
+
 def time_out(e):
     return e[0] == 'TIME_OUT'
 
