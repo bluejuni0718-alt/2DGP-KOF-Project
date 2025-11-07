@@ -9,6 +9,8 @@ def init():
     pass
 
 def finish():
+    global image
+    del image
     pass
 
 def handle_events():
