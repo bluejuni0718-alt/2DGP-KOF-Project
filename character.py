@@ -6,10 +6,14 @@ from state_machine import *
 from character_frame import *
 
 PIXEL_PER_METER = 10.0/0.3 #10 픽셀당 30cm로 설정
+
 RUN_SPEED_KMPH = 20.0 #시속 20km로 설정
 RUN_SPEED_MPS = (RUN_SPEED_KMPH * 1000.0 / 3600.0) #초속미터 환산
 RUN_SPEED_PPS = (RUN_SPEED_MPS*PIXEL_PER_METER) #초속 픽셀로 환산
-WALK_SPEED_PPS = RUN_SPEED_PPS / 3
+
+WALK_SPEED_KMPH = 5
+WALK_SPEED_MPS = (WALK_SPEED_KMPH * 1000.0 / 3600.0)
+WALK_SPEED_PPS = (WALK_SPEED_MPS * PIXEL_PER_METER)
 
 def time_out(e):
     return e[0] == 'TIME_OUT'
@@ -164,11 +168,11 @@ class Run:
         self.character.dir = 0
         pass
     def do(self):
-        self.character.anim_tick += 1
         if self.character.anim_tick >= self.character.anim_delay:
+            self.character.frame = (self.character.frame + 1) % self.character.image.walk_frames
             self.character.anim_tick = 0
-            self.character.frame = (self.character.frame + 1) % max(1, self.character.image.run_frames)
-            self.character.xPos += self.character.dir * 25
+        self.character.anim_tick += 1
+        self.character.xPos += self.character.dir * RUN_SPEED_PPS * game_framework.frame_time
         pass
     def draw(self):
         self.character.image.draw_by_act_kind(self.character.image.run_frame_start,self.character.image.run_frames ,self.character.frame,self.character.xPos, self.character.yPos,self.character.face_dir)
