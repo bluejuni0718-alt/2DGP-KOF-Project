@@ -248,6 +248,7 @@ class Character:
         self.state_machine.update()
     def draw(self):
         self.state_machine.draw()
+        self.font.draw(self.xPos - 60, self.yPos + 70, f'(Time: {get_time():.2f})', (255, 255, 0))
     def handle_event(self,event):
         if event.type == SDL_KEYDOWN:
             if event.key == self.keymap['left']:
