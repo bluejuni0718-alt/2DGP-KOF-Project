@@ -1,5 +1,6 @@
 from pico2d import*
 import game_framework
+import play_mode
 
 image =None
 
@@ -19,7 +20,7 @@ def handle_events():
         if event.type== SDL_QUIT:
             game_framework.quit()
         elif event.type==SDL_KEYDOWN and event.key==SDLK_ESCAPE:
-            game_framework.quit()
+            game_framework.change_mode(play_mode)
     pass
 
 def draw():
