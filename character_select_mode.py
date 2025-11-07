@@ -27,3 +27,12 @@ def draw():
     image.draw(400,300,800,600)
     update_canvas()
     pass
+
+def update():
+    pass
+
+def pause():
+    pass
+
+def resume():
+    pass
