@@ -17,6 +17,8 @@ def handle_events():
             running = False
         elif event.type==SDL_KEYDOWN and event.key==SDLK_RETURN:
             game_framework.change_mode(intro_mode)
+        else:
+            test_character.handle_event(event)
     pass
 
 def init():
