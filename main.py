@@ -1,5 +1,6 @@
 from pico2d import *
-import play_mode
+import game_framework
+import logo_mode
 
 open_canvas()
 play_mode.init()
