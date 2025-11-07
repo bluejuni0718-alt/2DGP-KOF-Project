@@ -1,6 +1,8 @@
+import time
+frame_time = 0.0
+
 running = None
 stack = None
-
 
 def change_mode(mode):
     global stack
