@@ -4,6 +4,8 @@ import game_framework
 image =None
 
 def init():
+    global image
+    image= load_image('character_select_mode.png')
     pass
 
 def finish():
