@@ -1,4 +1,5 @@
 import game_framework
+import character_select_mode
 from pico2d import*
 
 
@@ -14,8 +15,9 @@ def finish():
     del image
 
 def update():
+    global running
     if running == False:
-        game_framework.quit()
+        game_framework.change_mode(character_select_mode)
     pass
 
 def draw():
