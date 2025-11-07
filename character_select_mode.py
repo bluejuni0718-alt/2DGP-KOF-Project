@@ -5,7 +5,7 @@ image =None
 
 def init():
     global image
-    image= load_image('character_select_mode.png')
+    image= load_image('GameMode_Image/Game_Character_Select.png')
     pass
 
 def finish():
