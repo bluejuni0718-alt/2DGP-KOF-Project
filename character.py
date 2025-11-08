@@ -29,7 +29,7 @@ FRAMES_PER_JUMP_ACTION = 5
 
 MOVE_JUMP_TIME_PER_ACTION = 0.6
 MOVE_JUMP_ACTION_PER_TIME = 1.0 / MOVE_JUMP_TIME_PER_ACTION
-FRAMES_PER_MOVE_JUMP_ACTION = 10
+FRAMES_PER_MOVE_JUMP_ACTION = 6
 
 def time_out(e):
     return e[0] == 'TIME_OUT'
@@ -141,11 +141,11 @@ class MoveJump:
     def do(self):
         if self.character.dir == 1:
             self.character.frame = (self.character.frame +
-                                    FRAMES_PER_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
+                                    FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
                                     % max(1, self.character.image.jump_move_frames)
         else:
             self.character.frame = (self.character.frame -
-                                    FRAMES_PER_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
+                                    FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
                                    % max(1, self.character.image.jump_move_frames)
         self.vy += self.gravity * game_framework.frame_time
         self.character.yPos += self.vy * game_framework.frame_time
