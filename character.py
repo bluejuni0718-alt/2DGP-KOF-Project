@@ -326,11 +326,10 @@ class Character:
 
             return pred
 
-        self.right_double_fwd = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN, required_face_dir=1, must_match=False)
-        self.right_double_back = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN, required_face_dir=-1,must_match=True)
-        # 왼쪽 키: 앞이면 face_dir == -1, 뒤면 face_dir != -1
-        self.left_double_fwd = mk_double_tap_pred(self.keymap['left'], SDL_KEYDOWN, required_face_dir=-1, must_match=False)
-        self.left_double_back = mk_double_tap_pred(self.keymap['left'], SDL_KEYDOWN, required_face_dir=-1, must_match=True)
+        self.right_double_fwd = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN, forward_check=True)
+        self.right_double_back = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN, forward_check=False)
+        self.left_double_fwd = mk_double_tap_pred(self.keymap['left'], SDL_KEYDOWN, forward_check=True)
+        self.left_double_back = mk_double_tap_pred(self.keymap['left'], SDL_KEYDOWN, forward_check=False)
 
         self.right_down = mk_key_pred(self.keymap['right'], SDL_KEYDOWN)
         self.left_down = mk_key_pred(self.keymap['left'], SDL_KEYDOWN)
@@ -342,7 +341,8 @@ class Character:
             self.IDLE,{
                 self.IDLE:{self.right_double_fwd:self.RUN,self.left_double_fwd:self.RUN,self.right_double_back:self.BACK_DASH,self.left_double_back:self.BACK_DASH,
                            self.right_down:self.WALK,self.left_down:self.WALK,self.up_down:self.JUMP},
-                self.WALK:{self.right_up:self.IDLE,self.left_up:self.IDLE,self.up_down:self.MOVE_JUMP},
+                self.WALK:{self.right_up:self.IDLE,self.left_up:self.IDLE,self.up_down:self.MOVE_JUMP,
+                           },
                 self.JUMP:{time_out: self.IDLE, pressing_key:self.WALK},
                 self.MOVE_JUMP: {time_out:self.IDLE, pressing_key:self.WALK},
                 self.RUN:{self.right_up:self.IDLE,self.left_up:self.IDLE,self.up_down:self.RUN_JUMP},
