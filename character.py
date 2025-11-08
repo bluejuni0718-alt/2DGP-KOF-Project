@@ -19,7 +19,7 @@ JUMP_SPEED_KMPH = 50
 JUMP_SPEED_MPS = (JUMP_SPEED_KMPH * 1000.0 / 3600.0)
 JUMP_SPEED_PPS = (JUMP_SPEED_MPS * PIXEL_PER_METER)
 
-BACK_DASH_SPEED_KMPH = 10
+BACK_DASH_SPEED_KMPH = 20
 BACK_DASH_SPEED_MPS = (BACK_DASH_SPEED_KMPH * 1000.0 / 3600.0)
 BACK_DASH_SPEED_PPS = (BACK_DASH_SPEED_MPS * PIXEL_PER_METER)
 
@@ -238,9 +238,8 @@ class BackDash:
         self.character = character
         self.vy = 0.0
         self.gravity = -1500.0
-        self.desired_jump_height = 120
-        self.pressed_after_enter = False
-        self.pressed_dir = 0
+        self.desired_jump_height = 25
+
     def enter(self, e):
         if self.character.right_down(e) or self.character.right_pressed:
             self.character.dir = 1
