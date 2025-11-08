@@ -286,7 +286,7 @@ class SitDown:
 
         pass
     def draw(self):
-        self.character.image.draw_by_frame_num(self.character.image.sit_down_frame_start + int(self.character.frame), self.character.xPos, self.character.yPos,self.character.face_dir)
+        self.character.image.draw_by_frame_num(self.character.image.sit_down_frame_start + int(self.character.frame), self.character.xPos, self.character.yPos - 6 * int(self.character.frame),self.character.face_dir)
         pass
 
 class Character:
