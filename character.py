@@ -104,9 +104,12 @@ class Jump:
 
         if self.character.yPos <= self.character.ground_y:
             self.character.yPos = self.character.ground_y
-            self.character.state_machine.handle_state_event(('TIME_OUT', None))
             if self.pressed_after_enter:
                 self.character.dir = self.pressed_dir
+                self.character.state_machine.handle_state_event(('Pressing_Key', None))
+            elif self.character.right_pressed or self.character.left_pressed:
+                # 진입 전에 이미 누르고 있던 키(착지 직후 여전히 누르고 있으면) 처리
+                self.character.dir = 1 if self.character.right_pressed else -1
                 self.character.state_machine.handle_state_event(('Pressing_Key', None))
         pass
     def draw(self):
