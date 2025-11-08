@@ -333,6 +333,7 @@ class Character:
                 self.MOVE_JUMP: {time_out:self.IDLE, pressing_key:self.WALK},
                 self.RUN:{self.right_up:self.IDLE,self.left_up:self.IDLE,self.up_down:self.RUN_JUMP},
                 self.RUN_JUMP:{time_out:self.IDLE,pressing_key:self.RUN},
+                self.BACK_DASH:{time_out:self.IDLE,pressing_key:self.WALK}
             }
         )
     def update(self):
