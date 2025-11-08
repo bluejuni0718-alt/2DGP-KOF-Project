@@ -255,7 +255,7 @@ class Character:
         self.JUMP=Jump(self)
         self.MOVE_JUMP=MoveJump(self)
         self.RUN = Run(self)
-        self.RunJump = RunJump(self)
+        self.RUNJUMP = RunJump(self)
 
         def mk_key_pred(key_const, sdl_type):
             def pred(e):
@@ -299,7 +299,8 @@ class Character:
                 self.WALK:{self.right_up:self.IDLE,self.left_up:self.IDLE,self.up_down:self.MOVE_JUMP},
                 self.JUMP:{time_out: self.IDLE, pressing_key:self.WALK},
                 self.MOVE_JUMP: {time_out:self.IDLE, pressing_key:self.WALK},
-                self.RUN:{self.right_up:self.IDLE,self.left_up:self.IDLE}
+                self.RUN:{self.right_up:self.IDLE,self.left_up:self.IDLE,self.up_down:self.RUNJUMP},
+                self.RUNJUMP:{time_out:self.IDLE,pressing_key:self.RUN},
             }
         )
     def update(self):
