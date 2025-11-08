@@ -274,6 +274,7 @@ class SitDown:
     def __init__(self, character):
         self.character = character
     def enter(self, e):
+        self.character.frame = 0
         pass
     def exit(self,e):
         self.character.frame = 0
