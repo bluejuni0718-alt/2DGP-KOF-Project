@@ -105,6 +105,9 @@ class Jump:
         if self.character.yPos <= self.character.ground_y:
             self.character.yPos = self.character.ground_y
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
+            if self.pressed_after_enter:
+                self.character.dir = self.pressed_dir
+                self.character.state_machine.handle_state_event(('Pressing_Key', None))
         pass
     def draw(self):
         self.character.image.draw_by_act_kind(self.character.image.jump_frame_start,self.character.image.jump_frames ,int(self.character.frame),self.character.xPos, self.character.yPos,self.character.face_dir)
