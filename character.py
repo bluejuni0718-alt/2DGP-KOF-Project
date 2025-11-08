@@ -255,11 +255,21 @@ class BackDash:
         pass
 
     def do(self):
-        self.character.xPos -= self.character.dir * BACK_DASH_SPEED_PPS * game_framework.frame_time
-        pass
+        self.vy += self.gravity * game_framework.frame_time
+        self.character.yPos += self.vy * game_framework.frame_time
+        self.character.xPos += self.character.dir * BACK_DASH_SPEED_PPS * game_framework.frame_time
+
+        if self.character.yPos <= self.character.ground_y:
+            self.character.yPos = self.character.ground_y
+            if self.character.right_pressed or self.character.left_pressed:
+                self.character.state_machine.handle_state_event(('Pressing_Key', None))
+            else:
+                self.character.state_machine.handle_state_event(('TIME_OUT', None))
+
     def draw(self):
-        self.character.image.draw_by_frame_num(self.character.image.back_dash_frame_start,self.character.xPos, self.character.yPos,self.character.face_dir)
-        pass
+        self.character.image.draw_by_frame_num(self.character.image.back_dash_frame_start,
+                                               self.character.xPos, self.character.yPos, self.character.face_dir)
+
 
 class Character:
     def __init__(self, image_data,keymap=None):
