@@ -255,6 +255,7 @@ class Character:
         self.JUMP=Jump(self)
         self.MOVE_JUMP=MoveJump(self)
         self.RUN = Run(self)
+        self.RunJump = RunJump(self)
 
         def mk_key_pred(key_const, sdl_type):
             def pred(e):
