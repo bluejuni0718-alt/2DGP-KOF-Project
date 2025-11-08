@@ -75,10 +75,11 @@ class Walk:
         pass
 
 class Jump:
-
     def __init__(self, character):
         self.character=character
-        self.isJumping = 1
+        self.vy = 0.0
+        self.gravity = -1500.0
+        self.desired_jump_height = 130
     def enter(self, e):
         self.character.frame = self.character.jump_frame
         pass
