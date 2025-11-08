@@ -312,19 +312,26 @@ class Character:
 
             return pred
 
-                    if not is_double:
-                        return False
+        def mk_double_fwd_back_combined(sdl_type):
+            base = mk_double_detector_any(sdl_type)
 
-                    # 눌린 키 방향과 현재 시선(face_dir) 비교 → 앞/뒤 판정
-                    return (key_dir == self.face_dir) if forward_check else (key_dir != self.face_dir)
-                return False
+            def fwd(e):
+                if not base(e):
+                    return False
+                key_const = e[1].key
+                key_dir = 1 if key_const == self.keymap['right'] else -1
+                return key_dir == self.face_dir
 
-            return pred
+            def back(e):
+                if not base(e):
+                    return False
+                key_const = e[1].key
+                key_dir = 1 if key_const == self.keymap['right'] else -1
+                return key_dir != self.face_dir
 
-        self.right_double_fwd = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN, forward_check=True)
-        self.right_double_back = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN, forward_check=False)
-        self.left_double_fwd = mk_double_tap_pred(self.keymap['left'], SDL_KEYDOWN, forward_check=True)
-        self.left_double_back = mk_double_tap_pred(self.keymap['left'], SDL_KEYDOWN, forward_check=False)
+            return fwd, back
+
+        self.double_fwd, self.double_back = mk_double_fwd_back_combined(SDL_KEYDOWN)
 
         self.right_down = mk_key_pred(self.keymap['right'], SDL_KEYDOWN)
         self.left_down = mk_key_pred(self.keymap['left'], SDL_KEYDOWN)
