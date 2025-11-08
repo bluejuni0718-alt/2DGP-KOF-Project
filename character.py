@@ -120,7 +120,6 @@ class Jump:
 class MoveJump:
     def __init__(self, character):
         self.character=character
-        self.SpecialFrame= 0
         self.vy = 0.0
         self.gravity = -1500.0
         self.desired_jump_height = 120
@@ -151,11 +150,15 @@ class MoveJump:
         self.vy += self.gravity * game_framework.frame_time
         self.character.yPos += self.vy * game_framework.frame_time
         self.character.xPos += self.character.dir * WALK_SPEED_PPS * game_framework.frame_time
+
+        if self.character.yPos <= self.character.ground_y:
+            self.character.yPos = self.character.ground_y
+            if self.character.right_pressed or self.character.left_pressed:
+                self.character.state_machine.handle_state_event(('Pressing_Key', None))
+            else:
+                self.character.state_machine.handle_state_event(('TIME_OUT', None))
         pass
     def draw(self):
-        if self.character.dir ==1 :
-            self.character.image.draw_by_frame_num(self.character.image.jump_move_motion_list[int(self.character.frame)],self.character.xPos, self.character.yPos,self.character.face_dir)
-        else:
             self.character.image.draw_by_frame_num(self.character.image.jump_move_motion_list[int(self.character.frame)],self.character.xPos, self.character.yPos,self.character.face_dir)
 
 class Run:
