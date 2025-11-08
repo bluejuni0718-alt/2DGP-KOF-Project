@@ -137,6 +137,10 @@ class MoveJump:
         self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
         if self.vy < 0:
             self.vy = -self.vy
+        if self.character.right_down(e) or self.character.right_pressed:
+            self.character.dir = 1
+        elif self.character.left_down(e) or self.character.left_pressed:
+            self.character.dir = -1
     def exit(self,e):
         self.character.jump_frame = self.character.frame
         self.character.dir = 0
