@@ -161,6 +161,11 @@ class MoveJump:
                     self.character.state_machine.handle_state_event(('TIME_OUT', None))
                 elif self.character.right_pressed == True or self.character.left_pressed == True:
                     self.character.state_machine.handle_state_event(('Pressing_Key', None))
+        self.character.frame = (self.character.frame +
+                                FRAMES_PER_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
+                               % max(1, self.character.image.jump_move_frames)
+        self.vy += self.gravity * game_framework.frame_time
+        self.character.yPos += self.vy * game_framework.frame_time
         pass
     def draw(self):
         frame_count = max(1, self.character.image.jump_move_frames)
