@@ -30,20 +30,20 @@ class KimFrameInfo:
             self.delYPos+=8
             pass
         fx, fy, fw, fh = self.frame_list[self.idle_frame_start + frame]
-        if face_dir == 1:
+        if face_dir == -1:
             self.print_image.clip_draw(fx, fy, fw, fh, x + self.delXPos, y + self.delYPos)
         else:
             self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', x + self.delXPos, y + self.delYPos, fw, fh)
         pass
     def draw_by_frame_num(self,frame_num,x, y,face_dir):
         fx, fy, fw, fh = self.frame_list[frame_num]
-        if face_dir ==1:
+        if face_dir ==-1:
             self.print_image.clip_draw(fx, fy, fw, fh, x, y)
         else:
             self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', x + self.delXPos, y + self.delYPos, fw, fh)
     def draw_by_act_kind(self,act_start_frame,act_frames,frame,x,y,face_dir):
         fx, fy, fw, fh = self.frame_list[act_start_frame + frame]
-        if face_dir ==1:
+        if face_dir ==-1:
             self.print_image.clip_draw(fx, fy, fw, fh, x, y)
         else:
             self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', x + self.delXPos, y + self.delYPos, fw, fh)
