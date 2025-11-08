@@ -280,6 +280,8 @@ class Character:
         self.left_pressed = False
         self.right_pressed = False
 
+        self.require_up_between_double = False  # True로 하면 기존 동작(중간에 KEYUP 필요)로 강제
+
         self.IDLE=Idle(self)
         self.WALK=Walk(self)
         self.JUMP=Jump(self)
@@ -293,7 +295,10 @@ class Character:
                 return e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key == key_const
             return pred
 
-        def mk_double_tap_pred(key_const, sdl_type, required_face_dir=None, must_match=True):
+        def mk_double_tap_pred(key_const, sdl_type, forward_check=True):
+            # key_const로부터 키 방향 결정(오른쪽=1, 왼쪽=-1)
+            key_dir = 1 if key_const == self.keymap['right'] else -1
+
             def pred(e):
                 if not (e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key == key_const):
                     return False
@@ -301,15 +306,24 @@ class Character:
                     now = get_time()
                     prev_down = self._last_down.get(key_const, 0)
                     prev_up = self._last_up.get(key_const, 0)
-                    is_double = (prev_down != 0) and ((now - prev_down) <= self.double_tap_interval) and (
-                                prev_up > prev_down)
+
+                    # 두 번의 DOWN이 인터벌 내에 있으면 더블로 본다.
+                    # 필요하면 중간에 UP이 있었는지도 검사하도록 플래그로 제어.
+                    within_interval = (prev_down != 0) and ((now - prev_down) <= self.double_tap_interval)
+                    require_up = getattr(self, 'require_up_between_double', False)
+                    had_up_between = (prev_up > prev_down)
+                    is_double = within_interval and ((not require_up) or had_up_between)
+
+                    # 최신 다운 시간은 항상 갱신
                     self._last_down[key_const] = now
+
                     if not is_double:
                         return False
-                    if required_face_dir is None:
-                        return True
-                    return (self.face_dir == required_face_dir) if must_match else (self.face_dir != required_face_dir)
+
+                    # 눌린 키 방향과 현재 시선(face_dir) 비교 → 앞/뒤 판정
+                    return (key_dir == self.face_dir) if forward_check else (key_dir != self.face_dir)
                 return False
+
             return pred
 
         self.right_double_fwd = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN, required_face_dir=1, must_match=False)
