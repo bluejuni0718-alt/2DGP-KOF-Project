@@ -316,6 +316,7 @@ class Character:
         self.RUN = Run(self)
         self.RUN_JUMP = RunJump(self)
         self.BACK_DASH = BackDash(self)
+        self.SIT_DOWN = SitDown(self)
 
         def mk_key_pred(key_const, sdl_type):
             def pred(e):
