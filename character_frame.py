@@ -25,7 +25,7 @@ class KimFrameInfo:
         self.delXPos=0
         self.delYPos=0
         if frame==4:
-            self.delXPos+=8 * face_dir
+            self.delXPos+=8 * -face_dir
         elif frame==5:
             self.delYPos+=8
             pass
