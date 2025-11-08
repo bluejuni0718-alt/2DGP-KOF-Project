@@ -278,8 +278,10 @@ class SitDown:
     def exit(self,e):
         pass
     def do(self):
+        self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.sit_down_frames
         pass
     def draw(self):
+        self.character.image.draw_idle_by_frame_num(int(self.character.frame), self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
 
