@@ -270,6 +270,18 @@ class BackDash:
         self.character.image.draw_by_frame_num(self.character.image.back_dash_frame_start,
                                                self.character.xPos, self.character.yPos, self.character.face_dir)
 
+class Sit:
+    def __init__(self, character):
+        self.character = character
+    def enter(self, e):
+        pass
+    def exit(self,e):
+        pass
+    def do(self):
+        pass
+    def draw(self):
+        pass
+
 
 class Character:
     def __init__(self, image_data,keymap=None):
