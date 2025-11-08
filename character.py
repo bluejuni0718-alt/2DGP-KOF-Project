@@ -183,6 +183,50 @@ class Run:
         self.character.image.draw_by_frame_num(self.character.image.run_frame_start + int(self.character.frame),self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
+class RunJump:
+    def __init__(self, character):
+        self.character=character
+        self.vy = 0.0
+        self.gravity = -1500.0
+        self.desired_jump_height = 120
+    def enter(self, e):
+        self.character.frame = self.character.jump_frame
+        self.character.ground_y = self.character.yPos
+        g_abs = -self.gravity if self.gravity < 0 else self.gravity
+        self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
+        if self.vy < 0:
+            self.vy = -self.vy
+        if self.character.right_down(e) or self.character.right_pressed:
+            self.character.dir = 1
+        elif self.character.left_down(e) or self.character.left_pressed:
+            self.character.dir = -1
+    def exit(self,e):
+        self.character.jump_frame = self.character.frame
+        self.character.dir = 0
+        pass
+    def do(self):
+        if self.character.dir == 1:
+            self.character.frame = (self.character.frame +
+                                    FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
+                                    % max(1, self.character.image.jump_move_frames)
+        else:
+            self.character.frame = (self.character.frame -
+                                    FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
+                                   % max(1, self.character.image.jump_move_frames)
+        self.vy += self.gravity * game_framework.frame_time
+        self.character.yPos += self.vy * game_framework.frame_time
+        self.character.xPos += self.character.dir * RUN_SPEED_PPS * game_framework.frame_time
+
+        if self.character.yPos <= self.character.ground_y:
+            self.character.yPos = self.character.ground_y
+            if self.character.right_pressed or self.character.left_pressed:
+                self.character.state_machine.handle_state_event(('Pressing_Key', None))
+            else:
+                self.character.state_machine.handle_state_event(('TIME_OUT', None))
+        pass
+    def draw(self):
+            self.character.image.draw_by_frame_num(self.character.image.jump_move_motion_list[int(self.character.frame)],self.character.xPos, self.character.yPos,self.character.face_dir)
+
 class Character:
     def __init__(self, image_data,keymap=None):
         default = {'left': SDLK_LEFT, 'right': SDLK_RIGHT, 'up': SDLK_UP}
