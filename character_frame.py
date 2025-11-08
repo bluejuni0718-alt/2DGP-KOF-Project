@@ -11,12 +11,14 @@ class KimFrameInfo:
         self.walk_frames = 6
         self.jump_frame_start = 97
         self.jump_frames = 5
-        self.jump_move_frame_start = 97
+        self.jump_move_motion_list = [97, 98, 153, 154, 155, 156, 100, 101]
+        self.jump_move_frame_start = 0
         self.jump_move_frames = 8
         self.run_frame_start= 73
         self.run_frames = 6
         self.delXPos=0
         self.delYPos=0
+
         pass
     def draw_idle_by_frame_num(self,frame, x, y,face_dir):
         self.delXPos=0
