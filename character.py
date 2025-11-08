@@ -280,10 +280,9 @@ class SitDown:
         self.character.frame = 0
         pass
     def do(self):
-        if self.character.frame >= self.character.image.sit_down_frames-1:
+        if int(self.character.frame) >= self.character.image.sit_down_frames-1:
             self.character.frame = self.character.image.sit_down_frames -1
         self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.sit_down_frames
-
         pass
     def draw(self):
         self.character.image.draw_by_frame_num(self.character.image.sit_down_frame_start + int(self.character.frame), self.character.xPos, self.character.yPos - 6 * int(self.character.frame),self.character.face_dir)
@@ -340,6 +339,7 @@ class Character:
         self.RUN_JUMP = RunJump(self)
         self.BACK_DASH = BackDash(self)
         self.SIT_DOWN = SitDown(self)
+        self.SIT_UP = SitUp(self)
 
         def mk_key_pred(key_const, sdl_type):
             def pred(e):
