@@ -15,13 +15,17 @@ WALK_SPEED_KMPH = 5
 WALK_SPEED_MPS = (WALK_SPEED_KMPH * 1000.0 / 3600.0)
 WALK_SPEED_PPS = (WALK_SPEED_MPS * PIXEL_PER_METER)
 
-JUMP_SPEED_KMPH = 20
+JUMP_SPEED_KMPH = 50
 JUMP_SPEED_MPS = (JUMP_SPEED_KMPH * 1000.0 / 3600.0)
 JUMP_SPEED_PPS = (JUMP_SPEED_MPS * PIXEL_PER_METER)
 
 TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0/TIME_PER_ACTION
 FRAMES_PER_ACTION = 8
+
+JUMP_TIME_PER_ACTION = 0.8
+JUMP_ACTION_PER_TIME = 1.0 / JUMP_TIME_PER_ACTION
+FRAMES_PER_JUMP_ACTION = 6
 
 def time_out(e):
     return e[0] == 'TIME_OUT'
@@ -83,7 +87,7 @@ class Jump:
         self.character.dir = 0
         pass
     def do(self):
-        self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.jump_frames
+        self.character.frame = (self.character.frame + FRAMES_PER_JUMP_ACTION * JUMP_ACTION_PER_TIME * game_framework.frame_time) % self.character.image.jump_frames
         self.character.yPos += JUMP_SPEED_PPS * game_framework.frame_time * self.isJumping
         if int(self.character.frame) < 2:
             self.isJumping = 1
