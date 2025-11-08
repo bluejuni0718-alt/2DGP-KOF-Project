@@ -281,7 +281,7 @@ class SitDown:
         self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.sit_down_frames
         pass
     def draw(self):
-        self.character.image.draw_idle_by_frame_num(int(self.character.frame), self.character.xPos, self.character.yPos,self.character.face_dir)
+        self.character.image.draw_by_frame_num(int(self.character.frame), self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
 
@@ -367,18 +367,21 @@ class Character:
         self.right_up = mk_key_pred(self.keymap['right'], SDL_KEYUP)
         self.left_up = mk_key_pred(self.keymap['left'], SDL_KEYUP)
         self.up_down = mk_key_pred(self.keymap['up'], SDL_KEYDOWN)
+        self.down_down = mk_key_pred(self.keymap['down'], SDL_KEYDOWN)
+        self.down_up = mk_key_pred(self.keymap['down'], SDL_KEYUP)
 
         self.state_machine = StateMachine(
             self.IDLE,{
                 self.IDLE:{self.double_fwd: self.RUN,self.double_back: self.BACK_DASH,
-                           self.right_down: self.WALK,self.left_down: self.WALK,self.up_down: self.JUMP},
+                           self.right_down: self.WALK,self.left_down: self.WALK,self.up_down: self.JUMP,self.down_down: self.SIT_DOWN},
                 self.WALK:{self.right_up:self.IDLE,self.left_up:self.IDLE,self.up_down:self.MOVE_JUMP,
                            },
                 self.JUMP:{time_out: self.IDLE, pressing_key:self.WALK},
                 self.MOVE_JUMP: {time_out:self.IDLE, pressing_key:self.WALK},
                 self.RUN:{self.right_up:self.IDLE,self.left_up:self.IDLE,self.up_down:self.RUN_JUMP},
                 self.RUN_JUMP:{time_out:self.IDLE,pressing_key:self.RUN},
-                self.BACK_DASH:{time_out:self.IDLE,pressing_key:self.WALK}
+                self.BACK_DASH:{time_out:self.IDLE,pressing_key:self.WALK},
+                self.SIT_DOWN:{self.down_up: self.IDLE}
             }
         )
     def update(self):
