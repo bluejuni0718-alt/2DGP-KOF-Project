@@ -15,7 +15,7 @@ WALK_SPEED_KMPH = 5
 WALK_SPEED_MPS = (WALK_SPEED_KMPH * 1000.0 / 3600.0)
 WALK_SPEED_PPS = (WALK_SPEED_MPS * PIXEL_PER_METER)
 
-JUMP_SPEED_KMPH = 5
+JUMP_SPEED_KMPH = 20
 JUMP_SPEED_MPS = (JUMP_SPEED_KMPH * 1000.0 / 3600.0)
 JUMP_SPEED_PPS = (JUMP_SPEED_MPS * PIXEL_PER_METER)
 
@@ -71,35 +71,29 @@ class Walk:
         pass
 
 class Jump:
+
     def __init__(self, character):
         self.character=character
+        self.isJumping = 1
     def enter(self, e):
-        self.character.anim_delay = 8
-        self.character.anim_tick = 0
         self.character.frame = self.character.jump_frame
         pass
     def exit(self,e):
-        self.character.anim_delay = 4
         self.character.jump_frame = self.character.frame
-        self.character.dir =0
+        self.character.dir = 0
         pass
     def do(self):
-        self.character.anim_tick += 1
-        if self.character.anim_tick >= self.character.anim_delay:
-            self.character.anim_tick = 0
-            self.character.frame = (self.character.frame + 1) % max(1, self.character.image.jump_frames)
-        if self.character.anim_tick >= self.character.anim_delay/3:
-            if self.character.frame<=1:
-                self.character.yPos += 12.5
-            elif self.character.frame<=3:
-                self.character.yPos -= 12.5
-        if self.character.frame == 4 and (self.character.left_pressed==False and self.character.right_pressed==False):
+        self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.jump_frames
+        self.character.yPos += JUMP_SPEED_PPS * game_framework.frame_time * self.isJumping
+        if int(self.character.frame) < 2:
+            self.isJumping = 1
+        else:
+            self.isJumping = -1
+        if int(self.character.frame) == 4:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
-        elif self.character.frame == 4 and (self.character.right_pressed==True or self.character.left_pressed==True):
-            self.character.state_machine.handle_state_event(('Pressing_Key', None))
         pass
     def draw(self):
-        self.character.image.draw_by_act_kind(self.character.image.jump_frame_start,self.character.image.jump_frames ,self.character.frame,self.character.xPos, self.character.yPos,self.character.face_dir)
+        self.character.image.draw_by_act_kind(self.character.image.jump_frame_start,self.character.image.jump_frames ,int(self.character.frame),self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
 class MoveJump:
