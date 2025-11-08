@@ -236,6 +236,11 @@ class RunJump:
 class BackDash:
     def __init__(self, character):
         self.character = character
+        self.vy = 0.0
+        self.gravity = -1500.0
+        self.desired_jump_height = 120
+        self.pressed_after_enter = False
+        self.pressed_dir = 0
     def enter(self, e):
         if self.character.right_down(e) or self.character.right_pressed:
             self.character.dir = 1
