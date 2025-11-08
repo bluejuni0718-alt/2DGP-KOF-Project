@@ -364,6 +364,12 @@ class Character:
                 self.left_pressed = True
             elif event.key == self.keymap['right']:
                 self.right_pressed = True
+            # 상태머신 먼저 처리 — 모든 판정기가 동일한 이전 _last_down을 보게 함
+            self.state_machine.handle_state_event(('INPUT', event))
+            # 그 다음에 마지막 다운 시각을 갱신
+            if event.key in (self.keymap['left'], self.keymap['right']):
+                self._last_down[event.key] = get_time()
+
         elif event.type == SDL_KEYUP:
             if event.key == self.keymap['left']:
                 self.left_pressed = False
@@ -371,4 +377,5 @@ class Character:
             elif event.key == self.keymap['right']:
                 self.right_pressed = False
                 self._last_up[self.keymap['right']] = get_time()
-        self.state_machine.handle_state_event(('INPUT', event))
+            # KEYUP는 업데이트 후 상태머신 호출해도 무방
+            self.state_machine.handle_state_event(('INPUT', event))
