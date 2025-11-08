@@ -265,7 +265,7 @@ class Character:
         self.xPos = 400
         self.yPos = 90
         self.frame = 0
-        self.face_dir = -1
+        self.face_dir = 1
         self.dir = 0
         self.image=image_data
         self.jump_frame=0
