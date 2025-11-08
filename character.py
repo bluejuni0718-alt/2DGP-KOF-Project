@@ -123,6 +123,9 @@ class MoveJump:
     def __init__(self, character):
         self.character=character
         self.SpecialFrame= 0
+        self.vy = 0.0
+        self.gravity = -1500.0
+        self.desired_jump_height = 120
     def enter(self, e):
         self.character.anim_tick = 0
         self.character.frame = self.character.jump_frame
