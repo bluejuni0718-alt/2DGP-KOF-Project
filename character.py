@@ -71,7 +71,7 @@ class Walk:
         self.character.xPos +=self.character.dir * WALK_SPEED_PPS * game_framework.frame_time
         pass
     def draw(self):
-        self.character.image.draw_by_act_kind(self.character.image.walk_frame_start,self.character.image.walk_frames ,int(self.character.frame),self.character.xPos, self.character.yPos,self.character.face_dir)
+        self.character.image.draw_by_frame_num(self.character.image.walk_frame_start + int(self.character.frame),self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
 class Jump:
@@ -116,7 +116,7 @@ class Jump:
 
         pass
     def draw(self):
-        self.character.image.draw_by_act_kind(self.character.image.jump_frame_start,self.character.image.jump_frames ,int(self.character.frame),self.character.xPos, self.character.yPos,self.character.face_dir)
+        self.character.image.draw_by_frame_num(self.character.image.jump_frame_start + int(self.character.frame),self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
 class MoveJump:
@@ -192,7 +192,7 @@ class Run:
         self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.run_frames
         self.character.xPos += self.character.dir * RUN_SPEED_PPS * game_framework.frame_time
     def draw(self):
-        self.character.image.draw_by_act_kind(self.character.image.run_frame_start,self.character.image.run_frames ,int(self.character.frame),self.character.xPos, self.character.yPos,self.character.face_dir)
+        self.character.image.draw_by_frame_num(self.character.image.run_frame_start + int(self.character.frame),self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
 class Character:
