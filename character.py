@@ -25,7 +25,7 @@ FRAMES_PER_ACTION = 8
 
 JUMP_TIME_PER_ACTION = 0.8
 JUMP_ACTION_PER_TIME = 1.0 / JUMP_TIME_PER_ACTION
-FRAMES_PER_JUMP_ACTION = 6
+FRAMES_PER_JUMP_ACTION = 5
 
 def time_out(e):
     return e[0] == 'TIME_OUT'
@@ -82,8 +82,11 @@ class Jump:
         self.desired_jump_height = 130
     def enter(self, e):
         self.character.frame = self.character.jump_frame
-        pass
         self.character.ground_y = self.character.yPos
+        g_abs = -self.gravity if self.gravity < 0 else self.gravity
+        self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
+        if self.vy < 0:
+            self.vy = -self.vy
     def exit(self,e):
         self.character.jump_frame = self.character.frame
         self.character.dir = 0
