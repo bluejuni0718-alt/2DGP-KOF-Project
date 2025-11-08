@@ -146,15 +146,23 @@ class MoveJump:
         self.character.dir = 0
         pass
     def do(self):
-        self.character.frame = (self.character.frame +
-                                FRAMES_PER_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
-                               % max(1, self.character.image.jump_move_frames)
+        if self.character.dir == 1:
+            self.character.frame = (self.character.frame +
+                                    FRAMES_PER_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
+                                    % max(1, self.character.image.jump_move_frames)
+        else:
+            self.character.frame = (self.character.frame -
+                                    FRAMES_PER_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
+                                   % max(1, self.character.image.jump_move_frames)
         self.vy += self.gravity * game_framework.frame_time
         self.character.yPos += self.vy * game_framework.frame_time
         self.character.xPos += self.character.dir * WALK_SPEED_PPS * game_framework.frame_time
         pass
     def draw(self):
-        self.character.image.draw_by_frame_num(self.character.image.jump_move_motion_list[int(self.character.frame)],self.character.xPos, self.character.yPos,self.character.face_dir)
+        if self.character.dir ==1 :
+            self.character.image.draw_by_frame_num(self.character.image.jump_move_motion_list[int(self.character.frame)],self.character.xPos, self.character.yPos,self.character.face_dir)
+        else:
+            self.character.image.draw_by_frame_num(self.character.image.jump_move_motion_list[int(self.character.frame)],self.character.xPos, self.character.yPos,self.character.face_dir)
 
 class Run:
     def __init__(self, character):
