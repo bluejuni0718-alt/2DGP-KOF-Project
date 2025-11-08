@@ -32,8 +32,12 @@ class KimFrameInfo:
         else:
             self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', x + self.delXPos, y + self.delYPos, fw, fh)
         pass
-    def draw_jump_move_by_frame_num(self,frame,x,y,face_dir):
-        pass
+    def draw_by_frame_num(self,frame_num,x, y,face_dir):
+        fx, fy, fw, fh = self.frame_list[frame_num]
+        if face_dir ==1:
+            self.print_image.clip_draw(fx, fy, fw, fh, x, y)
+        else:
+            self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', x + self.delXPos, y + self.delYPos, fw, fh)
     def draw_by_act_kind(self,act_start_frame,act_frames,frame,x,y,face_dir):
         fx, fy, fw, fh = self.frame_list[act_start_frame + frame]
         if face_dir ==1:
