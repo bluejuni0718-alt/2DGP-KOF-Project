@@ -92,8 +92,6 @@ class Jump:
         self.vy = 0.0
         self.gravity = -1500.0
         self.desired_jump_height = 120
-        self.start_left_pressed = False
-        self.start_right_pressed = False
         self.pressed_after_enter = False
         self.pressed_dir = 0
     def enter(self, e):
