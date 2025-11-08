@@ -19,6 +19,10 @@ JUMP_SPEED_KMPH = 50
 JUMP_SPEED_MPS = (JUMP_SPEED_KMPH * 1000.0 / 3600.0)
 JUMP_SPEED_PPS = (JUMP_SPEED_MPS * PIXEL_PER_METER)
 
+BACK_DASH_SPEED_KMPH = 10
+BACK_DASH_SPEED_MPS = (BACK_DASH_SPEED_KMPH * 1000.0 / 3600.0)
+BACK_DASH_SPEED_PPS = (BACK_DASH_SPEED_MPS * PIXEL_PER_METER)
+
 TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0/TIME_PER_ACTION
 FRAMES_PER_ACTION = 8
@@ -235,12 +239,19 @@ class BackDash:
     def __init__(self, character):
         self.character = character
     def enter(self, e):
+        if self.character.right_down(e) or self.character.right_pressed:
+            self.character.dir = 1
+        elif self.character.left_down(e) or self.character.left_pressed:
+            self.character.dir = -1
         pass
     def exit(self,e):
+        self.character.dir = 0
         pass
     def do(self):
+        self.character.xPos -= self.character.dir * BACK_DASH_SPEED_PPS * game_framework.frame_time
         pass
     def draw(self):
+        self.character.image.draw_by_frame_num(self.character.image.back_dash_frame_start,self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
 class Character:
@@ -298,7 +309,7 @@ class Character:
             return pred
 
         self.right_double_fwd = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN, required_face_dir=1, must_match=False)
-        self.right_double_back = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN, required_face_dir=1,must_match=True)
+        self.right_double_back = mk_double_tap_pred(self.keymap['right'], SDL_KEYDOWN, required_face_dir=-1,must_match=True)
         # 왼쪽 키: 앞이면 face_dir == -1, 뒤면 face_dir != -1
         self.left_double_fwd = mk_double_tap_pred(self.keymap['left'], SDL_KEYDOWN, required_face_dir=-1, must_match=False)
         self.left_double_back = mk_double_tap_pred(self.keymap['left'], SDL_KEYDOWN, required_face_dir=-1, must_match=True)
