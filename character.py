@@ -83,6 +83,7 @@ class Jump:
     def enter(self, e):
         self.character.frame = self.character.jump_frame
         pass
+        self.character.ground_y = self.character.yPos
     def exit(self,e):
         self.character.jump_frame = self.character.frame
         self.character.dir = 0
@@ -187,6 +188,7 @@ class Character:
         self.dir = 0
         self.image=image_data
         self.jump_frame=0
+        self.ground_y =0
         self.anim_tick=0
         self.anim_delay=4
         self.double_tap_interval=0.3
