@@ -274,13 +274,12 @@ class Character:
         self.anim_delay=4
         self.double_tap_interval=0.3
 
+
         self._last_down = {}  # key_const -> 마지막 다운 시각
         self._last_up = {}  # key_const -> 마지막 업 시각
 
         self.left_pressed = False
         self.right_pressed = False
-
-        self.require_up_between_double = False  # True로 하면 기존 동작(중간에 KEYUP 필요)로 강제
 
         self.IDLE=Idle(self)
         self.WALK=Walk(self)
