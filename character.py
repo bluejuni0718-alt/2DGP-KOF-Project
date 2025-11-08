@@ -154,23 +154,7 @@ class MoveJump:
         self.character.xPos += self.character.dir * WALK_SPEED_PPS * game_framework.frame_time
         pass
     def draw(self):
-        frame_count = max(1, self.character.image.jump_move_frames)
-        relative_frame = self.character.frame % frame_count
-
-        if 1 < relative_frame < 6:
-            self.SpecialFrame = 54
-        else:
-            self.SpecialFrame = 0
-
-        draw_frame = relative_frame
-        if self.character.dir == -1:
-            draw_frame = frame_count - 1 - relative_frame
-
-        start = self.character.image.jump_move_frame_start + self.SpecialFrame
-
-        self.character.image.draw_by_act_kind(start, frame_count, draw_frame,
-                                              self.character.xPos, self.character.yPos,
-                                              self.character.face_dir)
+        self.character.image.draw_by_frame_num(self.character.image.jump_move_motion_list[int(self.character.frame)],self.character.xPos, self.character.yPos,self.character.face_dir)
 
 class Run:
     def __init__(self, character):
