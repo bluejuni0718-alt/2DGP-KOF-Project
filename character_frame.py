@@ -17,6 +17,8 @@ class KimFrameInfo:
         self.run_frame_start= 73
         self.run_frames = 6
         self.back_dash_frame_start = 378
+        self.sit_down_frame_start = 0
+        self.sit_down_frames = 3
         self.delXPos=0
         self.delYPos=0
 
