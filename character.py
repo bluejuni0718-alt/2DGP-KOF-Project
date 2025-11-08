@@ -341,8 +341,8 @@ class Character:
 
         self.state_machine = StateMachine(
             self.IDLE,{
-                self.IDLE:{self.right_double_fwd:self.RUN,self.left_double_fwd:self.RUN,self.right_double_back:self.BACK_DASH,self.left_double_back:self.BACK_DASH,
-                           self.right_down:self.WALK,self.left_down:self.WALK,self.up_down:self.JUMP},
+                self.IDLE:{self.double_fwd: self.RUN,self.double_back: self.BACK_DASH,
+                           self.right_down: self.WALK,self.left_down: self.WALK,self.up_down: self.JUMP},
                 self.WALK:{self.right_up:self.IDLE,self.left_up:self.IDLE,self.up_down:self.MOVE_JUMP,
                            },
                 self.JUMP:{time_out: self.IDLE, pressing_key:self.WALK},
@@ -357,7 +357,8 @@ class Character:
     def draw(self):
         self.state_machine.draw()
         self.font.draw(self.xPos - 60, self.yPos + 70, f'(Time: {get_time():.2f})', (255, 255, 0))
-    def handle_event(self,event):
+
+    def handle_event(self, event):
         if event.type == SDL_KEYDOWN:
             if event.key == self.keymap['left']:
                 self.left_pressed = True
