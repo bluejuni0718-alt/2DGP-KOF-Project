@@ -80,8 +80,10 @@ class Jump:
         self.vy = 0.0
         self.gravity = -1500.0
         self.desired_jump_height = 120
-        self._start_left_pressed = False
-        self._start_right_pressed = False
+        self.start_left_pressed = False
+        self.start_right_pressed = False
+        self.pressed_after_enter = False
+        self.pressed_dir = 0
     def enter(self, e):
         self.character.frame = self.character.jump_frame
         self.character.ground_y = self.character.yPos
@@ -98,7 +100,8 @@ class Jump:
                                 FRAMES_PER_JUMP_ACTION * JUMP_ACTION_PER_TIME * game_framework.frame_time) \
                                % max(1, self.character.image.jump_frames)
         self.vy += self.gravity * game_framework.frame_time
-        self.character.yPos += self.vy *game_framework.frame_time
+        self.character.yPos += self.vy * game_framework.frame_time
+
         if self.character.yPos <= self.character.ground_y:
             self.character.yPos = self.character.ground_y
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
