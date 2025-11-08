@@ -146,26 +146,12 @@ class MoveJump:
         self.character.dir = 0
         pass
     def do(self):
-        self.character.anim_tick += 1
-        if self.character.anim_tick >= self.character.anim_delay:
-            self.character.anim_tick = 0
-            self.character.frame = (self.character.frame + 1) % max(1, self.character.image.jump_move_frames + 1)
-        if self.character.anim_tick >= self.character.anim_delay/2:
-            self.character.xPos += self.character.dir * 5
-            if self.character.frame <= 3:
-                self.character.yPos += 17.5
-            elif self.character.frame <= 7:
-                self.character.yPos -= 17.5
-            else:
-                if self.character.left_pressed == False and self.character.right_pressed == False:
-                    self.character.state_machine.handle_state_event(('TIME_OUT', None))
-                elif self.character.right_pressed == True or self.character.left_pressed == True:
-                    self.character.state_machine.handle_state_event(('Pressing_Key', None))
         self.character.frame = (self.character.frame +
                                 FRAMES_PER_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
                                % max(1, self.character.image.jump_move_frames)
         self.vy += self.gravity * game_framework.frame_time
         self.character.yPos += self.vy * game_framework.frame_time
+        self.character.xPos += self.character.dir * WALK_SPEED_PPS * game_framework.frame_time
         pass
     def draw(self):
         frame_count = max(1, self.character.image.jump_move_frames)
