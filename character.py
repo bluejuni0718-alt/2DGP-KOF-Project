@@ -241,14 +241,19 @@ class BackDash:
         self.desired_jump_height = 25
 
     def enter(self, e):
+        self.character.ground_y = self.character.yPos
+        g_abs = -self.gravity if self.gravity < 0 else self.gravity
+        self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
+        if self.vy < 0:
+            self.vy = -self.vy
         if self.character.right_down(e) or self.character.right_pressed:
             self.character.dir = 1
         elif self.character.left_down(e) or self.character.left_pressed:
             self.character.dir = -1
-        pass
-    def exit(self,e):
+    def exit(self, e):
         self.character.dir = 0
         pass
+
     def do(self):
         self.character.xPos -= self.character.dir * BACK_DASH_SPEED_PPS * game_framework.frame_time
         pass
