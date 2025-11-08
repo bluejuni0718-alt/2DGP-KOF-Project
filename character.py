@@ -127,13 +127,12 @@ class MoveJump:
         self.gravity = -1500.0
         self.desired_jump_height = 120
     def enter(self, e):
-        self.character.anim_tick = 0
         self.character.frame = self.character.jump_frame
-        if self.character.right_pressed:
-            self.character.dir = 1
-        elif self.character.left_pressed:
-            self.character.dir = -1
-        pass
+        self.character.ground_y = self.character.yPos
+        g_abs = -self.gravity if self.gravity < 0 else self.gravity
+        self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
+        if self.vy < 0:
+            self.vy = -self.vy
     def exit(self,e):
         self.character.jump_frame = self.character.frame
         self.character.dir = 0
