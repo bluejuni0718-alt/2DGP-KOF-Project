@@ -92,13 +92,13 @@ class Jump:
         self.character.dir = 0
         pass
     def do(self):
-        self.character.frame = (self.character.frame + FRAMES_PER_JUMP_ACTION * JUMP_ACTION_PER_TIME * game_framework.frame_time) % self.character.image.jump_frames
-        self.character.yPos += JUMP_SPEED_PPS * game_framework.frame_time * self.isJumping
-        if int(self.character.frame) < 2:
-            self.isJumping = 1
-        else:
-            self.isJumping = -1
-        if int(self.character.frame) == 4:
+        self.character.frame = (self.character.frame +
+                                FRAMES_PER_JUMP_ACTION * JUMP_ACTION_PER_TIME * game_framework.frame_time) \
+                               % max(1, self.character.image.jump_frames)
+        self.vy += self.gravity * game_framework.frame_time
+        self.character.yPos += self.vy *game_framework.frame_time
+        if self.character.yPos <= self.character.ground_y:
+            self.character.yPos = self.character.ground_y
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
         pass
     def draw(self):
