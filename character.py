@@ -405,7 +405,7 @@ class Character:
                 self.RUN_JUMP:{time_out:self.IDLE,pressing_key:self.RUN},
                 self.BACK_DASH:{time_out:self.IDLE,pressing_key:self.WALK},
                 self.SIT_DOWN:{self.down_up: self.SIT_UP},
-                self.SIT_UP:{time_out: self.IDLE},
+                self.SIT_UP:{time_out: self.IDLE,self.down_down:self.SIT_DOWN},
             }
         )
     def update(self):
