@@ -353,6 +353,7 @@ class Character:
         self.BACK_DASH = BackDash(self)
         self.SIT_DOWN = SitDown(self)
         self.SIT_UP = SitUp(self)
+        self.NORMAL_ATTACK = NormalAttack(self)
 
         def mk_key_pred(key_const, sdl_type):
             def pred(e):
@@ -405,6 +406,10 @@ class Character:
         self.up_down = mk_key_pred(self.keymap['up'], SDL_KEYDOWN)
         self.down_down = mk_key_pred(self.keymap['down'], SDL_KEYDOWN)
         self.down_up = mk_key_pred(self.keymap['down'], SDL_KEYUP)
+        self.lp_down = mk_key_pred(self.keymap['lp'], SDL_KEYDOWN)
+        self.rp_down = mk_key_pred(self.keymap['rp'], SDL_KEYDOWN)
+        self.lk_down = mk_key_pred(self.keymap['lk'], SDL_KEYDOWN)
+        self.rk_down = mk_key_pred(self.keymap['rk'], SDL_KEYDOWN)
 
         self.state_machine = StateMachine(
             self.IDLE,{
