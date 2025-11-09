@@ -415,7 +415,8 @@ class Character:
         self.state_machine = StateMachine(
             self.IDLE,{
                 self.IDLE:{self.double_fwd: self.RUN,self.double_back: self.BACK_DASH,
-                           self.right_down: self.WALK,self.left_down: self.WALK,self.up_down: self.JUMP,self.down_down: self.SIT_DOWN},
+                           self.right_down: self.WALK,self.left_down: self.WALK,self.up_down: self.JUMP,self.down_down: self.SIT_DOWN
+                           ,self.lp_down: self.NORMAL_ATTACK,self.rp_down: self.NORMAL_ATTACK,lk_down: self.NORMAL_ATTACK,rk_down: self.NORMAL_ATTACK},
                 self.WALK:{self.right_up:self.IDLE,self.left_up:self.IDLE,self.up_down:self.MOVE_JUMP,
                            },
                 self.JUMP:{time_out: self.IDLE, pressing_key:self.WALK},
