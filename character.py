@@ -316,6 +316,7 @@ class NormalAttack:
     def exit(self,e):
         pass
     def do(self):
+        self.character.state_machine.handle_state_event(('TIME_OUT', None))
         pass
     def draw(self):
         pass
@@ -424,6 +425,7 @@ class Character:
                 self.BACK_DASH:{time_out:self.IDLE,pressing_key:self.WALK},
                 self.SIT_DOWN:{self.down_up: self.SIT_UP},
                 self.SIT_UP:{time_out: self.IDLE,self.down_down:self.SIT_DOWN},
+                self.NORMAL_ATTACK:{time_out:self.IDLE}
             }
         )
     def update(self):
