@@ -147,11 +147,11 @@ class MoveJump:
     def do(self):
         if self.character.dir == 1:
             self.character.frame = (self.character.frame +
-                                    FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
+                                    self.character.face_dir*FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
                                     % max(1, self.character.image.jump_move_frames)
         else:
             self.character.frame = (self.character.frame -
-                                    FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
+                                    self.character.face_dir*FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
                                    % max(1, self.character.image.jump_move_frames)
         self.vy += self.gravity * game_framework.frame_time
         self.character.yPos += self.vy * game_framework.frame_time
@@ -213,11 +213,11 @@ class RunJump:
     def do(self):
         if self.character.dir == 1:
             self.character.frame = (self.character.frame +
-                                    FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
+                                    self.character.face_dir*FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
                                     % max(1, self.character.image.jump_move_frames)
         else:
             self.character.frame = (self.character.frame -
-                                    FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
+                                    self.character.face_dir*FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
                                    % max(1, self.character.image.jump_move_frames)
         self.vy += self.gravity * game_framework.frame_time
         self.character.yPos += self.vy * game_framework.frame_time
