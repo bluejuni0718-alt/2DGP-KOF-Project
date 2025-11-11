@@ -67,7 +67,6 @@ class Walk:
     def __init__(self, character):
         self.character=character
     def enter(self, e):
-        self.character.anim_tick = 0
         self.character.frame = 0
         self.character.jump_frame = 0
         if self.character.fwd_down(e) or self.character.fwd_pressed:
