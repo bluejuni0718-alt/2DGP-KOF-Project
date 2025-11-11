@@ -361,6 +361,20 @@ class Character:
                 return e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key == key_const
             return pred
 
+        def mk_facing_dir_pred(sdl_type, want):  # want: 'fwd' or 'back'
+            def pred(e):
+                if not (e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key in (self.keymap['left'],
+                                                                                   self.keymap['right'])):
+                    return False
+                key_const = e[1].key
+                key_dir = 1 if key_const == self.keymap['right'] else -1
+                if want == 'fwd':
+                    return key_dir == self.face_dir
+                else:
+                    return key_dir != self.face_dir
+
+            return pred
+
         def mk_double_detector_any(sdl_type):
             def pred(e):
                 if not (e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key in (self.keymap['left'],
