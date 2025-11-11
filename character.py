@@ -342,8 +342,8 @@ class Character:
         self._last_down = {}  # key_const -> 마지막 다운 시각
         self._last_up = {}  # key_const -> 마지막 업 시각
 
-        self.left_pressed = False
-        self.right_pressed = False
+        self.fwd_pressed = False
+        self.back_pressed = False
 
         self.IDLE=Idle(self)
         self.WALK=Walk(self)
