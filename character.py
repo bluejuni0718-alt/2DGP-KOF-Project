@@ -425,6 +425,10 @@ class Character:
         self.rp_down = mk_key_pred(self.keymap['rp'], SDL_KEYDOWN)
         self.lk_down = mk_key_pred(self.keymap['lk'], SDL_KEYDOWN)
         self.rk_down = mk_key_pred(self.keymap['rk'], SDL_KEYDOWN)
+        self.fwd_down = mk_facing_dir_pred(SDL_KEYDOWN, 'fwd')
+        self.back_down = mk_facing_dir_pred(SDL_KEYDOWN, 'back')
+        self.fwd_up = mk_facing_dir_pred(SDL_KEYUP, 'fwd')
+        self.back_up = mk_facing_dir_pred(SDL_KEYUP, 'back')
 
         self.state_machine = StateMachine(
             self.IDLE,{
