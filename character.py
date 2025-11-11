@@ -69,10 +69,16 @@ class Walk:
     def enter(self, e):
         self.character.frame = 0
         self.character.jump_frame = 0
-        if self.character.fwd_down(e) or self.character.fwd_pressed:
-            self.character.dir = 1
-        elif self.character.back_down(e) or self.character.back_pressed:
-            self.character.dir = -1
+        if self.character.face_dir ==1:
+            if self.character.fwd_down(e) or self.character.fwd_pressed:
+                self.character.dir = 1
+            elif self.character.back_down(e) or self.character.back_pressed:
+                self.character.dir = -1
+        else:
+            if self.character.fwd_down(e) or self.character.fwd_pressed:
+                self.character.dir = -1
+            elif self.character.back_down(e) or self.character.back_pressed:
+                self.character.dir = 1
         pass
     def exit(self,e):
         self.character.dir=0
@@ -135,10 +141,16 @@ class MoveJump:
         self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
         if self.vy < 0:
             self.vy = -self.vy
-        if self.character.fwd_down(e) or self.character.fwd_pressed:
-            self.character.dir = 1
-        elif self.character.back_down(e) or self.character.back_pressed:
-            self.character.dir = -1
+        if self.character.face_dir == 1:
+            if self.character.fwd_down(e) or self.character.fwd_pressed:
+                self.character.dir = 1
+            elif self.character.back_down(e) or self.character.back_pressed:
+                self.character.dir = -1
+        else:
+            if self.character.fwd_down(e) or self.character.fwd_pressed:
+                self.character.dir = -1
+            elif self.character.back_down(e) or self.character.back_pressed:
+                self.character.dir = 1
     def exit(self,e):
         self.character.jump_frame = self.character.frame
         self.character.dir = 0
@@ -173,10 +185,16 @@ class Run:
         self.character.anim_tick = 0
         self.character.frame = 0
         self.character.jump_frame = 0
-        if self.character.fwd_down(e) or self.character.fwd_pressed:
-            self.character.dir = 1
-        elif self.character.back_down(e) or self.character.back_pressed:
-            self.character.dir = -1
+        if self.character.face_dir == 1:
+            if self.character.fwd_down(e) or self.character.fwd_pressed:
+                self.character.dir = 1
+            elif self.character.back_down(e) or self.character.back_pressed:
+                self.character.dir = -1
+        else:
+            if self.character.fwd_down(e) or self.character.fwd_pressed:
+                self.character.dir = -1
+            elif self.character.back_down(e) or self.character.back_pressed:
+                self.character.dir = 1
         pass
     def exit(self,e):
         self.character.dir = 0
@@ -201,10 +219,16 @@ class RunJump:
         self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
         if self.vy < 0:
             self.vy = -self.vy
-        if self.character.fwd_down(e) or self.character.fwd_pressed:
-            self.character.dir = 1
-        elif self.character.back_down(e) or self.character.back_pressed:
-            self.character.dir = -1
+        if self.character.face_dir == 1:
+            if self.character.fwd_down(e) or self.character.fwd_pressed:
+                self.character.dir = 1
+            elif self.character.back_down(e) or self.character.back_pressed:
+                self.character.dir = -1
+        else:
+            if self.character.fwd_down(e) or self.character.fwd_pressed:
+                self.character.dir = -1
+            elif self.character.back_down(e) or self.character.back_pressed:
+                self.character.dir = 1
     def exit(self,e):
         self.character.jump_frame = self.character.frame
         self.character.dir = 0
@@ -245,10 +269,16 @@ class BackDash:
         self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
         if self.vy < 0:
             self.vy = -self.vy
-        if self.character.fwd_down(e) or self.character.fwd_pressed:
-            self.character.dir = 1
-        elif self.character.back_down(e) or self.character.back_pressed:
-            self.character.dir = -1
+        if self.character.face_dir == 1:
+            if self.character.fwd_down(e) or self.character.fwd_pressed:
+                self.character.dir = 1
+            elif self.character.back_down(e) or self.character.back_pressed:
+                self.character.dir = -1
+        else:
+            if self.character.fwd_down(e) or self.character.fwd_pressed:
+                self.character.dir = -1
+            elif self.character.back_down(e) or self.character.back_pressed:
+                self.character.dir = 1
     def exit(self, e):
         self.character.dir = 0
         pass
@@ -321,6 +351,7 @@ class NormalAttack:
         pass
 
 class Character:
+
     def __init__(self, image_data,keymap=None):
         default = {'left': SDLK_a, 'right': SDLK_d, 'up': SDLK_w,'down':SDLK_s,'rp':SDLK_f,'lp':SDLK_g,'rk':SDLK_b,'lk':SDLK_c}
         self.font = load_font('ENCR10B.TTF', 16)
@@ -328,7 +359,7 @@ class Character:
         self.xPos = 400
         self.yPos = 90
         self.frame = 0
-        self.face_dir = 1
+        self.face_dir = -1
         self.dir = 0
         self.image=image_data
         self.jump_frame=0
@@ -360,19 +391,13 @@ class Character:
                 return e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key == key_const
             return pred
 
-        def mk_facing_dir_pred(sdl_type, want):  # want: 'fwd' or 'back'
-            def pred(e):
-                if not (e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key in (self.keymap['left'],
-                                                                                   self.keymap['right'])):
-                    return False
-                key_const = e[1].key
-                key_dir = 1 if key_const == self.keymap['right'] else -1
-                if want == 'fwd':
-                    return key_dir == self.face_dir
-                else:
-                    return key_dir != self.face_dir
-
-            return pred
+        def _is_facing_input(self, e, sdl_type, want):
+            if not (e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key in (self.keymap['left'],
+                                                                               self.keymap['right'])):
+                return False
+            key_const = e[1].key
+            key_dir = 1 if key_const == self.keymap['right'] else -1
+            return (key_dir == self.face_dir) if want == 'fwd' else (key_dir != self.face_dir)
 
         def mk_double_detector_any(sdl_type):
             def pred(e):
@@ -424,10 +449,10 @@ class Character:
         self.rp_down = mk_key_pred(self.keymap['rp'], SDL_KEYDOWN)
         self.lk_down = mk_key_pred(self.keymap['lk'], SDL_KEYDOWN)
         self.rk_down = mk_key_pred(self.keymap['rk'], SDL_KEYDOWN)
-        self.fwd_down = mk_facing_dir_pred(SDL_KEYDOWN, 'fwd')
-        self.back_down = mk_facing_dir_pred(SDL_KEYDOWN, 'back')
-        self.fwd_up = mk_facing_dir_pred(SDL_KEYUP, 'fwd')
-        self.back_up = mk_facing_dir_pred(SDL_KEYUP, 'back')
+        self.fwd_down = lambda e: self._is_facing_input(e, SDL_KEYDOWN, 'fwd')
+        self.back_down = lambda e: self._is_facing_input(e, SDL_KEYDOWN, 'back')
+        self.fwd_up = lambda e: self._is_facing_input(e, SDL_KEYUP, 'fwd')
+        self.back_up = lambda e: self._is_facing_input(e, SDL_KEYUP, 'back')
 
         self.state_machine = StateMachine(
             self.IDLE,{
@@ -446,6 +471,7 @@ class Character:
                 self.NORMAL_ATTACK:{time_out:self.IDLE}
             }
         )
+
     def update(self):
         self.state_machine.update()
     def draw(self):
@@ -476,3 +502,11 @@ class Character:
                 self._last_up[event.key] = get_time()
             # KEYUP는 업데이트 후 상태머신 호출해도 무방
             self.state_machine.handle_state_event(('INPUT', event))
+
+    def _is_facing_input(self, e, SDL_KEYDOWN, param):
+        if not (e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key in (self.keymap['left'], self.keymap['right'])):
+            return False
+        key_const = e[1].key
+        key_dir = 1 if key_const == self.keymap['right'] else -1
+        return (key_dir == self.face_dir) if param == 'fwd' else (key_dir != self.face_dir)
+
