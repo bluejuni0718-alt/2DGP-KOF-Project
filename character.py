@@ -70,9 +70,9 @@ class Walk:
         self.character.anim_tick = 0
         self.character.frame = 0
         self.character.jump_frame = 0
-        if self.character.right_down(e) or self.character.right_pressed:
+        if self.character.fwd_down(e) or self.character.right_pressed:
             self.character.dir = 1
-        elif self.character.left_down(e) or self.character.left_pressed:
+        elif self.character.back_down(e) or self.character.left_pressed:
             self.character.dir = -1
         pass
     def exit(self,e):
@@ -136,9 +136,9 @@ class MoveJump:
         self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
         if self.vy < 0:
             self.vy = -self.vy
-        if self.character.right_down(e) or self.character.right_pressed:
+        if self.character.fwd_down(e) or self.character.right_pressed:
             self.character.dir = 1
-        elif self.character.left_down(e) or self.character.left_pressed:
+        elif self.character.back_down(e) or self.character.left_pressed:
             self.character.dir = -1
     def exit(self,e):
         self.character.jump_frame = self.character.frame
@@ -174,9 +174,9 @@ class Run:
         self.character.anim_tick = 0
         self.character.frame = 0
         self.character.jump_frame = 0
-        if self.character.right_down(e) or self.character.right_pressed:
+        if self.character.fwd_down(e) or self.character.right_pressed:
             self.character.dir = 1
-        elif self.character.left_down(e) or self.character.left_pressed:
+        elif self.character.back_down(e) or self.character.left_pressed:
             self.character.dir = -1
         pass
     def exit(self,e):
@@ -202,9 +202,9 @@ class RunJump:
         self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
         if self.vy < 0:
             self.vy = -self.vy
-        if self.character.right_down(e) or self.character.right_pressed:
+        if self.character.fwd_down(e) or self.character.right_pressed:
             self.character.dir = 1
-        elif self.character.left_down(e) or self.character.left_pressed:
+        elif self.character.back_down(e) or self.character.left_pressed:
             self.character.dir = -1
     def exit(self,e):
         self.character.jump_frame = self.character.frame
@@ -246,9 +246,9 @@ class BackDash:
         self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
         if self.vy < 0:
             self.vy = -self.vy
-        if self.character.right_down(e) or self.character.right_pressed:
+        if self.character.fwd_down(e) or self.character.right_pressed:
             self.character.dir = 1
-        elif self.character.left_down(e) or self.character.left_pressed:
+        elif self.character.back_down(e) or self.character.left_pressed:
             self.character.dir = -1
     def exit(self, e):
         self.character.dir = 0
@@ -433,13 +433,13 @@ class Character:
         self.state_machine = StateMachine(
             self.IDLE,{
                 self.IDLE:{self.double_fwd: self.RUN,self.double_back: self.BACK_DASH,
-                           self.right_down: self.WALK,self.left_down: self.WALK,self.up_down: self.JUMP,self.down_down: self.SIT_DOWN
+                           self.fwd_down: self.WALK,self.back_down: self.WALK,self.up_down: self.JUMP,self.down_down: self.SIT_DOWN
                            ,self.lp_down: self.NORMAL_ATTACK,self.rp_down: self.NORMAL_ATTACK,self.lk_down: self.NORMAL_ATTACK,self.rk_down: self.NORMAL_ATTACK},
                 self.WALK:{self.right_up:self.IDLE,self.left_up:self.IDLE,self.up_down:self.MOVE_JUMP,
                            },
                 self.JUMP:{time_out: self.IDLE, pressing_key:self.WALK},
                 self.MOVE_JUMP: {time_out:self.IDLE, pressing_key:self.WALK},
-                self.RUN:{self.right_up:self.IDLE,self.left_up:self.IDLE,self.up_down:self.RUN_JUMP},
+                self.RUN:{self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.RUN_JUMP},
                 self.RUN_JUMP:{time_out:self.IDLE,pressing_key:self.RUN},
                 self.BACK_DASH:{time_out:self.IDLE,pressing_key:self.WALK},
                 self.SIT_DOWN:{self.down_up: self.SIT_UP},
