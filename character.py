@@ -70,9 +70,9 @@ class Walk:
         self.character.anim_tick = 0
         self.character.frame = 0
         self.character.jump_frame = 0
-        if self.character.fwd_down(e) or self.character.right_pressed:
+        if self.character.fwd_down(e) or self.character.fwd_pressed:
             self.character.dir = 1
-        elif self.character.back_down(e) or self.character.left_pressed:
+        elif self.character.back_down(e) or self.character.back_pressed:
             self.character.dir = -1
         pass
     def exit(self,e):
@@ -114,7 +114,7 @@ class Jump:
 
         if self.character.yPos <= self.character.ground_y:
             self.character.yPos = self.character.ground_y
-            if self.character.right_pressed or self.character.left_pressed:
+            if self.character.fwd_pressed or self.character.back_pressed:
                 self.character.state_machine.handle_state_event(('Pressing_Key', None))
             else:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
@@ -136,9 +136,9 @@ class MoveJump:
         self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
         if self.vy < 0:
             self.vy = -self.vy
-        if self.character.fwd_down(e) or self.character.right_pressed:
+        if self.character.fwd_down(e) or self.character.fwd_pressed:
             self.character.dir = 1
-        elif self.character.back_down(e) or self.character.left_pressed:
+        elif self.character.back_down(e) or self.character.back_pressed:
             self.character.dir = -1
     def exit(self,e):
         self.character.jump_frame = self.character.frame
@@ -159,7 +159,7 @@ class MoveJump:
 
         if self.character.yPos <= self.character.ground_y:
             self.character.yPos = self.character.ground_y
-            if self.character.right_pressed or self.character.left_pressed:
+            if self.character.fwd_pressed or self.character.back_pressed:
                 self.character.state_machine.handle_state_event(('Pressing_Key', None))
             else:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
@@ -174,9 +174,9 @@ class Run:
         self.character.anim_tick = 0
         self.character.frame = 0
         self.character.jump_frame = 0
-        if self.character.fwd_down(e) or self.character.right_pressed:
+        if self.character.fwd_down(e) or self.character.fwd_pressed:
             self.character.dir = 1
-        elif self.character.back_down(e) or self.character.left_pressed:
+        elif self.character.back_down(e) or self.character.back_pressed:
             self.character.dir = -1
         pass
     def exit(self,e):
@@ -202,9 +202,9 @@ class RunJump:
         self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
         if self.vy < 0:
             self.vy = -self.vy
-        if self.character.fwd_down(e) or self.character.right_pressed:
+        if self.character.fwd_down(e) or self.character.fwd_pressed:
             self.character.dir = 1
-        elif self.character.back_down(e) or self.character.left_pressed:
+        elif self.character.back_down(e) or self.character.back_pressed:
             self.character.dir = -1
     def exit(self,e):
         self.character.jump_frame = self.character.frame
@@ -225,7 +225,7 @@ class RunJump:
 
         if self.character.yPos <= self.character.ground_y:
             self.character.yPos = self.character.ground_y
-            if self.character.right_pressed or self.character.left_pressed:
+            if self.character.fwd_pressed or self.character.back_pressed:
                 self.character.state_machine.handle_state_event(('Pressing_Key', None))
             else:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
@@ -246,9 +246,9 @@ class BackDash:
         self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
         if self.vy < 0:
             self.vy = -self.vy
-        if self.character.fwd_down(e) or self.character.right_pressed:
+        if self.character.fwd_down(e) or self.character.fwd_pressed:
             self.character.dir = 1
-        elif self.character.back_down(e) or self.character.left_pressed:
+        elif self.character.back_down(e) or self.character.back_pressed:
             self.character.dir = -1
     def exit(self, e):
         self.character.dir = 0
@@ -261,7 +261,7 @@ class BackDash:
 
         if self.character.yPos <= self.character.ground_y:
             self.character.yPos = self.character.ground_y
-            if self.character.right_pressed or self.character.left_pressed:
+            if self.character.fwd_pressed or self.character.back_pressed:
                 self.character.state_machine.handle_state_event(('Pressing_Key', None))
             else:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
@@ -435,7 +435,7 @@ class Character:
                 self.IDLE:{self.double_fwd: self.RUN,self.double_back: self.BACK_DASH,
                            self.fwd_down: self.WALK,self.back_down: self.WALK,self.up_down: self.JUMP,self.down_down: self.SIT_DOWN
                            ,self.lp_down: self.NORMAL_ATTACK,self.rp_down: self.NORMAL_ATTACK,self.lk_down: self.NORMAL_ATTACK,self.rk_down: self.NORMAL_ATTACK},
-                self.WALK:{self.right_up:self.IDLE,self.left_up:self.IDLE,self.up_down:self.MOVE_JUMP,
+                self.WALK:{self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.MOVE_JUMP,
                            },
                 self.JUMP:{time_out: self.IDLE, pressing_key:self.WALK},
                 self.MOVE_JUMP: {time_out:self.IDLE, pressing_key:self.WALK},
@@ -455,22 +455,25 @@ class Character:
 
     def handle_event(self, event):
         if event.type == SDL_KEYDOWN:
-            if event.key == self.keymap['left']:
-                self.left_pressed = True
-            elif event.key == self.keymap['right']:
-                self.right_pressed = True
+            if event.key in (self.keymap['left'], self.keymap['right']):
+                key_dir = 1 if event.key == self.keymap['right'] else -1
+                if key_dir == self.face_dir:
+                    self.fwd_pressed = True
+                else:
+                    self.back_pressed = True
             # 상태머신 먼저 처리 — 모든 판정기가 동일한 이전 _last_down을 보게 함
             self.state_machine.handle_state_event(('INPUT', event))
             # 그 다음에 마지막 다운 시각을 갱신
             if event.key in (self.keymap['left'], self.keymap['right']):
                 self._last_down[event.key] = get_time()
-
         elif event.type == SDL_KEYUP:
-            if event.key == self.keymap['left']:
-                self.left_pressed = False
-                self._last_up[self.keymap['left']] = get_time()
-            elif event.key == self.keymap['right']:
-                self.right_pressed = False
-                self._last_up[self.keymap['right']] = get_time()
+            if event.key in (self.keymap['left'], self.keymap['right']):
+                key_dir = 1 if event.key == self.keymap['right'] else -1
+                if key_dir == self.face_dir:
+                    self.fwd_pressed = False
+                else:
+                    self.back_pressed = False
+                # 업 시각 기록
+                self._last_up[event.key] = get_time()
             # KEYUP는 업데이트 후 상태머신 호출해도 무방
             self.state_machine.handle_state_event(('INPUT', event))
