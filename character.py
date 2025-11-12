@@ -486,6 +486,8 @@ class Character:
                     self.fwd_pressed = True
                 else:
                     self.back_pressed = True
+            if event.key == SDLK_1:
+                self.face_dir *= -1
             # 상태머신 먼저 처리 — 모든 판정기가 동일한 이전 _last_down을 보게 함
             self.state_machine.handle_state_event(('INPUT', event))
             # 그 다음에 마지막 다운 시각을 갱신
