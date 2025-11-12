@@ -339,7 +339,10 @@ class SitUp:
 class NormalAttack:
     def __init__(self, character):
         self.character = character
+        # 공격 키별 start_frame, frame_count 매핑
+        self.attack_map = {
 
+        }
     def enter(self, e):
         pass
     def exit(self,e):
