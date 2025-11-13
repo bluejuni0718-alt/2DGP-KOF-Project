@@ -536,12 +536,14 @@ class Character:
         self.keymap = default if keymap is None else {**default, **keymap}
         self.xPos = 400
         self.yPos = 90
+        self.vy = 0.0
         self.frame = 0
         self.face_dir = 1
         self.dir = 0
         self.image=image_data
         self.jump_frame=0
-        self.ground_y =0
+        self.default_ground_y = self.yPos
+        self.ground_y = self.default_ground_y
         self.anim_tick=0
         self.anim_delay=4
         self.double_tap_interval=0.3
@@ -566,6 +568,7 @@ class Character:
         self.SIT_DOWN = SitDown(self)
         self.SIT_UP = SitUp(self)
         self.NORMAL_ATTACK = NormalAttack(self)
+        self.AIR_ATTACK = AirAttack(self)
 
         def mk_key_pred(key_const, sdl_type):
             def pred(e):
