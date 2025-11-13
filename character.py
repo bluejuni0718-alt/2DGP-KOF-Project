@@ -672,7 +672,7 @@ class Character:
                     time_out:self.IDLE
                     },
                 self.AIR_ATTACK:{
-                    time_out:self.JUMP
+                    time_out:self.JUMP, land : self.IDLE
                     }
             }
         )
