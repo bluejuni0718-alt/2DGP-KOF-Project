@@ -698,6 +698,7 @@ class Character:
         self.back_down = lambda e: self._is_facing_input(e, SDL_KEYDOWN, 'back')
         self.fwd_up = lambda e: self._is_facing_input(e, SDL_KEYUP, 'fwd')
         self.back_up = lambda e: self._is_facing_input(e, SDL_KEYUP, 'back')
+        self.land_moving = lambda e: (e[0] == 'LAND') and (self.dir != 0)
 
         self.state_machine = StateMachine(
             self.IDLE,{
@@ -738,7 +739,7 @@ class Character:
                     time_out:self.IDLE
                     },
                 self.AIR_ATTACK:{
-                    time_out:self.JUMP, land : self.IDLE
+                    time_out:self.JUMP, land : self.IDLE, self.land_moving: self.WALK,
                     }
             }
         )
