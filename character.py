@@ -726,13 +726,22 @@ class Character:
                     self.fwd_pressed = True
                 else:
                     self.back_pressed = True
+
             if event.key == SDLK_1:
                 self.face_dir *= -1
             if event.key == self.keymap['down']:
                 self.down_pressed = True
-            # 상태머신 먼저 처리 — 모든 판정기가 동일한 이전 _last_down을 보게 함
+            # 상태머신에 INPUT 이벤트 먼저 전달
             self.state_machine.handle_state_event(('INPUT', event))
-            # 그 다음에 마지막 다운 시각을 갱신
+            # 공격키면 명시적 ATTACK 이벤트도 발행
+            atk = None
+            for k in ('lp', 'rp', 'lk', 'rk'):
+                if event.key == self.keymap.get(k):
+                    atk = k
+                    break
+            if atk:
+                self.state_machine.handle_state_event(('ATTACK', atk))
+            # 마지막 다운 시각 갱신
             if event.key in (self.keymap['left'], self.keymap['right']):
                 self._last_down[event.key] = get_time()
         elif event.type == SDL_KEYUP:
@@ -746,7 +755,7 @@ class Character:
                 self.down_pressed = False
                 # 업 시각 기록
                 self._last_up[event.key] = get_time()
-            # KEYUP는 업데이트 후 상태머신 호출해도 무방
+            # KEYUP는 INPUT 이벤트로 전달
             self.state_machine.handle_state_event(('INPUT', event))
 
     def _is_facing_input(self, e, SDL_KEYDOWN, param):
