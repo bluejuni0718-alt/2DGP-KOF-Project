@@ -45,6 +45,9 @@ def time_out(e):
 def pressing_key(e):
     return e[0] == 'Pressing_Key'
 
+def pressing_down(e):
+    return e[0] == 'Pressing_Down'
+
 class Idle:
     def __init__(self, character):
         self.character =character
@@ -121,6 +124,8 @@ class Jump:
             self.character.yPos = self.character.ground_y
             if self.character.fwd_pressed or self.character.back_pressed:
                 self.character.state_machine.handle_state_event(('Pressing_Key', None))
+            elif self.character.down_pressed:
+                self.character.state_machine.handle_state_event(('Pressing_Down', None))
             else:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
         pass
@@ -172,6 +177,8 @@ class MoveJump:
             self.character.yPos = self.character.ground_y
             if self.character.fwd_pressed or self.character.back_pressed:
                 self.character.state_machine.handle_state_event(('Pressing_Key', None))
+            elif self.character.down_pressed:
+                self.character.state_machine.handle_state_event(('Pressing_Down', None))
             else:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
         pass
@@ -250,6 +257,8 @@ class RunJump:
             self.character.yPos = self.character.ground_y
             if self.character.fwd_pressed or self.character.back_pressed:
                 self.character.state_machine.handle_state_event(('Pressing_Key', None))
+            elif self.character.down_pressed:
+                self.character.state_machine.handle_state_event(('Pressing_Down', None))
             else:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
         pass
@@ -292,6 +301,8 @@ class BackDash:
             self.character.yPos = self.character.ground_y
             if self.character.fwd_pressed or self.character.back_pressed:
                 self.character.state_machine.handle_state_event(('Pressing_Key', None))
+            elif self.character.down_pressed:
+                self.character.state_machine.handle_state_event(('Pressing_Down', None))
             else:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
@@ -339,6 +350,7 @@ class SitUp:
 class NormalAttack:
     def __init__(self, character):
         self.character = character
+        im = character.image
         # 공격 키별 start_frame, frame_count 매핑
         self.attack_map = {
 
@@ -362,7 +374,7 @@ class Character:
         self.xPos = 400
         self.yPos = 90
         self.frame = 0
-        self.face_dir = -1
+        self.face_dir = 1
         self.dir = 0
         self.image=image_data
         self.jump_frame=0
@@ -377,6 +389,8 @@ class Character:
 
         self.fwd_pressed = False
         self.back_pressed = False
+        self.down_pressed = False
+
 
         self.IDLE=Idle(self)
         self.WALK=Walk(self)
@@ -393,14 +407,6 @@ class Character:
             def pred(e):
                 return e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key == key_const
             return pred
-
-        def _is_facing_input(self, e, sdl_type, want):
-            if not (e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key in (self.keymap['left'],
-                                                                               self.keymap['right'])):
-                return False
-            key_const = e[1].key
-            key_dir = 1 if key_const == self.keymap['right'] else -1
-            return (key_dir == self.face_dir) if want == 'fwd' else (key_dir != self.face_dir)
 
         def mk_double_detector_any(sdl_type):
             def pred(e):
@@ -464,11 +470,11 @@ class Character:
                            ,self.lp_down: self.NORMAL_ATTACK,self.rp_down: self.NORMAL_ATTACK,self.lk_down: self.NORMAL_ATTACK,self.rk_down: self.NORMAL_ATTACK},
                 self.WALK:{self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.MOVE_JUMP,
                            },
-                self.JUMP:{time_out: self.IDLE, pressing_key:self.WALK},
-                self.MOVE_JUMP: {time_out:self.IDLE, pressing_key:self.WALK},
+                self.JUMP:{time_out: self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN},
+                self.MOVE_JUMP: {time_out:self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN},
                 self.RUN:{self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.RUN_JUMP},
-                self.RUN_JUMP:{time_out:self.IDLE,pressing_key:self.RUN},
-                self.BACK_DASH:{time_out:self.IDLE,pressing_key:self.WALK},
+                self.RUN_JUMP:{time_out:self.IDLE,pressing_key:self.RUN, pressing_down:self.SIT_DOWN},
+                self.BACK_DASH:{time_out:self.IDLE,pressing_key:self.WALK,pressing_down:self.SIT_DOWN},
                 self.SIT_DOWN:{self.down_up: self.SIT_UP},
                 self.SIT_UP:{time_out: self.IDLE,self.down_down:self.SIT_DOWN},
                 self.NORMAL_ATTACK:{time_out:self.IDLE}
@@ -491,6 +497,8 @@ class Character:
                     self.back_pressed = True
             if event.key == SDLK_1:
                 self.face_dir *= -1
+            if event.key == self.keymap['down']:
+                self.down_pressed = True
             # 상태머신 먼저 처리 — 모든 판정기가 동일한 이전 _last_down을 보게 함
             self.state_machine.handle_state_event(('INPUT', event))
             # 그 다음에 마지막 다운 시각을 갱신
@@ -503,6 +511,8 @@ class Character:
                     self.fwd_pressed = False
                 else:
                     self.back_pressed = False
+            if event.key == self.keymap['down']:
+                self.down_pressed = False
                 # 업 시각 기록
                 self._last_up[event.key] = get_time()
             # KEYUP는 업데이트 후 상태머신 호출해도 무방
