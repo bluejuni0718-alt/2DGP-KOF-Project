@@ -632,18 +632,42 @@ class Character:
 
         self.state_machine = StateMachine(
             self.IDLE,{
-                self.IDLE:{self.double_fwd: self.RUN,self.double_back: self.BACK_DASH,
-                           self.fwd_down: self.WALK,self.back_down: self.WALK,self.up_down: self.JUMP,self.down_down: self.SIT_DOWN
-                           ,self.lp_down: self.NORMAL_ATTACK,self.rp_down: self.NORMAL_ATTACK,self.lk_down: self.NORMAL_ATTACK,self.rk_down: self.NORMAL_ATTACK},
-                self.WALK:{self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.MOVE_JUMP},
-                self.JUMP:{time_out: self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN},
-                self.MOVE_JUMP: {time_out:self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN},
-                self.RUN:{self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.RUN_JUMP},
-                self.RUN_JUMP:{time_out:self.IDLE,pressing_key:self.RUN, pressing_down:self.SIT_DOWN},
-                self.BACK_DASH:{time_out:self.IDLE,pressing_key:self.WALK,pressing_down:self.SIT_DOWN},
-                self.SIT_DOWN:{self.down_up: self.SIT_UP},
-                self.SIT_UP:{time_out: self.IDLE,self.down_down:self.SIT_DOWN,self.fwd_down:self.WALK,self.back_down:self.WALK,self.up_down:self.JUMP},
-                self.NORMAL_ATTACK:{time_out:self.IDLE}
+                self.IDLE:{
+                    self.double_fwd: self.RUN,self.double_back: self.BACK_DASH,
+                    self.fwd_down: self.WALK,self.back_down: self.WALK,self.up_down: self.JUMP,self.down_down: self.SIT_DOWN,
+                    self.lp_down: self.NORMAL_ATTACK,self.rp_down: self.NORMAL_ATTACK,self.lk_down: self.NORMAL_ATTACK,self.rk_down: self.NORMAL_ATTACK
+                    },
+                self.WALK:{
+                    self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.MOVE_JUMP,
+                    },
+                self.JUMP:{
+                    time_out: self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN,
+                    self.lp_down: self.AIR_ATTACK, self.rp_down: self.AIR_ATTACK, self.lk_down: self.AIR_ATTACK, self.rk_down: self.AIR_ATTACK
+                    },
+                self.MOVE_JUMP: {
+                    time_out:self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN,
+                },
+                self.RUN:{
+                    self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.RUN_JUMP
+                    },
+                self.RUN_JUMP:{
+                    time_out:self.IDLE,pressing_key:self.RUN, pressing_down:self.SIT_DOWN
+                    },
+                self.BACK_DASH:{
+                    time_out:self.IDLE,pressing_key:self.WALK,pressing_down:self.SIT_DOWN
+                    },
+                self.SIT_DOWN:{
+                    self.down_up: self.SIT_UP
+                    },
+                self.SIT_UP:{
+                    time_out: self.IDLE,self.down_down:self.SIT_DOWN,self.fwd_down:self.WALK,self.back_down:self.WALK,self.up_down:self.JUMP
+                    },
+                self.NORMAL_ATTACK:{
+                    time_out:self.IDLE
+                    },
+                self.AIR_ATTACK:{
+                    time_out:self.JUMP
+                    }
             }
         )
 
