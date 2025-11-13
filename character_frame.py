@@ -19,6 +19,14 @@ class KimFrameInfo:
         self.back_dash_frame_start = 378
         self.sit_down_frame_start = 0
         self.sit_down_frames = 3
+        #TODO: add more action frame info
+        #방향에 따른 공격값 -> face방향에 따라 반대면 배열의 뒤에서 부터 접근하기?
+        self.normal_attacks = {
+            'rp': {'frames': [244, 245, 244], 'offsets': [(0, 0), (8, 0), (0, 0)]},
+            'lp': {'frames':[259,258,259],'offsets':[(0, 0), (8, 0), (0, 0)]},
+            'lk': {'frames':[286,287,288,289,290],'offsets':[(0,0),(0,0),(-10,0),(0,0),(0,0)]},
+            'rk': {'frames': [254,255,256,255,254], 'offsets': [(0, 0), (8, 0), (0, 0), (8, 0), (0, 0)]},
+        }
         self.delXPos=0
         self.delYPos=0
 
@@ -49,3 +57,24 @@ class KimFrameInfo:
             self.print_image.clip_draw(fx, fy, fw, fh, x, y)
         else:
             self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', x + self.delXPos, y + self.delYPos, fw, fh)
+
+    def draw_normal_attack(self, attack_key, frame_index, x, y, face_dir):
+        info = self.normal_attacks.get(attack_key)
+        if not info:
+            return
+        frames = info['frames']
+        offsets = info.get('offsets', [(0, 0)] * len(frames))
+        idx = max(0, min(frame_index, len(frames) - 1))
+        frame_num = frames[idx]
+        ox, oy = offsets[idx]
+        ox = ox * -face_dir
+        self.delXPos = ox
+        self.delYPos = oy
+        # 재사용 가능한 기존 헬퍼 사용
+        self.draw_by_frame_num(frame_num, x, y, face_dir)
+
+    def is_attack_finished(self, attack_key, frame_index):
+        info = self.normal_attacks.get(attack_key)
+        if not info:
+            return True
+        return frame_index >= (len(info['frames']) - 1)
