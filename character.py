@@ -253,7 +253,6 @@ class Run:
 class RunJump:
     def __init__(self, character):
         self.character = character
-        self.vy = 0.0
         self.gravity = -1500.0
         self.desired_jump_height = 120
 
@@ -261,10 +260,16 @@ class RunJump:
         self.character.frame = self.character.jump_frame
         # 기준 바닥 고정
         self.character.ground_y = self.character.default_ground_y
+        # 초기 수직속도를 캐릭터 속성으로 설정 (모든 상태가 동일한 vy를 보게 됨)
         g_abs = -self.gravity if self.gravity < 0 else self.gravity
         self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
         if self.vy < 0:
             self.vy = -self.vy
+        vy = (2 * g_abs * self.desired_jump_height) ** 0.5
+        if vy < 0:
+            vy = -vy
+        self.character.vy = vy
+
         # 방향 결정 (기존)
         if self.character.face_dir == 1:
             if self.character.fwd_down(e) or self.character.fwd_pressed:
@@ -276,8 +281,10 @@ class RunJump:
                 self.character.dir = -1
             elif self.character.back_down(e) or self.character.back_pressed:
                 self.character.dir = 1
-    def exit(self,e):
+
+    def exit(self, e):
         self.character.jump_frame = self.character.frame
+
         def _is_attack_transition(ev):
             if not ev:
                 return False
@@ -293,21 +300,34 @@ class RunJump:
                 return ev[1].key in atk_keys
             return False
 
-        if not _is_attack_transition(e):
+        if _is_attack_transition(e):
+            # 런에서 점프한 상태에서 공격으로 전환될 때 현재 런 속도를 vx로 보존
+            if getattr(self.character, 'dir', 0) != 0:
+                self.character.vx = self.character.dir * RUN_SPEED_PPS
+        else:
+            # 공격이 아닌 전환이면 방향 초기화 및 vx 삭제
             self.character.dir = 0
-        pass
+            if hasattr(self.character, 'vx'):
+                self.character.vx = 0.0
+
     def do(self):
+        dt = game_framework.frame_time
+        # 프레임 진행 (기존 로직 유지)
         if self.character.dir == 1:
             self.character.frame = (self.character.frame +
-                                    self.character.face_dir*FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
-                                    % max(1, self.character.image.jump_move_frames)
+                                    self.character.face_dir * FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * dt) \
+                                   % max(1, getattr(self.character.image, 'jump_move_frames', 1))
         else:
             self.character.frame = (self.character.frame -
-                                    self.character.face_dir*FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
-                                   % max(1, self.character.image.jump_move_frames)
-        self.vy += self.gravity * game_framework.frame_time
-        self.character.yPos += self.vy * game_framework.frame_time
-        self.character.xPos += self.character.dir * RUN_SPEED_PPS * game_framework.frame_time
+                                    self.character.face_dir * FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * dt) \
+                                   % max(1, getattr(self.character.image, 'jump_move_frames', 1))
+
+        # vertical: 항상 character.vy 사용
+        self.character.vy += self.gravity * dt
+        self.character.yPos += self.character.vy * dt
+
+        # horizontal
+        self.character.xPos += self.character.dir * RUN_SPEED_PPS * dt
 
         if self.character.yPos <= self.character.ground_y:
             # 착지 시 기본 바닥으로 복원
@@ -319,9 +339,10 @@ class RunJump:
                 self.character.state_machine.handle_state_event(('Pressing_Down', None))
             else:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
-        pass
+
     def draw(self):
-            self.character.image.draw_by_frame_num(self.character.image.jump_move_motion_list[int(self.character.frame)],self.character.xPos, self.character.yPos,self.character.face_dir)
+        self.character.image.draw_by_frame_num(self.character.image.jump_move_motion_list[int(self.character.frame)],
+                                               self.character.xPos, self.character.yPos, self.character.face_dir)
 
 class BackDash:
     def __init__(self, character):
@@ -496,12 +517,17 @@ class AirAttack:
         if not self.attack_key:
             self.attack_key = 'rp'
         now = get_time()
-        self.character.attack_buffer = [(k, t) for (k, t) in self.character.attack_buffer if now - t <= self.character.attack_buffer_window]
+        self.character.attack_buffer = [(k, t) for (k, t) in self.character.attack_buffer if
+                                        now - t <= self.character.attack_buffer_window]
+        # enter 시 vx가 있으면 그대로 유지 (RunJump.exit에서 세팅됨)
 
     def exit(self, e):
         self.character.frame = 0.0
         self.attack_key = None
         self.character.attack_buffer.clear()
+        # 점프 공격 종료 시 저장된 vx 초기화
+        if hasattr(self.character, 'vx'):
+            self.character.vx = 0.0
 
     def _consume_buffered_attack(self):
         now = get_time()
@@ -521,11 +547,17 @@ class AirAttack:
         if self.character.yPos <= self.character.ground_y:
             self.character.ground_y = self.character.default_ground_y
             self.character.yPos = self.character.default_ground_y
+            # 착지 시 vx 초기화
+            if hasattr(self.character, 'vx'):
+                self.character.vx = 0.0
             self.character.state_machine.handle_state_event(('LAND', None))
             return
 
-        # dir != 0 일 때 진행 방향으로 계속 이동하게 함
-        if getattr(self.character, 'dir', 0) != 0:
+        vx = getattr(self.character, 'vx', 0.0)
+        if vx and abs(vx) > 0.0:
+            self.character.xPos += vx * dt
+        elif getattr(self.character, 'dir', 0) != 0:
+            # 런에서 온 경우에는 RunJump.exit에서 vx를 세팅했으므로 여기서는 보통 WALK 속도로 처리
             self.character.xPos += self.character.dir * WALK_SPEED_PPS * dt
 
         # dir 기반으로 프레임셋 선택
