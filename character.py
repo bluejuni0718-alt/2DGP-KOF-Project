@@ -52,6 +52,9 @@ def pressing_key(e):
 def pressing_down(e):
     return e[0] == 'Pressing_Down'
 
+def land(e):
+    return e[0] == 'LAND'
+
 class Idle:
     def __init__(self, character):
         self.character =character
@@ -483,14 +486,17 @@ class AirAttack:
         self.character.vy += self.gravity * dt
         self.character.yPos += self.character.vy * dt
 
+        if self.character.yPos <= self.character.ground_y:
+            self.character.ground_y = self.character.default_ground_y
+            self.character.yPos = self.character.default_ground_y
+            self.character.state_machine.handle_state_event(('LAND', None))
+            return
+
         frames = getattr(self.character.image, 'jump_attacks', {}).get(self.attack_key, {}).get('frames', [])
         frame_count = len(frames)
         if frame_count == 0:
             # 애니 없으면 바로 복귀 (공중이면 다시 JUMP로)
             if self.character.yPos > self.character.ground_y:
-                self.character.state_machine.handle_state_event(('TIME_OUT', None))
-            else:
-                # 착지한 상태면 일반 TIME_OUT 흐름
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
             return
 
