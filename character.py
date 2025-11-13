@@ -355,53 +355,72 @@ class NormalAttack:
     def __init__(self, character):
         self.character = character
         self.attack_key = None   # 'rp'|'lp'|'rk'|'lk'
+        self.combo_accept_last_frames = 2  # 마지막 N프레임에서 콤보 허용
 
     def enter(self, e):
-        # 다른 상태들과 일관되게 character.frame을 사용하고 기본값 설정
         self.character.anim_tick = 0
         self.character.frame = 0.0
         self.attack_key = None
-        if e and e[0] == 'INPUT':
+        if e and e[0] == 'ATTACK':
+            self.attack_key = e[1]
+        elif e and e[0] == 'INPUT':
             ev = e[1]
             for k in ('rp', 'lp', 'rk', 'lk'):
                 if ev.key == self.character.keymap.get(k):
                     self.attack_key = k
                     break
         if not self.attack_key:
-            self.attack_key = 'rp'  # 기본값
+            self.attack_key = 'rp'
+        # 엔터 시 오래된 버퍼는 제거
+        now = get_time()
+        self.character.attack_buffer = [(k, t) for (k, t) in self.character.attack_buffer if now - t <= self.character.attack_buffer_window]
 
     def exit(self, e):
         self.character.frame = 0.0
         self.attack_key = None
+        # 엔터/종료 시 버퍼 정리(원하면)
+        self.character.attack_buffer.clear()
+
+    def _consume_buffered_attack(self):
+        now = get_time()
+        for i, (k, t) in enumerate(self.character.attack_buffer):
+            if now - t <= self.character.attack_buffer_window:
+                # 간단히 아무 공격키나 허용하거나, 특정 체인만 허용하도록 검사 가능
+                return self.character.attack_buffer.pop(i)  # (k, t)
+        return None
 
     def do(self):
-        # 초당 액션 기반으로 frame 증가 (다른 상태들과 동일한 패턴)
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
-
-        # 현재 공격의 프레임 리스트 길이 확인
         frames = getattr(self.character.image, 'normal_attacks', {}).get(self.attack_key, {}).get('frames', [])
         frame_count = len(frames)
-
         if frame_count == 0:
-            # 정의된 모션이 없으면 즉시 복귀
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
             return
 
-        # 마지막 프레임까지 렌더링하려면 frame_count 이상일 때 종료
+        # 콤보 허용 구간 검사: 마지막 N프레임 이내일 때만 체인 허용
+        current_idx = min(int(self.character.frame), frame_count - 1)
+        accept_from = max(0, frame_count - self.combo_accept_last_frames)
+        if current_idx >= accept_from:
+            consumed = self._consume_buffered_attack()
+            if consumed:
+                next_attack_key, _ = consumed
+                # 체인 로직: 다음 공격키로 교체하고 애니메이션 리셋
+                self.attack_key = next_attack_key
+                self.character.frame = 0.0
+                return
+
         if int(self.character.frame) >= frame_count:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
     def draw(self):
         frames = getattr(self.character.image, 'normal_attacks', {}).get(self.attack_key, {}).get('frames', [])
-        frame_count = len(frames)
-        if frame_count == 0:
+        if not frames:
             return
-        idx = min(int(self.character.frame), frame_count - 1)
+        idx = min(int(self.character.frame), len(frames) - 1)
         self.character.image.draw_normal_attack(self.attack_key, idx,
                                                 self.character.xPos, self.character.yPos, self.character.face_dir)
 
 class Character:
-
     def __init__(self, image_data,keymap=None):
         default = {'left': SDLK_a, 'right': SDLK_d, 'up': SDLK_w,'down':SDLK_s,'rp':SDLK_f,'lp':SDLK_g,'rk':SDLK_b,'lk':SDLK_c}
         self.font = load_font('ENCR10B.TTF', 16)
@@ -418,7 +437,6 @@ class Character:
         self.anim_delay=4
         self.double_tap_interval=0.3
 
-
         self._last_down = {}  # key_const -> 마지막 다운 시각
         self._last_up = {}  # key_const -> 마지막 업 시각
 
@@ -426,6 +444,8 @@ class Character:
         self.back_pressed = False
         self.down_pressed = False
 
+        self.attack_buffer = []  # list of (attack_key_str, timestamp)
+        self.attack_buffer_window = 0.35  # 버퍼 유효 시간(초)
 
         self.IDLE=Idle(self)
         self.WALK=Walk(self)
@@ -503,8 +523,7 @@ class Character:
                 self.IDLE:{self.double_fwd: self.RUN,self.double_back: self.BACK_DASH,
                            self.fwd_down: self.WALK,self.back_down: self.WALK,self.up_down: self.JUMP,self.down_down: self.SIT_DOWN
                            ,self.lp_down: self.NORMAL_ATTACK,self.rp_down: self.NORMAL_ATTACK,self.lk_down: self.NORMAL_ATTACK,self.rk_down: self.NORMAL_ATTACK},
-                self.WALK:{self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.MOVE_JUMP,
-                           },
+                self.WALK:{self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.MOVE_JUMP},
                 self.JUMP:{time_out: self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN},
                 self.MOVE_JUMP: {time_out:self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN},
                 self.RUN:{self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.RUN_JUMP},

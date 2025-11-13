@@ -19,7 +19,6 @@ class KimFrameInfo:
         self.back_dash_frame_start = 378
         self.sit_down_frame_start = 0
         self.sit_down_frames = 3
-        #TODO: add more action frame info
         #방향에 따른 공격값 -> face방향에 따라 반대면 배열의 뒤에서 부터 접근하기?
         self.normal_attacks = {
             'rp': {'frames': [244, 245, 244], 'offsets': [(0, 0), (8, 0), (0, 0)]},
