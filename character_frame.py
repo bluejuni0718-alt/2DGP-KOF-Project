@@ -26,6 +26,12 @@ class KimFrameInfo:
             'lk': {'frames':[286,287,288,289,290],'offsets':[(0,0),(0,0),(-10,0),(0,0),(0,0)]},
             'rk': {'frames': [254,255,256,255,254], 'offsets': [(0, 0), (8, 0), (0, 0), (8, 0), (0, 0)]},
         }
+        self.jump_attacks ={
+            'rp': {'frames': [250, 251, 250], 'offsets': [(0, 0), (8, 0), (0, 0)]},
+            'lp': {'frames':[260,261,260],'offsets':[(0, 0), (8, 0), (0, 0)]},
+            'lk': {'frames':[352,353,354,355],'offsets':[(0,0),(8,0),(0,0),(0,0)]},
+            'rk': {'frames': [275,276,277], 'offsets': [(0, 0),(0, 0),  (0, 0)]},
+        }
         self.delXPos=0
         self.delYPos=0
 
@@ -70,6 +76,20 @@ class KimFrameInfo:
         self.delXPos = ox
         self.delYPos = oy
         # 재사용 가능한 기존 헬퍼 사용
+        self.draw_by_frame_num(frame_num, x, y, face_dir)
+    def draw_jump_attack(self, attack_key, frame_index, x, y, face_dir):
+        info = self.jump_attacks.get(attack_key)
+        if not info:
+            return
+        frames = info.get('frames', [])
+        offsets = info.get('offsets', [(0, 0)] * len(frames))
+        idx = max(0, min(frame_index, len(frames) - 1))
+        frame_num = frames[idx]
+        ox, oy = offsets[idx]
+        ox = ox * -face_dir
+        self.delXPos = ox
+        self.delYPos = oy
+        # 기존 헬퍼 재사용
         self.draw_by_frame_num(frame_num, x, y, face_dir)
 
     def is_attack_finished(self, attack_key, frame_index):

@@ -100,42 +100,47 @@ class Walk:
 
 class Jump:
     def __init__(self, character):
-        self.character=character
-        self.vy = 0.0
+        self.character = character
         self.gravity = -1500.0
         self.desired_jump_height = 120
-        self.pressed_after_enter = False
-        self.pressed_dir = 0
+
     def enter(self, e):
         self.character.frame = self.character.jump_frame
-        self.character.ground_y = self.character.yPos
-        g_abs = -self.gravity if self.gravity < 0 else self.gravity
-        self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
-        if self.vy < 0:
-            self.vy = -self.vy
-    def exit(self,e):
+        # 진입 시 기준 바닥은 항상 default_ground_y로 고정
+        self.character.ground_y = self.character.default_ground_y
+        # 처음 점프일 때만 vy 설정 (TIME_OUT으로 다시 들어올 때 재설정하지 않음)
+        if not (e and e[0] == 'TIME_OUT'):
+            g_abs = -self.gravity if self.gravity < 0 else self.gravity
+            self.character.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
+            if self.character.vy < 0:
+                self.character.vy = -self.character.vy
+
+    def exit(self, e):
         self.character.jump_frame = self.character.frame
         self.character.dir = 0
-        pass
+
     def do(self):
         self.character.frame = (self.character.frame +
                                 FRAMES_PER_JUMP_ACTION * JUMP_ACTION_PER_TIME * game_framework.frame_time) \
-                               % max(1, self.character.image.jump_frames)
-        self.vy += self.gravity * game_framework.frame_time
-        self.character.yPos += self.vy * game_framework.frame_time
+                               % max(1, getattr(self.character.image, 'jump_frames', 1))
+        self.character.vy += self.gravity * game_framework.frame_time
+        self.character.yPos += self.character.vy * game_framework.frame_time
 
         if self.character.yPos <= self.character.ground_y:
-            self.character.yPos = self.character.ground_y
+            # 착지 시 항상 기본 바닥으로 복원
+            self.character.ground_y = self.character.default_ground_y
+            self.character.yPos = self.character.default_ground_y
             if self.character.fwd_pressed or self.character.back_pressed:
                 self.character.state_machine.handle_state_event(('Pressing_Key', None))
             elif self.character.down_pressed:
                 self.character.state_machine.handle_state_event(('Pressing_Down', None))
             else:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
-        pass
+
     def draw(self):
-        self.character.image.draw_by_frame_num(self.character.image.jump_frame_start + int(self.character.frame),self.character.xPos, self.character.yPos,self.character.face_dir)
-        pass
+        self.character.image.draw_by_frame_num(
+            self.character.image.jump_frame_start + int(self.character.frame),
+            self.character.xPos, self.character.yPos, self.character.face_dir)
 
 class MoveJump:
     def __init__(self, character):
