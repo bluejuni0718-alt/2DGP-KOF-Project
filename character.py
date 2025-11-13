@@ -479,11 +479,10 @@ class AirAttack:
         self.character = character
         self.attack_key = None
         self.combo_accept_last_frames = 2
-        self.gravity = -1500.0  # Jump과 동일한 중력 사용
+        self.gravity = -1500.0
 
     def enter(self, e):
-        # 공격 애니 재생은 0부터, 위치/vy는 유지
-        self.character.anim_tick = 0
+        # anim_tick/anim_delay를 사용하지 않음 — frame만 초기화
         self.character.frame = 0.0
         self.attack_key = None
         if e and e[0] == 'ATTACK':
@@ -513,23 +512,32 @@ class AirAttack:
 
     def do(self):
         dt = game_framework.frame_time
-        # 공격 애니 진행
-        self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * dt        # 점프 물리 계속 적용 (character.vy 사용)
+        # 애니 진행 및 중력 처리
+        self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * dt
         self.character.vy += self.gravity * dt
         self.character.yPos += self.character.vy * dt
 
+        # 착지 처리
         if self.character.yPos <= self.character.ground_y:
             self.character.ground_y = self.character.default_ground_y
             self.character.yPos = self.character.default_ground_y
             self.character.state_machine.handle_state_event(('LAND', None))
             return
 
-        frames = getattr(self.character.image, 'jump_attacks', {}).get(self.attack_key, {}).get('frames', [])
+        # dir != 0 일 때 진행 방향으로 계속 이동하게 함
+        if getattr(self.character, 'dir', 0) != 0:
+            self.character.xPos += self.character.dir * WALK_SPEED_PPS * dt
+
+        # dir 기반으로 프레임셋 선택
+        if getattr(self.character, 'dir', 0) != 0:
+            info = getattr(self.character.image, 'move_jump_attacks', {}).get(self.attack_key, {})
+        else:
+            info = getattr(self.character.image, 'jump_attacks', {}).get(self.attack_key, {})
+
+        frames = info.get('frames', [])
         frame_count = len(frames)
         if frame_count == 0:
-            # 애니 없으면 바로 복귀 (공중이면 다시 JUMP로)
-            if self.character.yPos > self.character.ground_y:
-                self.character.state_machine.handle_state_event(('TIME_OUT', None))
+            self.character.state_machine.handle_state_event(('TIME_OUT', None))
             return
 
         current_idx = min(int(self.character.frame), frame_count - 1)
@@ -542,29 +550,24 @@ class AirAttack:
                 self.character.frame = 0.0
                 return
 
-        landed = self.character.yPos <= self.character.ground_y
-        if landed:
-            # 착지 시 기본 바닥으로 복원
-            self.character.ground_y = self.character.default_ground_y
-            self.character.yPos = self.character.default_ground_y
-
-        # 애니/공격 종료 시: 공중이면 다시 점프 상태로, 착지하면 착지 처리를 하게 함
         if int(self.character.frame) >= frame_count:
-            if landed:
-                if self.character.fwd_pressed or self.character.back_pressed:
-                    self.character.state_machine.handle_state_event(('Pressing_Key', None))
-                elif self.character.down_pressed:
-                    self.character.state_machine.handle_state_event(('Pressing_Down', None))
-                else:
-                    self.character.state_machine.handle_state_event(('TIME_OUT', None))
-            else:
-                self.character.state_machine.handle_state_event(('TIME_OUT', None))
+            self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
     def draw(self):
+        # 오직 dir != 0 일 때만 move_jump_attacks 사용, 아니면 jump_attacks 사용
+        if getattr(self.character, 'dir', 0) != 0:
+            info = getattr(self.character.image, 'move_jump_attacks', {}).get(self.attack_key, {})
+            frames = info.get('frames', []) if info else []
+            if frames:
+                idx = max(0, min(int(self.character.frame), len(frames) - 1))
+                frame_num = frames[idx]
+                self.character.image.draw_by_frame_num(frame_num, self.character.xPos, self.character.yPos, self.character.face_dir)
+                return
+
         frames = getattr(self.character.image, 'jump_attacks', {}).get(self.attack_key, {}).get('frames', [])
         if not frames:
             return
-        idx = min(int(self.character.frame), len(frames) - 1)
+        idx = max(0, min(int(self.character.frame), len(frames) - 1))
         self.character.image.draw_jump_attack(self.attack_key, idx, self.character.xPos, self.character.yPos, self.character.face_dir)
 
 class Character:
