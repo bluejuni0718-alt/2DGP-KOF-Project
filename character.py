@@ -144,17 +144,20 @@ class Jump:
 
 class MoveJump:
     def __init__(self, character):
-        self.character=character
-        self.vy = 0.0
+        self.character = character
         self.gravity = -1500.0
         self.desired_jump_height = 120
+
     def enter(self, e):
         self.character.frame = self.character.jump_frame
-        self.character.ground_y = self.character.yPos
-        g_abs = -self.gravity if self.gravity < 0 else self.gravity
-        self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
-        if self.vy < 0:
-            self.vy = -self.vy
+        # 기준 바닥을 기본값으로 고정
+        self.character.ground_y = self.character.default_ground_y
+        if not (e and e[0] == 'TIME_OUT'):
+            g_abs = -self.gravity if self.gravity < 0 else self.gravity
+            self.character.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
+            if self.character.vy < 0:
+                self.character.vy = -self.character.vy
+        # 방향 결정 (기존 로직 유지)
         if self.character.face_dir == 1:
             if self.character.fwd_down(e) or self.character.fwd_pressed:
                 self.character.dir = 1
@@ -165,34 +168,40 @@ class MoveJump:
                 self.character.dir = -1
             elif self.character.back_down(e) or self.character.back_pressed:
                 self.character.dir = 1
-    def exit(self,e):
+
+    def exit(self, e):
         self.character.jump_frame = self.character.frame
         self.character.dir = 0
-        pass
+
     def do(self):
         if self.character.dir == 1:
             self.character.frame = (self.character.frame +
-                                    self.character.face_dir*FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
-                                    % max(1, self.character.image.jump_move_frames)
+                                    self.character.face_dir * FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
+                                   % max(1, getattr(self.character.image, 'jump_move_frames', 1))
         else:
             self.character.frame = (self.character.frame -
-                                    self.character.face_dir*FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
-                                   % max(1, self.character.image.jump_move_frames)
-        self.vy += self.gravity * game_framework.frame_time
-        self.character.yPos += self.vy * game_framework.frame_time
+                                    self.character.face_dir * FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
+                                   % max(1, getattr(self.character.image, 'jump_move_frames', 1))
+
+        self.character.vy += self.gravity * game_framework.frame_time
+        self.character.yPos += self.character.vy * game_framework.frame_time
         self.character.xPos += self.character.dir * WALK_SPEED_PPS * game_framework.frame_time
 
         if self.character.yPos <= self.character.ground_y:
-            self.character.yPos = self.character.ground_y
+            # 착지 시 기본 바닥으로 복원
+            self.character.ground_y = self.character.default_ground_y
+            self.character.yPos = self.character.default_ground_y
             if self.character.fwd_pressed or self.character.back_pressed:
                 self.character.state_machine.handle_state_event(('Pressing_Key', None))
             elif self.character.down_pressed:
                 self.character.state_machine.handle_state_event(('Pressing_Down', None))
             else:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
-        pass
+
     def draw(self):
-            self.character.image.draw_by_frame_num(self.character.image.jump_move_motion_list[int(self.character.frame)],self.character.xPos, self.character.yPos,self.character.face_dir)
+        self.character.image.draw_by_frame_num(
+            self.character.image.jump_move_motion_list[int(self.character.frame)],
+            self.character.xPos, self.character.yPos, self.character.face_dir)
 
 class Run:
     def __init__(self, character):
