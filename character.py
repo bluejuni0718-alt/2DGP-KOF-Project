@@ -174,7 +174,23 @@ class MoveJump:
 
     def exit(self, e):
         self.character.jump_frame = self.character.frame
-        self.character.dir = 0
+        def _is_attack_transition(ev):
+            if not ev:
+                return False
+            if ev[0] == 'ATTACK':
+                return True
+            if ev[0] == 'INPUT' and getattr(ev[1], 'type', None) == SDL_KEYDOWN:
+                atk_keys = (
+                    self.character.keymap.get('lp'),
+                    self.character.keymap.get('rp'),
+                    self.character.keymap.get('lk'),
+                    self.character.keymap.get('rk'),
+                )
+                return ev[1].key in atk_keys
+            return False
+
+        if not _is_attack_transition(e):
+            self.character.dir = 0
 
     def do(self):
         if self.character.dir == 1:
@@ -262,7 +278,23 @@ class RunJump:
                 self.character.dir = 1
     def exit(self,e):
         self.character.jump_frame = self.character.frame
-        self.character.dir = 0
+        def _is_attack_transition(ev):
+            if not ev:
+                return False
+            if ev[0] == 'ATTACK':
+                return True
+            if ev[0] == 'INPUT' and getattr(ev[1], 'type', None) == SDL_KEYDOWN:
+                atk_keys = (
+                    self.character.keymap.get('lp'),
+                    self.character.keymap.get('rp'),
+                    self.character.keymap.get('lk'),
+                    self.character.keymap.get('rk'),
+                )
+                return ev[1].key in atk_keys
+            return False
+
+        if not _is_attack_transition(e):
+            self.character.dir = 0
         pass
     def do(self):
         if self.character.dir == 1:
