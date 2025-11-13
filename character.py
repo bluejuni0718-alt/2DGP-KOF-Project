@@ -233,17 +233,20 @@ class Run:
 
 class RunJump:
     def __init__(self, character):
-        self.character=character
+        self.character = character
         self.vy = 0.0
         self.gravity = -1500.0
         self.desired_jump_height = 120
+
     def enter(self, e):
         self.character.frame = self.character.jump_frame
-        self.character.ground_y = self.character.yPos
+        # 기준 바닥 고정
+        self.character.ground_y = self.character.default_ground_y
         g_abs = -self.gravity if self.gravity < 0 else self.gravity
         self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
         if self.vy < 0:
             self.vy = -self.vy
+        # 방향 결정 (기존)
         if self.character.face_dir == 1:
             if self.character.fwd_down(e) or self.character.fwd_pressed:
                 self.character.dir = 1
