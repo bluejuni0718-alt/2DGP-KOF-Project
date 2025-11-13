@@ -39,6 +39,10 @@ BACK_DASH_TIME_PER_ACTION = 0.3
 BACK_DASH_ACTION_PER_TIME = 1.0 / BACK_DASH_TIME_PER_ACTION
 FRAMES_PER_BACK_DASH_ACTION = 6
 
+ATTACK_TIME_PER_ACTION = 0.6
+ATTACK_ACTION_PER_TIME = 1.0 / ATTACK_TIME_PER_ACTION
+FRAMES_PER_ATTACK_ACTION = 6
+
 def time_out(e):
     return e[0] == 'TIME_OUT'
 
@@ -350,20 +354,51 @@ class SitUp:
 class NormalAttack:
     def __init__(self, character):
         self.character = character
-        im = character.image
-        # 공격 키별 start_frame, frame_count 매핑
-        self.attack_map = {
+        self.attack_key = None   # 'rp'|'lp'|'rk'|'lk'
 
-        }
     def enter(self, e):
-        pass
-    def exit(self,e):
-        pass
+        # 다른 상태들과 일관되게 character.frame을 사용하고 기본값 설정
+        self.character.anim_tick = 0
+        self.character.frame = 0.0
+        self.attack_key = None
+        if e and e[0] == 'INPUT':
+            ev = e[1]
+            for k in ('rp', 'lp', 'rk', 'lk'):
+                if ev.key == self.character.keymap.get(k):
+                    self.attack_key = k
+                    break
+        if not self.attack_key:
+            self.attack_key = 'rp'  # 기본값
+
+    def exit(self, e):
+        self.character.frame = 0.0
+        self.attack_key = None
+
     def do(self):
-        self.character.state_machine.handle_state_event(('TIME_OUT', None))
-        pass
+        # 초당 액션 기반으로 frame 증가 (다른 상태들과 동일한 패턴)
+        self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
+
+        # 현재 공격의 프레임 리스트 길이 확인
+        frames = getattr(self.character.image, 'normal_attacks', {}).get(self.attack_key, {}).get('frames', [])
+        frame_count = len(frames)
+
+        if frame_count == 0:
+            # 정의된 모션이 없으면 즉시 복귀
+            self.character.state_machine.handle_state_event(('TIME_OUT', None))
+            return
+
+        # 마지막 프레임까지 렌더링하려면 frame_count 이상일 때 종료
+        if int(self.character.frame) >= frame_count:
+            self.character.state_machine.handle_state_event(('TIME_OUT', None))
+
     def draw(self):
-        pass
+        frames = getattr(self.character.image, 'normal_attacks', {}).get(self.attack_key, {}).get('frames', [])
+        frame_count = len(frames)
+        if frame_count == 0:
+            return
+        idx = min(int(self.character.frame), frame_count - 1)
+        self.character.image.draw_normal_attack(self.attack_key, idx,
+                                                self.character.xPos, self.character.yPos, self.character.face_dir)
 
 class Character:
 
