@@ -476,7 +476,7 @@ class Character:
                 self.RUN_JUMP:{time_out:self.IDLE,pressing_key:self.RUN, pressing_down:self.SIT_DOWN},
                 self.BACK_DASH:{time_out:self.IDLE,pressing_key:self.WALK,pressing_down:self.SIT_DOWN},
                 self.SIT_DOWN:{self.down_up: self.SIT_UP},
-                self.SIT_UP:{time_out: self.IDLE,self.down_down:self.SIT_DOWN},
+                self.SIT_UP:{time_out: self.IDLE,self.down_down:self.SIT_DOWN,self.fwd_down:self.WALK,self.back_down:self.WALK,self.up_down:self.JUMP},
                 self.NORMAL_ATTACK:{time_out:self.IDLE}
             }
         )
