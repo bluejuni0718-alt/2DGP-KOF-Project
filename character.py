@@ -262,9 +262,6 @@ class RunJump:
         self.character.ground_y = self.character.default_ground_y
         # 초기 수직속도를 캐릭터 속성으로 설정 (모든 상태가 동일한 vy를 보게 됨)
         g_abs = -self.gravity if self.gravity < 0 else self.gravity
-        self.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
-        if self.vy < 0:
-            self.vy = -self.vy
         vy = (2 * g_abs * self.desired_jump_height) ** 0.5
         if vy < 0:
             vy = -vy
@@ -503,7 +500,6 @@ class AirAttack:
         self.gravity = -1500.0
 
     def enter(self, e):
-        # anim_tick/anim_delay를 사용하지 않음 — frame만 초기화
         self.character.frame = 0.0
         self.attack_key = None
         if e and e[0] == 'ATTACK':
@@ -719,12 +715,15 @@ class Character:
                     },
                 self.MOVE_JUMP: {
                     time_out:self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN,
+                    self.lp_down: self.AIR_ATTACK, self.rp_down: self.AIR_ATTACK, self.lk_down: self.AIR_ATTACK, self.rk_down: self.AIR_ATTACK
                 },
                 self.RUN:{
-                    self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.RUN_JUMP
-                    },
+                    self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.RUN_JUMP,
+                    self.lp_down: self.NORMAL_ATTACK, self.rp_down: self.NORMAL_ATTACK, self.lk_down: self.NORMAL_ATTACK, self.rk_down: self.NORMAL_ATTACK
+                },
                 self.RUN_JUMP:{
-                    time_out:self.IDLE,pressing_key:self.RUN, pressing_down:self.SIT_DOWN
+                    time_out:self.IDLE,pressing_key:self.RUN, pressing_down:self.SIT_DOWN,
+                    self.lp_down: self.AIR_ATTACK, self.rp_down: self.AIR_ATTACK, self.lk_down: self.AIR_ATTACK, self.rk_down: self.AIR_ATTACK
                     },
                 self.BACK_DASH:{
                     time_out:self.IDLE,pressing_key:self.WALK,pressing_down:self.SIT_DOWN
@@ -748,7 +747,7 @@ class Character:
         self.state_machine.update()
     def draw(self):
         self.state_machine.draw()
-        self.font.draw(self.xPos - 60, self.yPos + 70, f'(Time: {get_time():.2f})', (255, 255, 0))
+        self.font.draw(self.xPos - 60, self.yPos + 70, f'(Time: {get_time():.2f}, Dir : {self.dir})', (255, 255, 0))
 
     def handle_event(self, event):
         if event.type == SDL_KEYDOWN:
