@@ -459,7 +459,6 @@ class NormalAttack:
         self.combo_accept_last_frames = 2  # 마지막 N프레임에서 콤보 허용
 
     def enter(self, e):
-        self.character.anim_tick = 0
         self.character.frame = 0.0
         self.attack_key = None
         if e and e[0] == 'ATTACK':
@@ -703,7 +702,7 @@ class SitAttack:
 
 class Character:
     def __init__(self, image_data,keymap=None):
-        default = {'left': SDLK_a, 'right': SDLK_d, 'up': SDLK_w,'down':SDLK_s,'rp':SDLK_f,'lp':SDLK_g,'rk':SDLK_b,'lk':SDLK_c}
+        default = {'left': SDLK_a, 'right': SDLK_d, 'up': SDLK_w,'down':SDLK_s,'lp':SDLK_f,'rp':SDLK_g,'rk':SDLK_b,'lk':SDLK_c}
         self.font = load_font('ENCR10B.TTF', 16)
         self.keymap = default if keymap is None else {**default, **keymap}
         self.xPos = 400
@@ -744,6 +743,7 @@ class Character:
         self.SIT_UP = SitUp(self)
         self.NORMAL_ATTACK = NormalAttack(self)
         self.AIR_ATTACK = AirAttack(self)
+        self.SIT_ATTACK = SitAttack(self)
 
         def mk_key_pred(key_const, sdl_type):
             def pred(e):
