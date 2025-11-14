@@ -1,6 +1,9 @@
 from pico2d import *
 from frame import *
 
+CHARACTER_HEIGHT_SCALE = 2.0
+CHARACTER_WIDTH_SCALE = 2.0
+
 class KimFrameInfo:
     def __init__(self,frame_list_path='CharacterSpriteSheet_Modified/Kim_frame_box.png', print_image_path='CharacterSpriteSheet_Modified/Kim_frames_alpha1.png'):
         self.frame_list = get_frame_list(frame_list_path)
@@ -28,14 +31,14 @@ class KimFrameInfo:
         }
         self.jump_attacks ={
             'rp': {'frames': [250, 251, 251,251,251], 'offsets': [(0, 0), (0, 0), (0, 0), (0, 0), (0, 0)]},
-            'lp': {'frames':[260,261,260],'offsets':[(0, 0), (8, 0), (0, 0)]},
+            'lp': {'frames':[260,261,260],'offsets':[(0, 0), (0, 0), (0, 0)]},
             'lk': {'frames':[352,353,354,355],'offsets':[(0,0),(8,0),(0,0),(0,0)]},
             'rk': {'frames': [275,276,277], 'offsets': [(0, 0),(0, 0),  (0, 0)]},
         }
         self.move_jump_attacks={
             'rp': {'frames': [250, 251, 251,251,251], 'offsets': [(0, 0), (8, 0), (0, 0), (8, 0), (0, 0)]},
             'lp': {'frames':[260,261,260],'offsets':[(0, 0), (8, 0), (0, 0)]},
-            'lk': {'frames':[352,353,379,379,379,379],'offsets':[(0,0),(0,0),(0,0),(0,0),(0,0),(0,0)]},
+            'lk': {'frames':[352,353,379,379,379,379],'offsets':[(0,-20),(0,-20),(0,-20),(0,-20),(0,-20),(0,-20)]},
             'rk': {'frames':[272,273,274,214,215,216], 'offsets':[(0,0),(0,0),(0,0),(0,0)]},
         }
         self.sit_attacks = {
@@ -46,37 +49,43 @@ class KimFrameInfo:
         }
         self.delXPos=0
         self.delYPos=0
-
-        pass
     def draw_idle_by_frame_num(self,frame, x, y,face_dir):
         self.delXPos=0
         self.delYPos=0
+
         if frame==4:
-            self.delXPos+=8 * -face_dir
+            self.delXPos+=16 * -face_dir
         elif frame==5:
-            self.delYPos+=8
+            self.delYPos+=16
             pass
         fx, fy, fw, fh = self.frame_list[self.idle_frame_start + frame]
+        dw = fw * CHARACTER_WIDTH_SCALE
+        dh = fh * CHARACTER_HEIGHT_SCALE
+
         if face_dir == -1:
-            self.print_image.clip_draw(fx, fy, fw, fh, x + self.delXPos, y + self.delYPos)
+            self.print_image.clip_draw(fx, fy, fw, fh, x + self.delXPos, y + self.delYPos,dw,dh)
         else:
-            self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', x + self.delXPos, y + self.delYPos, fw, fh)
+            self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', x + self.delXPos, y + self.delYPos, dw, dh)
         pass
 
     def draw_by_frame_num(self, frame_num, x, y, face_dir):
         fx, fy, fw, fh = self.frame_list[frame_num]
+        dw = fw * CHARACTER_WIDTH_SCALE
+        dh = fh * CHARACTER_HEIGHT_SCALE
         # 항상 오프셋 적용: delXPos에는 이미 x 방향 보정(= ox * -face_dir)을 넣어야 함
         sx = x + self.delXPos
         sy = y + self.delYPos
         if face_dir == -1:
-            self.print_image.clip_draw(fx, fy, fw, fh, sx, sy)
+            self.print_image.clip_draw(fx, fy, fw, fh, sx, sy,dw,dh)
         else:
-            self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', sx, sy, fw, fh)
+            self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', sx, sy, dw, dh)
 
     def draw_by_act_kind(self, act_start_frame, act_frames, frame, x, y, face_dir):
         fx, fy, fw, fh = self.frame_list[act_start_frame + frame]
         sx = x + self.delXPos
         sy = y + self.delYPos
+        dw = fw * CHARACTER_WIDTH_SCALE
+        dh = fh * CHARACTER_HEIGHT_SCALE
         if face_dir == -1:
             self.print_image.clip_draw(fx, fy, fw, fh, sx, sy)
         else:
