@@ -389,20 +389,49 @@ class BackDash:
 class SitDown:
     def __init__(self, character):
         self.character = character
+        # 내부 sticky 상태: SitAttack에서 돌아와서 마지막 프레임을 유지해야 할 때 True
+        self._sticky_last_frame = False
+
     def enter(self, e):
+        # SitAttack에서 돌아온 경우에만 마지막 프레임으로 고정
+        if getattr(self.character, '_keep_sit_down_last_frame', False):
+            total = max(1, getattr(self.character.image, 'sit_down_frames', 1))
+            self.character.frame = total - 1
+            # 플래그 사용 후 해제
+            self.character._keep_sit_down_last_frame = False
+            self._sticky_last_frame = True
+        else:
+            self.character.frame = 0
+            self._sticky_last_frame = False
+
+        # SitDown은 자체적으로 y 보정(예: y - 6 * frame)을 사용하므로
+        # 이전 공격에서 설정된 delXPos/delYPos는 무조건 초기화
+        if hasattr(self.character.image, 'delXPos'):
+            self.character.image.delXPos = 0
+            self.character.image.delYPos = 0
+
+    def exit(self, e):
         self.character.frame = 0
-        pass
-    def exit(self,e):
-        self.character.frame = 0
-        pass
+        self._sticky_last_frame = False
+
     def do(self):
-        if int(self.character.frame) >= self.character.image.sit_down_frames-1:
-            self.character.frame = self.character.image.sit_down_frames -1
-        self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.sit_down_frames
-        pass
+        # sticky이면 프레임을 증가시키지 않고 마지막 프레임에 고정
+        if self._sticky_last_frame:
+            total = max(1, getattr(self.character.image, 'sit_down_frames', 1))
+            self.character.frame = total - 1
+            return
+
+        # 정상적인 앉기 애니 진행 및 상한 클램프
+        self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % max(1, getattr(self.character.image, 'sit_down_frames', 1))
+        if int(self.character.frame) >= getattr(self.character.image, 'sit_down_frames', 1) - 1:
+            self.character.frame = getattr(self.character.image, 'sit_down_frames', 1) - 1
+
     def draw(self):
-        self.character.image.draw_by_frame_num(self.character.image.sit_down_frame_start + int(self.character.frame), self.character.xPos, self.character.yPos - 6 * int(self.character.frame),self.character.face_dir)
-        pass
+        self.character.image.draw_by_frame_num(
+            self.character.image.sit_down_frame_start + int(self.character.frame),
+            self.character.xPos,
+            self.character.yPos - 6 * int(self.character.frame),
+            self.character.face_dir)
 
 class SitUp:
     def __init__(self, character):
