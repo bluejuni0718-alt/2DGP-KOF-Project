@@ -23,6 +23,7 @@ class Hitbox:
 
     def __repr__(self):
         return f"Hitbox({self.left}, {self.top}, {self.right}, {self.bottom}, owner={self.owner})"
+
 class InteractionManager:
     def __init__(self):
         # (attacker id, frame_id) 쌍으로 같은 애니 내 중복 히트 방지
@@ -42,3 +43,74 @@ class InteractionManager:
         left = ox_world - w / 2
         right = ox_world + w / 2
         return Hitbox(left=left, top=top, right=right, bottom=bottom, owner=attacker)
+
+    def _hurtbox_of(self, target):
+        """target.get_hurtbox() 우선 사용, 없으면 image 기반 폴백 박스 생성"""
+        if hasattr(target, "get_hurtbox"):
+            return target.get_hurtbox()
+        frame_idx = int(getattr(target, "frame", 0))
+        image = getattr(target, "image", None)
+        hb_list = getattr(image, "hurtboxes", None) if image is not None else None
+        if hb_list and frame_idx < len(hb_list):
+            ox, oy, w, h = hb_list[frame_idx]
+        else:
+            w = getattr(image, "frame_w", 40) if image is not None else 40
+            h = getattr(image, "frame_h", 80) if image is not None else 80
+            ox, oy = 0, 0
+        left = target.xPos + ox - w / 2
+        right = target.xPos + ox + w / 2
+        top = target.yPos + oy + h / 2
+        bottom = target.yPos + oy - h / 2
+        return Hitbox(left=left, top=top, right=right, bottom=bottom, owner=target)
+
+    def check_and_resolve(self, attacker, target):
+        """
+        매 프레임 루프에서 attacker/target 쌍마다 호출.
+        attacker.get_current_attack_info() -> None 또는 dict:
+          {
+            "frame_id": any_unique_identifier,
+            "relative_box": (ox, oy, w, h),
+            "damage": int,
+            "knockback": (dx, dy),
+            "hitstun": float_seconds
+          }
+        """
+        info = attacker.get_current_attack_info() if hasattr(attacker, "get_current_attack_info") else None
+        if not info:
+            return
+
+        frame_id = info.get("frame_id")
+        key = (id(attacker), frame_id)
+        if key in self._already_hit:
+            return
+
+        rel = info.get("relative_box")
+        if not rel:
+            return
+
+        atk_box = self._absolute_hitbox_from_relative(attacker, rel)
+        tgt_box = self._hurtbox_of(target)
+
+        if atk_box.overlaps(tgt_box):
+            knock = info.get("knockback", (0.0, 0.0))
+            damage = info.get("damage", 0)
+            hitstun = info.get("hitstun", 0.0)
+
+            if hasattr(attacker, "on_hit_success"):
+                try:
+                    attacker.on_hit_success(target, info)
+                except Exception:
+                    pass
+
+            if hasattr(target, "apply_hit"):
+                abs_knock_x = knock[0] * getattr(attacker, "face_dir", 1)
+                abs_knock_y = knock[1]
+                target.apply_hit({
+                    "from": attacker,
+                    "damage": damage,
+                    "knockback": (abs_knock_x, abs_knock_y),
+                    "hitstun": hitstun,
+                    "hit_time": pico2d.get_time()
+                })
+
+            self._already_hit.add(key)
