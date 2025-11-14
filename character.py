@@ -598,6 +598,80 @@ class AirAttack:
         idx = max(0, min(int(self.character.frame), len(frames) - 1))
         self.character.image.draw_jump_attack(self.attack_key, idx, self.character.xPos, self.character.yPos, self.character.face_dir)
 
+class SitAttack:
+    def __init__(self, character):
+        self.character = character
+        self.attack_key = None
+        self.combo_accept_last_frames = 2
+
+    def enter(self, e):
+        self.character.frame = 0.0
+        self.attack_key = None
+        if e and e[0] == 'ATTACK':
+            self.attack_key = e[1]
+        elif e and e[0] == 'INPUT':
+            ev = e[1]
+            for k in ('rp', 'lp', 'rk', 'lk'):
+                if ev.key == self.character.keymap.get(k):
+                    self.attack_key = k
+                    break
+        if not self.attack_key:
+            self.attack_key = 'rp'
+        now = get_time()
+        self.character.attack_buffer = [(k, t) for (k, t) in self.character.attack_buffer if now - t <= self.character.attack_buffer_window]
+
+    def exit(self, e):
+        self.character.frame = 0.0
+        self.attack_key = None
+        self.character.attack_buffer.clear()
+        # SitAttack에서 SIT_DOWN으로 돌아올 때만 SitDown의 마지막 프레임을 유지시키기 위한 플래그 설정
+        # (다른 경로로 SIT_DOWN에 진입할 때는 영향을 주지 않음)ㄴㄴㄴㄴㄴㄴㄴㄴㄴㄴㄴ
+        self.character._keep_sit_down_last_frame = True
+
+
+    def _consume_buffered_attack(self):
+        now = get_time()
+        for i, (k, t) in enumerate(self.character.attack_buffer):
+            if now - t <= self.character.attack_buffer_window:
+                return self.character.attack_buffer.pop(i)
+        return None
+
+    def do(self):
+        self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
+        info = getattr(self.character.image, 'sit_attacks', {}).get(self.attack_key, {})
+        frames = info.get('frames', [])
+        frame_count = len(frames)
+        if frame_count == 0:
+            self.character.state_machine.handle_state_event(('TIME_OUT', None))
+            return
+
+        current_idx = min(int(self.character.frame), frame_count - 1)
+        accept_from = max(0, frame_count - self.combo_accept_last_frames)
+        if current_idx >= accept_from:
+            consumed = self._consume_buffered_attack()
+            if consumed:
+                next_attack_key, _ = consumed
+                self.attack_key = next_attack_key
+                self.character.frame = 0.0
+                return
+
+        if int(self.character.frame) >= frame_count:
+            self.character.state_machine.handle_state_event(('TIME_OUT', None))
+
+    def draw(self):
+        info = getattr(self.character.image, 'sit_attacks', {}).get(self.attack_key, {})
+        frames = info.get('frames', [])
+        offsets = info.get('offsets', [(0, 0)] * len(frames))
+        if not frames:
+            return
+        idx = max(0, min(int(self.character.frame), len(frames) - 1))
+        frame_num = frames[idx]
+        ox, oy = offsets[idx] if idx < len(offsets) else (0, 0)
+        ox = ox * -self.character.face_dir
+        self.character.image.delXPos = ox
+        self.character.image.delYPos = oy
+        self.character.image.draw_by_frame_num(frame_num, self.character.xPos, self.character.yPos, self.character.face_dir)
+
 class Character:
     def __init__(self, image_data,keymap=None):
         default = {'left': SDLK_a, 'right': SDLK_d, 'up': SDLK_w,'down':SDLK_s,'rp':SDLK_f,'lp':SDLK_g,'rk':SDLK_b,'lk':SDLK_c}
