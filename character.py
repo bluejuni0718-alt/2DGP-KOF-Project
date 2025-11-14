@@ -708,7 +708,7 @@ class Character:
                     self.lp_down: self.NORMAL_ATTACK,self.rp_down: self.NORMAL_ATTACK,self.lk_down: self.NORMAL_ATTACK,self.rk_down: self.NORMAL_ATTACK
                     },
                 self.WALK:{
-                    self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.MOVE_JUMP,
+                    self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.MOVE_JUMP,self.down_down:self.SIT_DOWN,
                     },
                 self.JUMP:{
                     time_out: self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN,
