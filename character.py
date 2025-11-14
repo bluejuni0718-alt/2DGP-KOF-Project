@@ -726,6 +726,9 @@ class Character:
         self.fwd_pressed = False
         self.back_pressed = False
         self.down_pressed = False
+        self.keep_sit_down_last_frame = False
+        self.time_out_and_down = lambda e: (e[0] == 'TIME_OUT') and self.down_pressed
+        self.time_out_and_not_down = lambda e: (e[0] == 'TIME_OUT') and (not self.down_pressed)
 
         self.attack_buffer = []  # list of (attack_key_str, timestamp)
         self.attack_buffer_window = 0.35  # 버퍼 유효 시간(초)
@@ -812,6 +815,7 @@ class Character:
                     },
                 self.WALK:{
                     self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.MOVE_JUMP,self.down_down:self.SIT_DOWN,
+                    self.lp_down: self.NORMAL_ATTACK, self.rp_down: self.NORMAL_ATTACK,self.lk_down: self.NORMAL_ATTACK, self.rk_down: self.NORMAL_ATTACK
                     },
                 self.JUMP:{
                     time_out: self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN,
@@ -828,22 +832,28 @@ class Character:
                 self.RUN_JUMP:{
                     time_out:self.IDLE,pressing_key:self.RUN, pressing_down:self.SIT_DOWN,
                     self.lp_down: self.AIR_ATTACK, self.rp_down: self.AIR_ATTACK, self.lk_down: self.AIR_ATTACK, self.rk_down: self.AIR_ATTACK
-                    },
+                },
                 self.BACK_DASH:{
                     time_out:self.IDLE,pressing_key:self.WALK,pressing_down:self.SIT_DOWN
-                    },
+                },
                 self.SIT_DOWN:{
-                    self.down_up: self.SIT_UP
+                    self.down_up: self.SIT_UP,
+                    self.lp_down: self.SIT_ATTACK, self.rp_down: self.SIT_ATTACK, self.lk_down: self.SIT_ATTACK, self.rk_down: self.SIT_ATTACK
                     },
                 self.SIT_UP:{
                     time_out: self.IDLE,self.down_down:self.SIT_DOWN,self.fwd_down:self.WALK,self.back_down:self.WALK,self.up_down:self.JUMP
-                    },
+                },
                 self.NORMAL_ATTACK:{
-                    time_out:self.IDLE
-                    },
+                    time_out:self.IDLE,
+                },
                 self.AIR_ATTACK:{
                     time_out:self.JUMP, land : self.IDLE, self.land_moving: self.WALK,
-                    }
+                },
+                self.SIT_ATTACK:{
+                    self.time_out_and_down: self.SIT_DOWN,  # 애니 끝났고 아래키 눌러져 있으면 SIT_DOWN
+                    self.time_out_and_not_down: self.SIT_UP,  # 애니 끝났고 아래키 놓여있으면 IDLE
+                }
+
             }
         )
 
