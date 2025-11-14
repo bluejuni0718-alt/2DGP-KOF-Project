@@ -5,7 +5,7 @@ from frame import *
 from state_machine import *
 from character_frame import *
 
-PIXEL_PER_METER = 10.0/0.3 #10 픽셀당 30cm로 설정
+PIXEL_PER_METER = 10.0/0.15 #10 픽셀당 30cm로 설정
 
 RUN_SPEED_KMPH = 20.0 #시속 20km로 설정
 RUN_SPEED_MPS = (RUN_SPEED_KMPH * 1000.0 / 3600.0) #초속미터 환산
@@ -33,7 +33,7 @@ FRAMES_PER_JUMP_ACTION = 5
 
 MOVE_JUMP_TIME_PER_ACTION = 0.6
 MOVE_JUMP_ACTION_PER_TIME = 1.0 / MOVE_JUMP_TIME_PER_ACTION
-FRAMES_PER_MOVE_JUMP_ACTION = 6
+FRAMES_PER_MOVE_JUMP_ACTION = 5
 
 BACK_DASH_TIME_PER_ACTION = 0.3
 BACK_DASH_ACTION_PER_TIME = 1.0 / BACK_DASH_TIME_PER_ACTION
@@ -104,8 +104,8 @@ class Walk:
 class Jump:
     def __init__(self, character):
         self.character = character
-        self.gravity = -1500.0
-        self.desired_jump_height = 120
+        self.gravity = -3000.0
+        self.desired_jump_height = 240
 
     def enter(self, e):
         self.character.frame = self.character.jump_frame
@@ -148,8 +148,8 @@ class Jump:
 class MoveJump:
     def __init__(self, character):
         self.character = character
-        self.gravity = -1500.0
-        self.desired_jump_height = 120
+        self.gravity = -3000.0
+        self.desired_jump_height = 240
 
     def enter(self, e):
         self.character.frame = self.character.jump_frame
@@ -253,8 +253,8 @@ class Run:
 class RunJump:
     def __init__(self, character):
         self.character = character
-        self.gravity = -1500.0
-        self.desired_jump_height = 120
+        self.gravity = -3000.0
+        self.desired_jump_height = 240
 
     def enter(self, e):
         self.character.frame = self.character.jump_frame
@@ -346,7 +346,7 @@ class BackDash:
         self.character = character
         self.vy = 0.0
         self.gravity = -1500.0
-        self.desired_jump_height = 25
+        self.desired_jump_height = 10
 
     def enter(self, e):
         self.character.ground_y = self.character.yPos
@@ -525,7 +525,7 @@ class AirAttack:
         self.character = character
         self.attack_key = None
         self.combo_accept_last_frames = 2
-        self.gravity = -1500.0
+        self.gravity = -3000.0
 
     def enter(self, e):
         self.character.frame = 0.0
@@ -706,8 +706,9 @@ class Character:
         self.font = load_font('ENCR10B.TTF', 16)
         self.keymap = default if keymap is None else {**default, **keymap}
         self.xPos = 400
-        self.yPos = 90
+        self.yPos = 120
         self.vy = 0.0
+        self.vx = 0.0
         self.frame = 0
         self.face_dir = 1
         self.dir = 0
@@ -861,7 +862,7 @@ class Character:
         self.state_machine.update()
     def draw(self):
         self.state_machine.draw()
-        self.font.draw(self.xPos - 60, self.yPos + 70, f'(Time: {get_time():.2f}, Dir : {self.dir})', (255, 255, 0))
+        self.font.draw(self.xPos - 60, self.yPos + 150, f'(Time: {get_time():.2f}, Dir : {self.dir})', (255, 255, 0))
 
     def handle_event(self, event):
         if event.type == SDL_KEYDOWN:
