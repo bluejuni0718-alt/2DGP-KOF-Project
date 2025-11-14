@@ -38,6 +38,12 @@ class KimFrameInfo:
             'lk': {'frames':[352,353,379,379,379,379],'offsets':[(0,0),(0,0),(0,0),(0,0),(0,0),(0,0)]},
             'rk': {'frames':[272,273,274,214,215,216], 'offsets':[(0,0),(0,0),(0,0),(0,0)]},
         }
+        self.sit_attacks = {
+            'rp':{'frames':[252,253,252],'offsets':[(0,-20),(-12,-20),(0,-20)]},
+            'lp':{'frames':[262,263,262],'offsets':[(-5,-10),(-15,-10),(-5,-10)]},
+            'lk': {'frames': [294,295,296,297,298,299], 'offsets': [(0,-10),(0,-10),(0,-10),(0,-10),(0,-10),(0,-10)]},
+            'rk': {'frames': [278,279,280,281,280,279,278], 'offsets': [(0,0),(-15,10),(-25,20),(-25,20),(-25,20),(-15,10),(0,5)]},
+        }
         self.delXPos=0
         self.delYPos=0
 
@@ -56,18 +62,25 @@ class KimFrameInfo:
         else:
             self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', x + self.delXPos, y + self.delYPos, fw, fh)
         pass
-    def draw_by_frame_num(self,frame_num,x, y,face_dir):
+
+    def draw_by_frame_num(self, frame_num, x, y, face_dir):
         fx, fy, fw, fh = self.frame_list[frame_num]
-        if face_dir ==-1:
-            self.print_image.clip_draw(fx, fy, fw, fh, x, y)
+        # 항상 오프셋 적용: delXPos에는 이미 x 방향 보정(= ox * -face_dir)을 넣어야 함
+        sx = x + self.delXPos
+        sy = y + self.delYPos
+        if face_dir == -1:
+            self.print_image.clip_draw(fx, fy, fw, fh, sx, sy)
         else:
-            self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', x + self.delXPos, y + self.delYPos, fw, fh)
-    def draw_by_act_kind(self,act_start_frame,act_frames,frame,x,y,face_dir):
+            self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', sx, sy, fw, fh)
+
+    def draw_by_act_kind(self, act_start_frame, act_frames, frame, x, y, face_dir):
         fx, fy, fw, fh = self.frame_list[act_start_frame + frame]
-        if face_dir ==-1:
-            self.print_image.clip_draw(fx, fy, fw, fh, x, y)
+        sx = x + self.delXPos
+        sy = y + self.delYPos
+        if face_dir == -1:
+            self.print_image.clip_draw(fx, fy, fw, fh, sx, sy)
         else:
-            self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', x + self.delXPos, y + self.delYPos, fw, fh)
+            self.print_image.clip_composite_draw(fx, fy, fw, fh, 0, 'h', sx, sy, fw, fh)
 
     def draw_normal_attack(self, attack_key, frame_index, x, y, face_dir):
         info = self.normal_attacks.get(attack_key)
@@ -78,11 +91,13 @@ class KimFrameInfo:
         idx = max(0, min(frame_index, len(frames) - 1))
         frame_num = frames[idx]
         ox, oy = offsets[idx]
+        # 방향에 따른 반전은 x좌표(ox)만 반영
         ox = ox * -face_dir
         self.delXPos = ox
         self.delYPos = oy
         # 재사용 가능한 기존 헬퍼 사용
         self.draw_by_frame_num(frame_num, x, y, face_dir)
+
     def draw_jump_attack(self, attack_key, frame_index, x, y, face_dir):
         info = self.jump_attacks.get(attack_key)
         if not info:
@@ -92,6 +107,7 @@ class KimFrameInfo:
         idx = max(0, min(frame_index, len(frames) - 1))
         frame_num = frames[idx]
         ox, oy = offsets[idx]
+        # x만 방향 반영
         ox = ox * -face_dir
         self.delXPos = ox
         self.delYPos = oy
