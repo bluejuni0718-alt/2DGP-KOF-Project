@@ -4,6 +4,7 @@ import game_framework
 from frame import *
 from state_machine import *
 from character_frame import *
+from character_frame import CHARACTER_WIDTH_SCALE, CHARACTER_HEIGHT_SCALE
 
 PIXEL_PER_METER = 10.0/0.15 #10 픽셀당 30cm로 설정
 
@@ -716,17 +717,20 @@ class Character:
         self.jump_frame=0
         self.default_ground_y = self.yPos
         self.ground_y = self.default_ground_y
-        self.anim_tick=0
-        self.anim_delay=4
         self.double_tap_interval=0.3
 
         self._last_down = {}  # key_const -> 마지막 다운 시각
         self._last_up = {}  # key_const -> 마지막 업 시각
 
+        self.manager = manager
+        self.hitbox_ids =['body']
+
         self.fwd_pressed = False
         self.back_pressed = False
         self.down_pressed = False
-        self.keep_sit_down_last_frame = False
+        self._keep_sit_down_last_frame = False
+        # 외부 코드에서 self._keep_sit_down_last_frame와 self.keep_sit_down_last_frame 둘다 참조할 수 있게 동기화
+        self.keep_sit_down_last_frame = self._keep_sit_down_last_frame
         self.time_out_and_down = lambda e: (e[0] == 'TIME_OUT') and self.down_pressed
         self.time_out_and_not_down = lambda e: (e[0] == 'TIME_OUT') and (not self.down_pressed)
 
@@ -859,11 +863,94 @@ class Character:
         )
 
     def update(self):
+        self.frame_index = int(self.frame) if hasattr(self, 'frame') else 0
         self.state_machine.update()
     def draw(self):
         self.state_machine.draw()
         self.font.draw(self.xPos - 60, self.yPos + 150, f'(Time: {get_time():.2f}, Dir : {self.dir})', (255, 255, 0))
+        if getattr(self, 'manager', None):
+            try:
+                self.register_hitboxes()
+            except Exception:
+                pass
+    def _get_frame_size_from_image(self) -> tuple:
+        img = getattr(self, 'image', None)
+        if img is None:
+            return (0.0, 0.0)
+        idx = int(self.frame) if hasattr(self, 'frame') else 0
 
+        # 1) owner 이미지의 frame_list 사용 (튜플/리스트로 fx,fy,fw,fh)
+        fl = getattr(img, 'frame_list', None)
+        if fl is not None and isinstance(fl, (list, tuple)) and 0 <= idx < len(fl):
+            f = fl[idx]
+            if isinstance(f, (list, tuple)) and len(f) >= 4:
+                return (float(f[2]), float(f[3]))
+            # 객체형 프레임
+            w = getattr(f, 'w', None) or getattr(f, 'width', None)
+            h = getattr(f, 'h', None) or getattr(f, 'height', None)
+            if w is not None and h is not None:
+                return (float(w), float(h))
+
+        # 2) 이미지 자체에 프레임 크기 속성(w,h,width,height) 존재하면 사용
+        w = getattr(img, 'w', None) or getattr(img, 'width', None) or getattr(img, 'frame_width', None)
+        h = getattr(img, 'h', None) or getattr(img, 'height', None) or getattr(img, 'frame_height', None)
+        if w is not None and h is not None:
+            return (float(w), float(h))
+
+        # 3) fallback: 임의 기본값
+        return (32.0, 64.0)
+
+    # 히트박스 등록: self.hitbox_ids 를 순회하여 각 히트박스 등록
+    def register_hitboxes(self):
+        if not self.manager:
+            return
+        self.frame_index = int(self.frame) if hasattr(self, 'frame') else 0
+        w, h = self._get_frame_size_from_image()
+
+        img = getattr(self, 'image', None)
+
+        # 스케일 결정: owner -> owner.scale -> image -> CHARACTER_*_SCALE
+        sx = getattr(self, 'scale_x', None)
+        sy = getattr(self, 'scale_y', None)
+        if sx is None and sy is None:
+            s = getattr(self, 'scale', None)
+            if s is not None:
+                sx = sy = s
+
+        if sx is None and img is not None:
+            sx = getattr(img, 'scale_x', None)
+        if sy is None and img is not None:
+            sy = getattr(img, 'scale_y', None)
+        if sx is None and sy is None:
+            sx = CHARACTER_WIDTH_SCALE
+            sy = CHARACTER_HEIGHT_SCALE
+        if sx is None:
+            sx = CHARACTER_WIDTH_SCALE
+        if sy is None:
+            sy = CHARACTER_HEIGHT_SCALE
+
+        sx = float(sx)
+        sy = float(sy)
+
+        # 오프셋에도 스케일 적용
+        delx = float(getattr(img, 'delXPos', 0.0)) * sx if img is not None else 0.0
+        dely = float(getattr(img, 'delYPos', 0.0)) * sy if img is not None else 0.0
+
+        cx = float(getattr(self, 'xPos', 0.0)) + delx
+        cy = float(getattr(self, 'yPos', 0.0)) + dely
+
+        # 스케일 반영된 너비/높이
+        scaled_w = w * sx
+        scaled_h = h * sy
+
+        left = cx - (scaled_w / 2.0)
+        bottom = cy - (scaled_h / 2.0)
+        base_rect = (left, bottom, scaled_w, scaled_h)
+
+        try:
+            self.manager.register_hitbox(self, 'body', rect=base_rect, tag='body')
+        except Exception:
+            pass
     def handle_event(self, event):
         if event.type == SDL_KEYDOWN:
             if event.key in (self.keymap['left'], self.keymap['right']):
