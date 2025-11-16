@@ -1,25 +1,32 @@
-from pico2d import *
-from typing import Tuple, Set
-import pico2d
+# python
+# 파일: `interaction.py`
+from typing import Callable, Dict, List, Optional, Tuple, Any
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class Hitbox:
-    def __init__(self, left: float, top: float, right: float, bottom: float, owner=None):
-        # pico2d draw_rectangle expects (left, bottom, right, top)
-        self.left = float(left)
-        self.top = float(top)
-        self.right = float(right)
-        self.bottom = float(bottom)
+    """
+    rect: (left, bottom, width, height)
+    owner: 어떤 게임 오브젝트(캐릭터) 인스턴스
+    hb_id: 히트박스 식별자(문자열 등)
+    tag: 선택적 태그
+    """
+    def __init__(self, owner: Any, hb_id: str, rect: Tuple[float, float, float, float], tag: Optional[str] = None):
         self.owner = owner
+        self.hb_id = hb_id
+        self.rect = (float(rect[0]), float(rect[1]), float(rect[2]), float(rect[3]))
+        self.tag = tag
 
-    def overlaps(self, other: "Hitbox") -> bool:
-        return not (self.right < other.left or self.left > other.right or self.bottom > other.top or self.top < other.bottom)
+    def as_bbox(self) -> Tuple[float, float, float, float]:
+        l, b, w, h = self.rect
+        return (l, b, l + w, b + h)  # left, bottom, right, top
 
-    def draw_debug(self, color=(255, 0, 0)):
-        # color unused by pico2d.draw_rectangle, but kept for API parity
-        try:
-            pico2d.draw_rectangle(self.left, self.bottom, self.right, self.top)
-        except Exception:
-            pass
+    def intersects(self, other: "Hitbox") -> bool:
+        l1, b1, r1, t1 = self.as_bbox()
+        l2, b2, r2, t2 = other.as_bbox()
+        return not (r1 <= l2 or r2 <= l1 or t1 <= b2 or t2 <= b1)
 
     def __repr__(self):
         return f"Hitbox({self.left}, {self.top}, {self.right}, {self.bottom}, owner={self.owner})"
