@@ -175,12 +175,28 @@ def update():
                             B.yPos = B._prev_y
 
             # 속도 보정: 위치 보정이 일어났으면 해당 축 속도 0으로
+            EPS = 1e-6
             for owner in (A, B):
-                if hasattr(owner, 'vx'):
-                    if getattr(owner, '_prev_x', None) is not None and abs(getattr(owner, '_prev_x', 0) - getattr(owner, 'xPos', 0)) > 1e-6:
-                        owner.vx = 0.0
-                if hasattr(owner, 'vy'):
-                    if getattr(owner, '_prev_y', None) is not None and abs(getattr(owner, '_prev_y', 0) - getattr(owner, 'yPos', 0)) > 1e-6:
+                prev_x = getattr(owner, '_prev_x', None)
+                prev_y = getattr(owner, '_prev_y', None)
+                cur_x = getattr(owner, 'xPos', getattr(owner, 'x', 0.0))
+                cur_y = getattr(owner, 'yPos', getattr(owner, 'y', 0.0))
+
+                # 공중 판정: ground_y가 있으면 yPos 비교 + vy 체크, 없으면 vy만 사용
+                ground_y = getattr(owner, 'ground_y', getattr(owner, 'default_ground_y', None))
+                vy_val = getattr(owner, 'vy', 0.0)
+                if ground_y is not None:
+                    airborne = (cur_y > ground_y + EPS) or (abs(vy_val) > EPS)
+                else:
+                    airborne = abs(vy_val) > EPS
+
+                # x 축 보정이 있었다면 항상 vx를 0으로
+                if prev_x is not None and abs(prev_x - cur_x) > EPS and hasattr(owner, 'vx'):
+                    owner.vx = 0.0
+
+                # y 축 보정이 있었다면 지상일 때만 vy를 0으로 (공중이면 유지)
+                if prev_y is not None and abs(prev_y - cur_y) > EPS and hasattr(owner, 'vy'):
+                    if not airborne:
                         owner.vy = 0.0
 
 
