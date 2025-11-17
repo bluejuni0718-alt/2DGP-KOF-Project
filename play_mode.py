@@ -4,6 +4,15 @@ import game_framework
 from character import *
 import game_world
 import intro_mode
+from interaction import InteractionManager
+
+def pico_renderer(left, bottom, right, top, color=None, tag=None):
+    # 간단히 사각형 외곽을 그림. color/tag는 무시하거나 확장 가능.
+    draw_rectangle(left, bottom, right, top)
+
+interaction_manager = InteractionManager(renderer=pico_renderer)
+
+interaction_manager.show_hitboxes = True
 
 running = True
 
@@ -32,8 +41,12 @@ def update():
     game_world.update()
 
 def draw():
+    interaction_manager.begin_frame()
     clear_canvas()
     game_world.render()
+    interaction_manager.process()
+    if getattr(interaction_manager, 'show_hitboxes', False):
+        interaction_manager.debug_draw()
     update_canvas()
 
 def finish():
