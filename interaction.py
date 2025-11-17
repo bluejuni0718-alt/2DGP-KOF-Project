@@ -28,96 +28,150 @@ class Hitbox:
         l2, b2, r2, t2 = other.as_bbox()
         return not (r1 <= l2 or r2 <= l1 or t1 <= b2 or t2 <= b1)
 
-    def __repr__(self):
-        return f"Hitbox({self.left}, {self.top}, {self.right}, {self.bottom}, owner={self.owner})"
 
 class InteractionManager:
-    def __init__(self):
-        # (attacker id, frame_id) 쌍으로 같은 애니 내 중복 히트 방지
-        self._already_hit: Set[tuple] = set()
+    """
+    사용법:
+      im = InteractionManager(renderer=None)
+      im.on('enter', lambda a,b: print('enter', a.hb_id, b.hb_id))
+      매 프레임:
+        im.begin_frame()
+        for each object: im.register_hitbox(owner, hb_id, rect=(l,b,w,h), tag=...)
+        im.process()
+        im.debug_draw()
+    """
+    def __init__(self, renderer: Optional[Callable] = None):
+        self.renderer = renderer if callable(renderer) else None
+        self._hitboxes: List[Hitbox] = []
+        self._prev_pairs: set = set()  # set of normalized pair keys
+        self._last_hitbox_map: Dict[Tuple[int, str], Hitbox] = {}
+        self._callbacks: Dict[str, List[Callable[[Hitbox, Hitbox], None]]] = {'enter': [], 'stay': [], 'exit': []}
 
-    def clear_frame_hits(self):
-        """매 프레임 시작 시 호출하여 중복 히트 기록 초기화"""
-        self._already_hit.clear()
+    def begin_frame(self) -> None:
+        self._hitboxes = []
 
-    def _absolute_hitbox_from_relative(self, attacker, rel: Tuple[float, float, float, float]):
-        """rel: (ox, oy, w, h) - 공격자 기준 상대 박스를 월드 좌표 Hitbox로 변환"""
-        ox, oy, w, h = rel
-        face = getattr(attacker, "face_dir", 1)
-        ox_world = attacker.xPos + (ox * face)
-        top = attacker.yPos + oy + h / 2
-        bottom = attacker.yPos + oy - h / 2
-        left = ox_world - w / 2
-        right = ox_world + w / 2
-        return Hitbox(left=left, top=top, right=right, bottom=bottom, owner=attacker)
-
-    def _hurtbox_of(self, target):
-        """target.get_hurtbox() 우선 사용, 없으면 image 기반 폴백 박스 생성"""
-        if hasattr(target, "get_hurtbox"):
-            return target.get_hurtbox()
-        frame_idx = int(getattr(target, "frame", 0))
-        image = getattr(target, "image", None)
-        hb_list = getattr(image, "hurtboxes", None) if image is not None else None
-        if hb_list and frame_idx < len(hb_list):
-            ox, oy, w, h = hb_list[frame_idx]
-        else:
-            w = getattr(image, "frame_w", 40) if image is not None else 40
-            h = getattr(image, "frame_h", 80) if image is not None else 80
-            ox, oy = 0, 0
-        left = target.xPos + ox - w / 2
-        right = target.xPos + ox + w / 2
-        top = target.yPos + oy + h / 2
-        bottom = target.yPos + oy - h / 2
-        return Hitbox(left=left, top=top, right=right, bottom=bottom, owner=target)
-
-    def check_and_resolve(self, attacker, target):
+    def register_hitbox(self, owner: Any, hb_id: str, rect: Optional[Tuple[float, float, float, float]] = None,
+                        tag: Optional[str] = None, use_frame_size: bool = False) -> None:
         """
-        매 프레임 루프에서 attacker/target 쌍마다 호출.
-        attacker.get_current_attack_info() -> None 또는 dict:
-          {
-            "frame_id": any_unique_identifier,
-            "relative_box": (ox, oy, w, h),
-            "damage": int,
-            "knockback": (dx, dy),
-            "hitstun": float_seconds
-          }
+        rect가 None이고 use_frame_size=True면 owner의 frame_list/frame 정보를 사용해서 (w,h) 계산.
+        register된 rect는 월드 좌표의 (left, bottom, width, height)여야 함.
         """
-        info = attacker.get_current_attack_info() if hasattr(attacker, "get_current_attack_info") else None
-        if not info:
+        if rect is None and use_frame_size:
+            size = self._get_frame_size_from_owner(owner)
+            if not size:
+                return
+            w, h = size
+            img = getattr(owner, 'image', owner)
+            delx = float(getattr(img, 'delXPos', 0.0))
+            dely = float(getattr(img, 'delYPos', 0.0))
+            cx = float(getattr(owner, 'xPos', 0.0)) + delx
+            cy = float(getattr(owner, 'yPos', 0.0)) + dely
+            l = cx - (w / 2.0)
+            b = cy - (h / 2.0)
+            rect = (l, b, w, h)
+        if rect is None:
             return
+        hb = Hitbox(owner, hb_id, rect, tag=tag)
+        self._hitboxes.append(hb)
 
-        frame_id = info.get("frame_id")
-        key = (id(attacker), frame_id)
-        if key in self._already_hit:
-            return
+    def on(self, event: str, callback: Callable[[Hitbox, Hitbox], None]) -> None:
+        if event in self._callbacks:
+            self._callbacks[event].append(callback)
 
-        rel = info.get("relative_box")
-        if not rel:
-            return
+    def process(self) -> None:
+        curr_pairs = set()
+        curr_map: Dict[Tuple[int, str], Hitbox] = {}
+        n = len(self._hitboxes)
+        for hb in self._hitboxes:
+            key = (id(hb.owner), hb.hb_id)
+            curr_map[key] = hb
 
-        atk_box = self._absolute_hitbox_from_relative(attacker, rel)
-        tgt_box = self._hurtbox_of(target)
+        for i in range(n):
+            a = self._hitboxes[i]
+            for j in range(i + 1, n):
+                b = self._hitboxes[j]
+                if a.owner is b.owner:
+                    continue
+                if a.intersects(b):
+                    key = self._pair_key(a, b)
+                    curr_pairs.add(key)
+                    if key not in self._prev_pairs:
+                        self._emit('enter', a, b)
+                    else:
+                        self._emit('stay', a, b)
 
-        if atk_box.overlaps(tgt_box):
-            knock = info.get("knockback", (0.0, 0.0))
-            damage = info.get("damage", 0)
-            hitstun = info.get("hitstun", 0.0)
+        # exit: 이전 프레임에 존재했지만 이번엔 없는 쌍
+        for key in list(self._prev_pairs):
+            if key not in curr_pairs:
+                (a_k, b_k) = key
+                a = self._last_hitbox_map.get(a_k)
+                b = self._last_hitbox_map.get(b_k)
+                if a and b:
+                    self._emit('exit', a, b)
 
-            if hasattr(attacker, "on_hit_success"):
+        self._prev_pairs = curr_pairs
+        self._last_hitbox_map = curr_map
+
+    def debug_draw(self) -> None:
+        for hb in self._hitboxes:
+            l, b, r, t = hb.as_bbox()
+            if self.renderer:
                 try:
-                    attacker.on_hit_success(target, info)
+                    # 기대되는 renderer 시그니처: renderer(left, bottom, right, top, color=color, tag=...)
+                    try:
+                        self.renderer(l, b, r, t, color=(0, 255, 0), tag=hb.hb_id)
+                    except TypeError:
+                        # keyword 인자 미지원 시 positional fallback
+                        self.renderer(l, b, r, t)
                 except Exception:
-                    pass
+                    logger.exception("renderer failed for hitbox %s:%s", id(hb.owner), hb.hb_id)
+            else:
+                # 간단한 콘솔 출력: pico2d 의존 제거
+                print(f"HB {id(hb.owner)}:{hb.hb_id} -> {l},{b},{r},{t}")
 
-            if hasattr(target, "apply_hit"):
-                abs_knock_x = knock[0] * getattr(attacker, "face_dir", 1)
-                abs_knock_y = knock[1]
-                target.apply_hit({
-                    "from": attacker,
-                    "damage": damage,
-                    "knockback": (abs_knock_x, abs_knock_y),
-                    "hitstun": hitstun,
-                    "hit_time": pico2d.get_time()
-                })
+    # --- 내부 유틸리티 ---
+    def _emit(self, event: str, a: Hitbox, b: Hitbox) -> None:
+        for cb in self._callbacks.get(event, []):
+            try:
+                cb(a, b)
+            except Exception:
+                logger.exception("callback failed for event %s (%s)", event, cb)
 
-            self._already_hit.add(key)
+    def _pair_key(self, a: Hitbox, b: Hitbox) -> Tuple[Tuple[int, str], Tuple[int, str]]:
+        ak = (id(a.owner), a.hb_id)
+        bk = (id(b.owner), b.hb_id)
+        return (ak, bk) if ak <= bk else (bk, ak)
+
+    def _get_frame_size_from_owner(self, owner: Any) -> Optional[Tuple[float, float]]:
+        """
+        owner.frame_list[frame_index]가 tuple/list (fx,fy,fw,fh) 또는 객체형 프레임 정보를 지원.
+        또한 owner.image.frame_list를 참조할 수 있음.
+        반환: (w, h) 또는 None
+        """
+        try:
+            fl = getattr(owner, "frame_list", None)
+            idx = getattr(owner, "frame_index", None)
+            if fl is not None and idx is not None and 0 <= idx < len(fl):
+                f = fl[idx]
+                if isinstance(f, (tuple, list)) and len(f) >= 4:
+                    return (float(f[2]), float(f[3]))
+                return (float(getattr(f, "w", getattr(f, "width", 0))),
+                        float(getattr(f, "h", getattr(f, "height", 0))))
+        except Exception:
+            logger.exception("error reading owner.frame_list")
+
+        try:
+            img = getattr(owner, "image", None)
+            if img is not None:
+                fl = getattr(img, "frame_list", None)
+                idx = getattr(owner, "frame_index", None) or getattr(img, "frame_index", None)
+                if fl is not None and idx is not None and 0 <= idx < len(fl):
+                    f = fl[idx]
+                    if isinstance(f, (tuple, list)) and len(f) >= 4:
+                        return (float(f[2]), float(f[3]))
+                    return (float(getattr(f, "w", getattr(f, "width", 0))),
+                            float(getattr(f, "h", getattr(f, "height", 0))))
+        except Exception:
+            logger.exception("error reading image.frame_list")
+
+        return None
