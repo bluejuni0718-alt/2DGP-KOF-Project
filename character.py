@@ -701,13 +701,52 @@ class SitAttack:
         self.character.image.delYPos = oy
         self.character.image.draw_by_frame_num(frame_num, self.character.xPos, self.character.yPos, self.character.face_dir)
 
+class Guard:
+    def __init__(self, character):
+        self.character = character
+        self.frame_count = max(1, getattr(self.character.image, 'guard_stand_frames', 1))
+
+    def enter(self, e):
+        self.character.frame = 0.0
+        # 가드 진입 시 공격 플래그 해제하고 가드 상태 설정
+        self.character.is_attacking = False
+        self.character.guard_stance = True
+
+    def exit(self, e):
+        self.character.guard_stance = False
+        self.character.frame = 0.0
+
+    def do(self):
+        # 가드 애니 진행
+        dt = game_framework.frame_time
+        self.frame_count = max(1, getattr(self.character.image, 'guard_stand_frames', 1))
+        self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * dt) % self.frame_count
+
+        # 가드 유지 조건 실패 시 상태 전환
+        # (예: 지면이 아니거나 백 버튼이 해제되었거나 공격중인 경우)
+        can_guard = getattr(self.character, '_can_guard', lambda: False)()
+        if not can_guard or not self.character.back_pressed:
+            # TIME_OUT으로 빠져나가도록 함 (상황에 맞게 다른 이벤트로 변경 가능)
+            try:
+                self.character.state_machine.handle_state_event(('TIME_OUT', None))
+            except Exception:
+                pass
+
+    def draw(self):
+        # draw_guard를 활용하도록 통합
+        if hasattr(self.character, 'draw_guard'):
+            self.character.draw_guard()
+        else:
+            # 최소 페일백: 기본 상태머신 그리기
+            self.character.state_machine.draw()
+
 class Character:
-    def __init__(self, image_data,keymap=None):
+    def __init__(self, image_data,keymap=None, manager=None, x = 400, y = 120):
         default = {'left': SDLK_a, 'right': SDLK_d, 'up': SDLK_w,'down':SDLK_s,'lp':SDLK_f,'rp':SDLK_g,'rk':SDLK_b,'lk':SDLK_c}
         self.font = load_font('ENCR10B.TTF', 16)
         self.keymap = default if keymap is None else {**default, **keymap}
-        self.xPos = 400
-        self.yPos = 120
+        self.xPos = x
+        self.yPos = y
         self.vy = 0.0
         self.vx = 0.0
         self.frame = 0
@@ -729,6 +768,8 @@ class Character:
         self.back_pressed = False
         self.down_pressed = False
         self._keep_sit_down_last_frame = False
+        self.keep_sit_down_last_frame = self._keep_sit_down_last_frame
+        self._deferred_facing = None  # <-- 추가
         # 외부 코드에서 self._keep_sit_down_last_frame와 self.keep_sit_down_last_frame 둘다 참조할 수 있게 동기화
         self.keep_sit_down_last_frame = self._keep_sit_down_last_frame
         self.time_out_and_down = lambda e: (e[0] == 'TIME_OUT') and self.down_pressed
@@ -791,6 +832,8 @@ class Character:
                 return key_dir != self.face_dir
 
             return fwd, back
+
+
 
         self.double_fwd, self.double_back = mk_double_fwd_back_combined(SDL_KEYDOWN)
 
@@ -991,8 +1034,9 @@ class Character:
             # KEYUP는 INPUT 이벤트로 전달
             self.state_machine.handle_state_event(('INPUT', event))
 
-    def _is_facing_input(self, e, SDL_KEYDOWN, param):
-        if not (e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key in (self.keymap['left'], self.keymap['right'])):
+    def _is_facing_input(self, e, sdl_type, param):
+        # 파라미터 이름을 명확히 하고 사용
+        if not (e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key in (self.keymap['left'], self.keymap['right'])):
             return False
         key_const = e[1].key
         key_dir = 1 if key_const == self.keymap['right'] else -1
