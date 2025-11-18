@@ -71,19 +71,23 @@ def init():
         game_world.add_object(c)
 
 # python
+# python
 def update():
-    # 이전 위치 저장
+    # 이전 위치/속도 저장 (간단한 디버깅/복원 용도)
     for c in characters:
         try:
-            c._prev_xPos = getattr(c, 'xPos', 0.0)
-            c._prev_yPos = getattr(c, 'yPos', 0.0)
+            c._prev_pos = (getattr(c, 'xPos', 0.0), getattr(c, 'yPos', 0.0))
+            c._prev_vel = (getattr(c, 'vx', 0.0), getattr(c, 'vy', 0.0))
         except Exception:
             pass
 
-    # 게임 로직 업데이트(위치 등 변경)
-    game_world.update()
+    # 게임 로직 업데이트
+    try:
+        game_world.update()
+    except Exception:
+        pass
 
-    # 히트박스 수집/판정 준비
+    # 히트박스 수집/등록
     interaction_manager.begin_frame()
     for c in characters:
         try:
@@ -91,15 +95,21 @@ def update():
         except Exception:
             pass
 
-    # 충돌 이벤트 발생 (enter/stay/exit)
-    interaction_manager.process()
+    # 충돌 이벤트 발생
+    try:
+        interaction_manager.process()
+    except Exception:
+        pass
 
     # 충돌 해소: 등록된 히트박스 쌍을 순회하여 겹침 보정
     hbs = getattr(interaction_manager, '_hitboxes', [])
     n = len(hbs)
 
     def _is_attacking(owner):
-        return bool(getattr(owner, 'is_attacking', False))
+        try:
+            return bool(getattr(owner, 'is_attacking', False))
+        except Exception:
+            return False
 
     EPS = 1e-6
 
@@ -110,10 +120,13 @@ def update():
             if a.owner is b.owner:
                 continue
 
-            l1, b1, r1, t1 = a.as_bbox()
-            l2, b2, r2, t2 = b.as_bbox()
+            try:
+                l1, b1, r1, t1 = a.as_bbox()
+                l2, b2, r2, t2 = b.as_bbox()
+            except Exception:
+                continue
 
-            # 침투량 계산
+            # 침투량 계산 (x, y)
             dx = min(r1, r2) - max(l1, l2)
             dy = min(t1, t2) - max(b1, b2)
             if dx <= 0 or dy <= 0:
@@ -122,121 +135,182 @@ def update():
             A = a.owner
             B = b.owner
 
-            # (필요하면 공격 관련 예외처리 여기에 추가)
-            # if not _is_attacking(A) and not _is_attacking(B):
-            #     ...
-
-            # 위치 보정 플래그 (축별로 속도 0 처리에 사용)
+            # 위치 보정 플래그
             moved_x_A = moved_x_B = moved_y_A = moved_y_B = False
 
-            # 수평 분리 (dx < dy)
+            # 수평 분리 (x 축 보정)
             if dx < dy:
-                # 중심 기준으로 어느 쪽으로 밀어낼지 결정
-                cx1 = (l1 + r1) / 2.0
-                cx2 = (l2 + r2) / 2.0
-                push = dx
-                # 양쪽을 반반씩 밀어서 자연스럽게 분리
-                half = push / 2.0
-                if cx1 < cx2:
-                    try:
-                        A.xPos -= half
-                        moved_x_A = True
-                    except Exception:
-                        pass
-                    try:
-                        B.xPos += half
-                        moved_x_B = True
-                    except Exception:
-                        pass
-                else:
-                    try:
-                        A.xPos += half
-                        moved_x_A = True
-                    except Exception:
-                        pass
-                    try:
-                        B.xPos -= half
-                        moved_x_B = True
-                    except Exception:
-                        pass
+                try:
+                    cx1 = (l1 + r1) / 2.0
+                    cx2 = (l2 + r2) / 2.0
+                    shift = (dx / 2.0) + EPS
+                    if cx1 < cx2:
+                        # A 왼쪽, B 오른쪽 -> A를 왼쪽으로, B를 오른쪽으로 밀어 분리
+                        if hasattr(A, 'xPos'):
+                            A.xPos -= shift
+                            moved_x_A = True
+                        if hasattr(B, 'xPos'):
+                            B.xPos += shift
+                            moved_x_B = True
+                    else:
+                        # A 오른쪽, B 왼쪽 -> A를 오른쪽으로, B를 왼쪽으로 밀어 분리
+                        if hasattr(A, 'xPos'):
+                            A.xPos += shift
+                            moved_x_A = True
+                        if hasattr(B, 'xPos'):
+                            B.xPos -= shift
+                            moved_x_B = True
+                except Exception:
+                    pass
 
             else:
-                # vertical separation
-                cy1 = (b1 + t1) / 2.0
-                cy2 = (b2 + t2) / 2.0
+                # vertical separation (y 축 보정 우선)
+                try:
+                    cy1 = (b1 + t1) / 2.0
+                    cy2 = (b2 + t2) / 2.0
+                    # 위/아래 결정: cy가 큰 쪽이 위
+                    if cy1 > cy2:
+                        top_owner = A
+                        bot_owner = B
+                        l_top, b_top, r_top, t_top = l1, b1, r1, t1
+                        l_bot, b_bot, r_bot, t_bot = l2, b2, r2, t2
+                    else:
+                        top_owner = B
+                        bot_owner = A
+                        l_top, b_top, r_top, t_top = l2, b2, r2, t2
+                        l_bot, b_bot, r_bot, t_bot = l1, b1, r1, t1
 
-                if cy1 > cy2:
-                    top_owner, top_bbox = A, (l1, b1, r1, t1)
-                    bot_owner, bot_bbox = B, (l2, b2, r2, t2)
-                else:
-                    top_owner, top_bbox = B, (l2, b2, r2, t2)
-                    bot_owner, bot_bbox = A, (l1, b1, r1, t1)
+                    # 속도/airborne 판정
+                    vy_top = getattr(top_owner, 'vy', 0.0)
+                    vy_bot = getattr(bot_owner, 'vy', 0.0)
+                    ground_y_top = getattr(top_owner, 'ground_y', getattr(top_owner, 'default_ground_y', None))
+                    ground_y_bot = getattr(bot_owner, 'ground_y', getattr(bot_owner, 'default_ground_y', None))
 
-                l_top, b_top, r_top, t_top = top_bbox
-                l_bot, b_bot, r_bot, t_bot = bot_bbox
+                    airborne_top = True
+                    airborne_bot = True
+                    try:
+                        if ground_y_top is not None:
+                            if getattr(top_owner, 'yPos', 0.0) <= ground_y_top + EPS and vy_top <= 0.0:
+                                airborne_top = False
+                    except Exception:
+                        airborne_top = True
+                    try:
+                        if ground_y_bot is not None:
+                            if getattr(bot_owner, 'yPos', 0.0) <= ground_y_bot + EPS and vy_bot <= 0.0:
+                                airborne_bot = False
+                    except Exception:
+                        airborne_bot = True
 
-                # horizontal overlap amount
-                overlap_x = max(0.0, min(r_top, r_bot) - max(l_top, l_bot))
-                bot_width = max(EPS, (r_bot - l_bot))
+                    # 마주보기 설정: 중심 x 기준 (x가 더 작으면 1, 더 크면 -1)
+                    cx_top = (l_top + r_top) / 2.0
+                    cx_bot = (l_bot + r_bot) / 2.0
+                    top_should_face = 1 if cx_top < cx_bot else -1
+                    bot_should_face = -top_should_face
 
-                # airborne 판정
-                vy_top = getattr(top_owner, 'vy', 0.0)
-                ground_y_top = getattr(top_owner, 'ground_y', getattr(top_owner, 'default_ground_y', None))
-                if ground_y_top is not None:
-                    airborne_top = (getattr(top_owner, 'yPos', 0.0) > ground_y_top + EPS) or (abs(vy_top) > EPS)
-                else:
-                    airborne_top = abs(vy_top) > EPS
+                    # 즉시 또는 지연 적용 (공중이면 _deferred_facing에 저장)
+                    def _apply_or_defer_facing(owner, desired_dir, airborne):
+                        try:
+                            if owner is None:
+                                return
+                            if airborne:
+                                setattr(owner, '_deferred_facing', desired_dir)
+                            else:
+                                owner.face_dir = desired_dir
+                                # 지상에서 즉시 적용하면 지연값 제거
+                                if hasattr(owner, '_deferred_facing'):
+                                    owner._deferred_facing = None
+                        except Exception:
+                            pass
 
-                # 위에서 아래로 내려오면서 아래의 절반 이상 겹치면 통과 허용
-                if airborne_top and vy_top < 0.0 and (overlap_x >= 0.5 * bot_width):
-                    # 통과: 아무 보정도 하지 않음
+                    _apply_or_defer_facing(top_owner, top_should_face, airborne_top)
+                    _apply_or_defer_facing(bot_owner, bot_should_face, airborne_bot)
+
+                    # 위에서 내려오는 경우(음의 vy)이고 아래의 너비 절반 이상 겹치면 통과 허용
+                    overlap_x = min(r_top, r_bot) - max(l_top, l_bot)
+                    bot_width = (r_bot - l_bot) if (r_bot - l_bot) > 0 else 0.0
+                    allow_pass_through = False
+                    try:
+                        if getattr(top_owner, 'vy', 0.0) < 0.0 and bot_width > 0.0:
+                            if overlap_x >= (bot_width * 0.5):
+                                allow_pass_through = True
+                    except Exception:
+                        allow_pass_through = False
+
+                    if allow_pass_through:
+                        # 통과 허용: 위치 보정하지 않음
+                        pass
+                    else:
+                        # 통상적인 수직 분리: 위를 위로, 아래를 아래로 밀어 분리
+                        shift_y = (dy / 2.0) + EPS
+                        # 위쪽을 위로
+                        try:
+                            top_owner.yPos += shift_y
+                            moved_y_top = True
+                        except Exception:
+                            moved_y_top = False
+                        # 아래쪽을 아래로 (되도록 지면 기준은 건드리지 않음)
+                        try:
+                            bot_owner.yPos -= shift_y
+                            moved_y_bot = True
+                        except Exception:
+                            moved_y_bot = False
+
+                        # moved flags를 실제 A/B에 반영
+                        if top_owner is A:
+                            moved_y_A = bool(moved_y_top)
+                            moved_y_B = bool(moved_y_bot)
+                        else:
+                            moved_y_A = bool(moved_y_bot)
+                            moved_y_B = bool(moved_y_top)
+
+                except Exception:
                     pass
-                else:
-                    # 차단: 위 캐릭터만 위로 올려 착지 처리 (아래 캐릭터의 y/ground는 변경하지 않음)
-                    penetration_y = dy
-                    try:
-                        top_owner.yPos += penetration_y
-                        moved_y_top = True
-                    except Exception:
-                        pass
-
-                    try:
-                        # 착지 기준은 아래 히트박스의 top으로 설정
-                        top_owner.ground_y = t_bot
-                    except Exception:
-                        pass
-
-                    # 착지이므로 위 캐릭터의 vy만 정리
-                    if hasattr(top_owner, 'vy'):
-                        top_owner.vy = 0.0
-
-                    # 아래 캐릭터를 아래로 밀지 않고 옆으로 밀어 분리
-                    try:
-                        cx_top = (l_top + r_top) / 2.0
-                        cx_bot = (l_bot + r_bot) / 2.0
-                        dir_sign = 1.0 if cx_top < cx_bot else -1.0
-                        # 밀어낼 양: 최소 1픽셀 보장, 겹침의 절반 정도
-                        push_amount = max(1.0, overlap_x / 2.0)
-                        if hasattr(bot_owner, 'xPos'):
-                            bot_owner.xPos += dir_sign * push_amount
-                            # bot_owner가 옆으로 이동했으므로 x 속도 보정 가능
-                            if hasattr(bot_owner, 'vx'):
-                                bot_owner.vx = 0.0
-                    except Exception:
-                        pass
 
             # 속도 보정: 위치 보정이 일어났으면 해당 축 속도 0으로
             try:
                 if moved_x_A and hasattr(A, 'vx'):
-                    A.vx = 0.0
+                    try:
+                        A.vx = 0.0
+                    except Exception:
+                        pass
                 if moved_x_B and hasattr(B, 'vx'):
-                    B.vx = 0.0
+                    try:
+                        B.vx = 0.0
+                    except Exception:
+                        pass
                 if moved_y_A and hasattr(A, 'vy'):
-                    A.vy = 0.0
+                    try:
+                        A.vy = 0.0
+                    except Exception:
+                        pass
                 if moved_y_B and hasattr(B, 'vy'):
-                    B.vy = 0.0
+                    try:
+                        B.vy = 0.0
+                    except Exception:
+                        pass
             except Exception:
                 pass
+        for c in characters:
+            try:
+                df = getattr(c, '_deferred_facing', None)
+                if df is None:
+                    continue
+                # 이전 프레임 y (저장 안되어 있으면 현재보다 약간 위로 가정)
+                prev_y = getattr(c, '_prev_pos', (0.0, getattr(c, 'yPos', 0.0)))[1]
+                # 캐릭터의 기준 바닥(ground_y 또는 default_ground_y)
+                ground_y = getattr(c, 'ground_y', None)
+                if ground_y is None:
+                    ground_y = getattr(c, 'default_ground_y', getattr(c, 'yPos', 0.0))
+                # 이전에는 공중(prev_y > ground_y)이고 현재는 착지(c.yPos <= ground_y)한 경우 적용
+                if prev_y > ground_y and getattr(c, 'yPos', 0.0) <= ground_y:
+                    try:
+                        c.face_dir = int(df)
+                    except Exception:
+                        c.face_dir = 1 if df else -1
+                    c._deferred_facing = None
+            except Exception:
+                pass
+
 
 
 def draw():
