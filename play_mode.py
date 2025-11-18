@@ -70,8 +70,6 @@ def init():
     for c in characters:
         game_world.add_object(c)
 
-# python
-# python
 def update():
     # 이전 위치/속도 저장 (간단한 디버깅/복원 용도)
     for c in characters:
@@ -250,8 +248,13 @@ def update():
                             moved_y_top = False
                         # 아래쪽을 아래로 (되도록 지면 기준은 건드리지 않음)
                         try:
-                            bot_owner.yPos -= shift_y
-                            moved_y_bot = True
+                            prev_bot_y = getattr(bot_owner, 'yPos', 0.0)
+                            if ground_y_bot is not None:
+                                new_bot_y = max(prev_bot_y - shift_y, ground_y_bot)
+                            else:
+                                new_bot_y = prev_bot_y - shift_y
+                            bot_owner.yPos = new_bot_y
+                            moved_y_bot = (new_bot_y != prev_bot_y)
                         except Exception:
                             moved_y_bot = False
 
@@ -290,26 +293,42 @@ def update():
                         pass
             except Exception:
                 pass
-        for c in characters:
-            try:
-                df = getattr(c, '_deferred_facing', None)
-                if df is None:
-                    continue
-                # 이전 프레임 y (저장 안되어 있으면 현재보다 약간 위로 가정)
-                prev_y = getattr(c, '_prev_pos', (0.0, getattr(c, 'yPos', 0.0)))[1]
-                # 캐릭터의 기준 바닥(ground_y 또는 default_ground_y)
-                ground_y = getattr(c, 'ground_y', None)
-                if ground_y is None:
-                    ground_y = getattr(c, 'default_ground_y', getattr(c, 'yPos', 0.0))
-                # 이전에는 공중(prev_y > ground_y)이고 현재는 착지(c.yPos <= ground_y)한 경우 적용
-                if prev_y > ground_y and getattr(c, 'yPos', 0.0) <= ground_y:
-                    try:
-                        c.face_dir = int(df)
-                    except Exception:
-                        c.face_dir = 1 if df else -1
-                    c._deferred_facing = None
-            except Exception:
-                pass
+
+    # 충돌 처리 후: 바닥 아래로 파고드는 것을 방지하기 위한 최종 클램프
+    for c in characters:
+        try:
+            ground_y = getattr(c, 'ground_y', None)
+            if ground_y is None:
+                ground_y = getattr(c, 'default_ground_y', None)
+            if ground_y is not None:
+                if getattr(c, 'yPos', 0.0) < ground_y:
+                    c.yPos = ground_y
+                    if hasattr(c, 'vy') and getattr(c, 'vy', 0.0) < 0.0:
+                        c.vy = 0.0
+        except Exception:
+            pass
+
+    # 지연된 보는 방향 적용 (착지 시)
+    for c in characters:
+        try:
+            df = getattr(c, '_deferred_facing', None)
+            if df is None:
+                continue
+            # 이전 프레임 y (저장 안되어 있으면 현재보다 약간 위로 가정)
+            prev_y = getattr(c, '_prev_pos', (0.0, getattr(c, 'yPos', 0.0)))[1]
+            # 캐릭터의 기준 바닥(ground_y 또는 default_ground_y)
+            ground_y = getattr(c, 'ground_y', None)
+            if ground_y is None:
+                ground_y = getattr(c, 'default_ground_y', getattr(c, 'yPos', 0.0))
+            # 이전에는 공중(prev_y > ground_y)이고 현재는 착지(c.yPos <= ground_y)한 경우 적용
+            if prev_y > ground_y and getattr(c, 'yPos', 0.0) <= ground_y:
+                try:
+                    c.face_dir = int(df)
+                except Exception:
+                    c.face_dir = 1 if df else -1
+                c._deferred_facing = None
+        except Exception:
+            pass
 
 
 
