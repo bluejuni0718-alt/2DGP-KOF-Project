@@ -963,6 +963,14 @@ class Guard:
             self.character.state_machine.draw()
 
 class Character:
+    @property
+    def keep_sit_down_last_frame(self):
+        return getattr(self, '_keep_sit_down_last_frame', False)
+
+    @keep_sit_down_last_frame.setter
+    def keep_sit_down_last_frame(self, value):
+        self._keep_sit_down_last_frame = bool(value)
+
     def __init__(self, image_data,keymap=None, manager=None, x = 400, y = 120):
         default = {'left': SDLK_a, 'right': SDLK_d, 'up': SDLK_w,'down':SDLK_s,'lp':SDLK_f,'rp':SDLK_g,'rk':SDLK_b,'lk':SDLK_c}
         self.font = load_font('ENCR10B.TTF', 16)
@@ -984,13 +992,13 @@ class Character:
         self._last_up = {}  # key_const -> 마지막 업 시각
 
         self.manager = manager
-        self.hitbox_ids =['body']
+        self.hitbox_ids = []
 
         self.fwd_pressed = False
         self.back_pressed = False
         self.down_pressed = False
+
         self._keep_sit_down_last_frame = False
-        self.keep_sit_down_last_frame = self._keep_sit_down_last_frame
         self._deferred_facing = None  # <-- 추가
         # 외부 코드에서 self._keep_sit_down_last_frame와 self.keep_sit_down_last_frame 둘다 참조할 수 있게 동기화
         self.keep_sit_down_last_frame = self._keep_sit_down_last_frame
@@ -1054,8 +1062,6 @@ class Character:
                 return key_dir != self.face_dir
 
             return fwd, back
-
-
 
         self.double_fwd, self.double_back = mk_double_fwd_back_combined(SDL_KEYDOWN)
 
@@ -1133,11 +1139,7 @@ class Character:
     def draw(self):
         self.state_machine.draw()
         self.font.draw(self.xPos - 60, self.yPos + 150, f'(Time: {get_time():.2f}, Dir : {self.dir})', (255, 255, 0))
-        if getattr(self, 'manager', None):
-            try:
-                self.register_hitboxes()
-            except Exception:
-                pass
+
     def _get_frame_size_from_image(self) -> tuple:
         img = getattr(self, 'image', None)
         if img is None:
@@ -1167,56 +1169,95 @@ class Character:
 
     # 히트박스 등록: self.hitbox_ids 를 순회하여 각 히트박스 등록
     def register_hitboxes(self):
-        if not self.manager:
+        """매 프레임: 이전 히트박스 제거 -> body를 프레임 크기 기준으로 rect=(left,bottom,width,height) 형태(공격 히트박스와 동일 메커니즘)로 등록 -> 상태의 공격 히트박스 호출"""
+        if not getattr(self, 'manager', None):
             return
-        self.frame_index = int(self.frame) if hasattr(self, 'frame') else 0
-        w, h = self._get_frame_size_from_image()
+        mgr = self.manager
 
-        img = getattr(self, 'image', None)
+        # 이전에 등록한 히트박스 제거
+        old_ids = getattr(self, 'hitbox_ids', []) or []
+        for hid in list(old_ids):
+            try:
+                if hasattr(mgr, 'unregister_hitbox'):
+                    mgr.unregister_hitbox(self, hid)
+            except Exception:
+                pass
+        self.hitbox_ids = []
 
-        # 스케일 결정: owner -> owner.scale -> image -> CHARACTER_*_SCALE
-        sx = getattr(self, 'scale_x', None)
-        sy = getattr(self, 'scale_y', None)
-        if sx is None and sy is None:
-            s = getattr(self, 'scale', None)
-            if s is not None:
-                sx = sy = s
-
-        if sx is None and img is not None:
-            sx = getattr(img, 'scale_x', None)
-        if sy is None and img is not None:
-            sy = getattr(img, 'scale_y', None)
-        if sx is None and sy is None:
-            sx = CHARACTER_WIDTH_SCALE
-            sy = CHARACTER_HEIGHT_SCALE
-        if sx is None:
-            sx = CHARACTER_WIDTH_SCALE
-        if sy is None:
-            sy = CHARACTER_HEIGHT_SCALE
-
-        sx = float(sx)
-        sy = float(sy)
-
-        # 오프셋에도 스케일 적용
-        delx = float(getattr(img, 'delXPos', 0.0)) * sx if img is not None else 0.0
-        dely = float(getattr(img, 'delYPos', 0.0)) * sy if img is not None else 0.0
-
-        cx = float(getattr(self, 'xPos', 0.0)) + delx
-        cy = float(getattr(self, 'yPos', 0.0)) + dely
-
-        # 스케일 반영된 너비/높이
-        scaled_w = w * sx
-        scaled_h = h * sy
-
-        left = cx - (scaled_w / 2.0)
-        bottom = cy - (scaled_h / 2.0)
-        base_rect = (left, bottom, scaled_w, scaled_h)
-
+        # 항상 body 히트박스: 프레임 크기 기준 (공격 히트박스와 같은 rect 포맷: left, bottom, width, height)
         try:
-            self.manager.register_hitbox(self, 'body', rect=base_rect, tag='body')
+            img = getattr(self, 'image', None)
+            fw, fh = self._get_frame_size_from_image()
+            sx = float(getattr(self, 'scale_x', getattr(self, 'scale', CHARACTER_WIDTH_SCALE)))
+            sy = float(getattr(self, 'scale_y', getattr(self, 'scale', CHARACTER_HEIGHT_SCALE)))
+            delx = float(getattr(img, 'delXPos', 0.0)) * sx if img is not None else 0.0
+            dely = float(getattr(img, 'delYPos', 0.0)) * sy if img is not None else 0.0
+
+            cx = float(getattr(self, 'xPos', 0.0)) + delx
+            cy = float(getattr(self, 'yPos', 0.0)) + dely
+
+            w = fw * sx
+            h = fh * sy
+            left = cx - (w / 2.0)
+            bottom = cy - (h / 2.0)
+
+            hb_id = f'body_{id(self)}'
+            registered = False
+
+            # 1) 기본 시그니처: register_hitbox(owner, id, rect=..., tag=...)
+            try:
+                if hasattr(mgr, 'register_hitbox'):
+                    mgr.register_hitbox(self, hb_id, rect=(left, bottom, w, h), tag='body')
+                    registered = True
+            except Exception:
+                registered = False
+
+            # 2) fallback: register_hitbox(id, owner, rect=..., tag=...)
+            if not registered:
+                try:
+                    mgr.register_hitbox(hb_id, self, rect=(left, bottom, w, h), tag='body')
+                    registered = True
+                except Exception:
+                    registered = False
+
+            # 3) 마지막 fallback: 레거시 형태 (left, bottom, width, height) 개별 인수
+            if not registered:
+                try:
+                    mgr.register_hitbox(self, hb_id, left, bottom, w, h, 'body')
+                    registered = True
+                except Exception:
+                    registered = False
+
+            if registered:
+                try:
+                    self.hitbox_ids.append(hb_id)
+                except Exception:
+                    self.hitbox_ids = [hb_id]
         except Exception:
             pass
+
+        # 상태 객체의 공격/특수 히트박스 등록(공격 히트박스 로직은 변경하지 않음)
+        state_obj = None
+        for attr in ('cur_state', 'current_state', 'state', 'cur'):
+            try:
+                sm = getattr(self, 'state_machine', None)
+                state_obj = getattr(sm, attr, None) if sm is not None else None
+            except Exception:
+                state_obj = None
+            if state_obj is not None:
+                break
+
+        if state_obj is not None and hasattr(state_obj, 'register_hitboxes'):
+            try:
+                state_obj.register_hitboxes(self.manager)
+            except Exception:
+                try:
+                    state_obj.register_hitboxes(self, self.manager)
+                except Exception:
+                    pass
+
     def handle_event(self, event):
+        # 키 입력 처리 및 마지막 up/down 시각 기록
         if event.type == SDL_KEYDOWN:
             if event.key in (self.keymap['left'], self.keymap['right']):
                 key_dir = 1 if event.key == self.keymap['right'] else -1
@@ -1229,8 +1270,10 @@ class Character:
                 self.face_dir *= -1
             if event.key == self.keymap['down']:
                 self.down_pressed = True
+
             # 상태머신에 INPUT 이벤트 먼저 전달
             self.state_machine.handle_state_event(('INPUT', event))
+
             # 공격키면 명시적 ATTACK 이벤트도 발행
             atk = None
             for k in ('lp', 'rp', 'lk', 'rk'):
@@ -1239,9 +1282,14 @@ class Character:
                     break
             if atk:
                 self.state_machine.handle_state_event(('ATTACK', atk))
-            # 마지막 다운 시각 갱신
+
+            # 마지막 다운 시각 갱신 (좌/우)
             if event.key in (self.keymap['left'], self.keymap['right']):
-                self._last_down[event.key] = get_time()
+                try:
+                    self._last_down[event.key] = get_time()
+                except Exception:
+                    pass
+
         elif event.type == SDL_KEYUP:
             if event.key in (self.keymap['left'], self.keymap['right']):
                 key_dir = 1 if event.key == self.keymap['right'] else -1
@@ -1249,10 +1297,20 @@ class Character:
                     self.fwd_pressed = False
                 else:
                     self.back_pressed = False
+                # 마지막 업 시각 갱신 (좌/우)
+                try:
+                    self._last_up[event.key] = get_time()
+                except Exception:
+                    pass
+
             if event.key == self.keymap['down']:
                 self.down_pressed = False
-                # 업 시각 기록
-                self._last_up[event.key] = get_time()
+                # 업 시각 기록 (아래키)
+                try:
+                    self._last_up[event.key] = get_time()
+                except Exception:
+                    pass
+
             # KEYUP는 INPUT 이벤트로 전달
             self.state_machine.handle_state_event(('INPUT', event))
 
