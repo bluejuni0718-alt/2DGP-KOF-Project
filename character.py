@@ -590,14 +590,21 @@ class SitDown:
 class SitUp:
     def __init__(self, character):
         self.character = character
+
     def enter(self, e):
-        self.character.frame = self.character.image.sit_down_frames - 1
+        self.character.frame = max(0.0, getattr(self.character.image, 'sit_down_frames', 1) - 1.0)
         pass
     def exit(self,e):
         self.character.frame = 0
         pass
+
     def do(self):
-        if int(self.character.frame) < self.character.image.sit_down_frame_start + 1:
+        # 프레임을 역재생으로 감소시킴
+        delta = FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time
+        self.character.frame -= delta
+        if self.character.frame <= 0.0:
+            # 완료되면 TIME_OUT으로 상태 전환
+            self.character.frame = 0.0
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
         else:
             self.character.frame = (self.character.frame - FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.sit_down_frames
