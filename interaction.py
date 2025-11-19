@@ -74,6 +74,7 @@ class InteractionManager:
         hb = Hitbox(owner, hb_id, rect, tag=tag)
         self._hitboxes.append(hb)
 
+
     def on(self, event: str, callback: Callable[[Hitbox, Hitbox], None]) -> None:
         if event in self._callbacks:
             self._callbacks[event].append(callback)
@@ -127,7 +128,8 @@ class InteractionManager:
                     logger.exception("renderer failed for hitbox %s:%s", id(hb.owner), hb.hb_id)
             else:
                 # 간단한 콘솔 출력: pico2d 의존 제거
-                print(f"HB {id(hb.owner)}:{hb.hb_id} -> {l},{b},{r},{t}")
+                #print(f"HB {id(hb.owner)}:{hb.hb_id} -> {l},{b},{r},{t}")
+                pass
 
     # --- 내부 유틸리티 ---
     def _emit(self, event: str, a: Hitbox, b: Hitbox) -> None:
