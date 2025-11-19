@@ -606,9 +606,6 @@ class SitUp:
             # 완료되면 TIME_OUT으로 상태 전환
             self.character.frame = 0.0
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
-        else:
-            self.character.frame = (self.character.frame - FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.sit_down_frames
-        pass
     def draw(self):
         self.character.image.draw_by_frame_num(self.character.image.sit_down_frame_start + int(self.character.frame), self.character.xPos, self.character.yPos - 6 * int(self.character.frame),self.character.face_dir)
         pass
@@ -635,12 +632,19 @@ class NormalAttack:
         # 엔터 시 오래된 버퍼는 제거
         now = get_time()
         self.character.attack_buffer = [(k, t) for (k, t) in self.character.attack_buffer if now - t <= self.character.attack_buffer_window]
-
+        try:
+            self.character.is_attacking = True
+        except Exception:
+            pass
     def exit(self, e):
         self.character.frame = 0.0
         self.attack_key = None
         # 엔터/종료 시 버퍼 정리(원하면)
         self.character.attack_buffer.clear()
+        try:
+            self.character.is_attacking = False
+        except Exception:
+            pass
 
     def _consume_buffered_attack(self):
         now = get_time()
@@ -673,6 +677,13 @@ class NormalAttack:
         if int(self.character.frame) >= frame_count:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
+    def register_hitboxes(self, manager):
+        info = getattr(self.character.image, 'normal_attacks', {}).get(self.attack_key or 'rp', {})
+        _register_hitboxes_from_info(self.character, manager, info, self.character.frame,
+                                     name_prefix=f'normal_{self.attack_key or "rp"}')
+        # 보조 전방/아래 히트박스 등록
+        _register_extra_attack_hitboxes(self.character, manager, 'normal')
+
     def draw(self):
         frames = getattr(self.character.image, 'normal_attacks', {}).get(self.attack_key, {}).get('frames', [])
         if not frames:
@@ -695,24 +706,43 @@ class AirAttack:
             self.attack_key = e[1]
         elif e and e[0] == 'INPUT':
             ev = e[1]
-            for k in ('rp', 'lp', 'rk', 'lk'):
-                if ev.key == self.character.keymap.get(k):
-                    self.attack_key = k
-                    break
+            try:
+                for k in ('rp', 'lp', 'rk', 'lk'):
+                    if ev.key == self.character.keymap.get(k):
+                        self.attack_key = k
+                        break
+            except Exception:
+                pass
         if not self.attack_key:
             self.attack_key = 'rp'
         now = get_time()
-        self.character.attack_buffer = [(k, t) for (k, t) in self.character.attack_buffer if
-                                        now - t <= self.character.attack_buffer_window]
-        # enter 시 vx가 있으면 그대로 유지 (RunJump.exit에서 세팅됨)
+        try:
+            self.character.attack_buffer = [(k, t) for (k, t) in self.character.attack_buffer if
+                                            now - t <= self.character.attack_buffer_window]
+        except Exception:
+            self.character.attack_buffer = []
+        try:
+            self.character.is_attacking = True
+        except Exception:
+            pass
 
     def exit(self, e):
         self.character.frame = 0.0
         self.attack_key = None
-        self.character.attack_buffer.clear()
-        # 점프 공격 종료 시 저장된 vx 초기화
-        if hasattr(self.character, 'vx'):
-            self.character.vx = 0.0
+        try:
+            self.character.attack_buffer.clear()
+        except Exception:
+            self.character.attack_buffer = []
+        # 점프공격에서 보존한 vx 초기화
+        try:
+            if hasattr(self.character, 'vx'):
+                self.character.vx = 0.0
+        except Exception:
+            pass
+        try:
+            self.character.is_attacking = False
+        except Exception:
+            pass
 
     def _consume_buffered_attack(self):
         now = get_time()
@@ -770,6 +800,12 @@ class AirAttack:
         if int(self.character.frame) >= frame_count:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
+    def register_hitboxes(self, manager):
+        info = getattr(self.character.image, 'air_attacks', {}).get(self.attack_key or 'rp', {})
+        _register_hitboxes_from_info(self.character, manager, info, self.character.frame, name_prefix='air_attack')
+        # 보조 전방/아래 히트박스 등록
+        _register_extra_attack_hitboxes(self.character, manager, 'air')
+
     def draw(self):
         # 오직 dir != 0 일 때만 move_jump_attacks 사용, 아니면 jump_attacks 사용
         if getattr(self.character, 'dir', 0) != 0:
@@ -800,22 +836,42 @@ class SitAttack:
             self.attack_key = e[1]
         elif e and e[0] == 'INPUT':
             ev = e[1]
-            for k in ('rp', 'lp', 'rk', 'lk'):
-                if ev.key == self.character.keymap.get(k):
-                    self.attack_key = k
-                    break
+            try:
+                for k in ('rp', 'lp', 'rk', 'lk'):
+                    if ev.key == self.character.keymap.get(k):
+                        self.attack_key = k
+                        break
+            except Exception:
+                pass
         if not self.attack_key:
             self.attack_key = 'rp'
         now = get_time()
-        self.character.attack_buffer = [(k, t) for (k, t) in self.character.attack_buffer if now - t <= self.character.attack_buffer_window]
+        try:
+            self.character.attack_buffer = [(k, t) for (k, t) in self.character.attack_buffer if
+                                            now - t <= self.character.attack_buffer_window]
+        except Exception:
+            self.character.attack_buffer = []
+        try:
+            self.character.is_attacking = True
+        except Exception:
+            pass
 
     def exit(self, e):
         self.character.frame = 0.0
         self.attack_key = None
-        self.character.attack_buffer.clear()
-        # SitAttack에서 SIT_DOWN으로 돌아올 때만 SitDown의 마지막 프레임을 유지시키기 위한 플래그 설정
-        # (다른 경로로 SIT_DOWN에 진입할 때는 영향을 주지 않음)ㄴㄴㄴㄴㄴㄴㄴㄴㄴㄴㄴ
-        self.character._keep_sit_down_last_frame = True
+        try:
+            self.character.attack_buffer.clear()
+        except Exception:
+            self.character.attack_buffer = []
+        # SitDown으로 복귀 시 마지막 프레임 유지 요청 (있으면 SitDown에서 처리됨)
+        try:
+            self.character._keep_sit_down_last_frame = True
+        except Exception:
+            pass
+        try:
+            self.character.is_attacking = False
+        except Exception:
+            pass
 
 
     def _consume_buffered_attack(self):
@@ -846,6 +902,12 @@ class SitAttack:
 
         if int(self.character.frame) >= frame_count:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
+
+    def register_hitboxes(self, manager):
+        info = getattr(self.character.image, 'sit_attacks', {}).get(self.attack_key or 'rp', {})
+        _register_hitboxes_from_info(self.character, manager, info, self.character.frame, name_prefix='sit_attack')
+        # 보조 전방 히트박스 등록
+        _register_extra_attack_hitboxes(self.character, manager, 'sit')
 
     def draw(self):
         info = getattr(self.character.image, 'sit_attacks', {}).get(self.attack_key, {})
