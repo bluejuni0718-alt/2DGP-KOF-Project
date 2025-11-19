@@ -6,6 +6,159 @@ from state_machine import *
 from character_frame import *
 from character_frame import CHARACTER_WIDTH_SCALE, CHARACTER_HEIGHT_SCALE
 
+def _register_hitboxes_from_info(character, manager, info, frame_idx, name_prefix='attack'):
+    if not manager or not info:
+        return
+    hitboxes = info.get('hitboxes', [])
+    if not hitboxes:
+        return
+    idx = max(0, min(int(frame_idx), len(hitboxes) - 1))
+    hb_defs = hitboxes[idx] if idx < len(hitboxes) else None
+    if not hb_defs:
+        return
+
+    img = getattr(character, 'image', None)
+    sx = float(getattr(character, 'scale_x', getattr(character, 'scale', CHARACTER_WIDTH_SCALE)))
+    sy = float(getattr(character, 'scale_y', getattr(character, 'scale', CHARACTER_HEIGHT_SCALE)))
+    delx = float(getattr(img, 'delXPos', 0.0)) * sx if img is not None else 0.0
+    dely = float(getattr(img, 'delYPos', 0.0)) * sy if img is not None else 0.0
+
+    cx = float(getattr(character, 'xPos', 0.0)) + delx
+    cy = float(getattr(character, 'yPos', 0.0)) + dely
+    face = int(getattr(character, 'face_dir', 1))
+
+    try:
+        if not hasattr(character, 'hitbox_ids') or character.hitbox_ids is None:
+            character.hitbox_ids = []
+    except Exception:
+        character.hitbox_ids = []
+
+    for i, hb in enumerate(hb_defs):
+        try:
+            if isinstance(hb, dict):
+                ox = float(hb.get('x', 0.0))
+                oy = float(hb.get('y', 0.0))
+                w = float(hb.get('w', hb.get('width', 0.0)))
+                h = float(hb.get('h', hb.get('height', 0.0)))
+                tag = hb.get('tag', None)
+                custom_id = hb.get('id', None)
+            else:
+                try:
+                    ox = float(hb[0]); oy = float(hb[1]); w = float(hb[2]); h = float(hb[3])
+                    tag = hb[4] if len(hb) > 4 else None
+                    custom_id = None
+                except Exception:
+                    continue
+
+            ox = ox * sx * (1 if face == 1 else -1)
+            oy = oy * sy
+            w = w * sx
+            h = h * sy
+
+            left = cx + ox - (w / 2.0)
+            bottom = cy + oy - (h / 2.0)
+            right = left + w
+            top = bottom + h
+
+            hb_id = custom_id if custom_id else f'{name_prefix}_{i}_{id(character)}'
+            try:
+                # rect를 bbox로 전달 (left, bottom, right, top)
+                manager.register_hitbox(character, hb_id, rect=(left, bottom, right, top), tag=tag)
+            except Exception:
+                pass
+
+            try:
+                character.hitbox_ids.append(hb_id)
+            except Exception:
+                try:
+                    character.hitbox_ids = list(getattr(character, 'hitbox_ids', []))
+                    character.hitbox_ids.append(hb_id)
+                except Exception:
+                    pass
+        except Exception:
+            continue
+
+def _register_extra_attack_hitboxes(character, manager, kind):
+    """normal|sit|air 용 보조 전방/아래 히트박스 등록. manager에 등록하고 character.hitbox_ids에 id 저장"""
+    if not manager or character is None:
+        return
+
+    img = getattr(character, 'image', None)
+    sx = float(getattr(character, 'scale_x', getattr(character, 'scale', CHARACTER_WIDTH_SCALE)))
+    sy = float(getattr(character, 'scale_y', getattr(character, 'scale', CHARACTER_HEIGHT_SCALE)))
+    delx = float(getattr(img, 'delXPos', 0.0)) * sx if img is not None else 0.0
+    dely = float(getattr(img, 'delYPos', 0.0)) * sy if img is not None else 0.0
+
+    cx = float(getattr(character, 'xPos', 0.0)) + delx
+    cy = float(getattr(character, 'yPos', 0.0)) + dely
+    face = int(getattr(character, 'face_dir', 1))
+
+    fw, fh = character._get_frame_size_from_image()
+    scaled_w = float(fw) * sx
+    scaled_h = float(fh) * sy
+
+    forward_gap = 8.0 * sx
+    down_gap = 4.0 * sy
+
+    def reg(hb_id, rect, tag='attack'):
+        try:
+            manager.register_hitbox(character, hb_id, rect=rect, tag=tag)
+        except Exception:
+            try:
+                # 등록 실패하면 무시
+                pass
+            except Exception:
+                pass
+        try:
+            if not hasattr(character, 'hitbox_ids') or character.hitbox_ids is None:
+                character.hitbox_ids = []
+        except Exception:
+            character.hitbox_ids = []
+        try:
+            character.hitbox_ids.append(hb_id)
+        except Exception:
+            try:
+                character.hitbox_ids = list(getattr(character, 'hitbox_ids', []))
+                character.hitbox_ids.append(hb_id)
+            except Exception:
+                pass
+
+    kind = (kind or '').lower()
+    if kind == 'normal':
+        w = max(8.0, scaled_w * 0.28)
+        h = max(16.0, scaled_h * 1.2)
+        cx_off = face * (scaled_w / 2.0 + (w / 2.0) + forward_gap)
+        left = cx + cx_off - (w / 2.0)
+        bottom = cy - (h / 2.0)
+        reg(f'attack_normal_front_{id(character)}', (left, bottom, w, h), tag='attack')
+    elif kind == 'sit':
+        w = max(20.0, scaled_w * 1.0)
+        h = max(8.0, scaled_h * 0.35)
+        cx_off = face * (scaled_w / 2.0 + (w / 2.0) + forward_gap * 0.6)
+        cy_off = - (scaled_h * 0.35)
+        left = cx + cx_off - (w / 2.0)
+        bottom = cy + cy_off - (h / 2.0)
+        reg(f'attack_sit_forward_{id(character)}', (left, bottom, w, h), tag='attack')
+    elif kind == 'air':
+        w1 = max(8.0, scaled_w * 0.25)
+        h1 = max(16.0, scaled_h * 1.15)
+        cx_off1 = face * (scaled_w / 2.0 + (w1 / 2.0) + forward_gap)
+        left1 = cx + cx_off1 - (w1 / 2.0)
+        bottom1 = cy - (h1 / 2.0)
+        reg(f'attack_air_front_{id(character)}', (left1, bottom1, w1, h1), tag='attack')
+
+        w2 = max(20.0, scaled_w * 1.1)
+        h2 = max(8.0, scaled_h * 0.36)
+        cx_off2 = 0.0
+        cy_off2 = - (scaled_h / 2.0 + (h2 / 2.0) + down_gap)
+        left2 = cx + cx_off2 - (w2 / 2.0)
+        bottom2 = cy + cy_off2
+        reg(f'attack_air_below_{id(character)}', (left2, bottom2, w2, h2), tag='attack')
+    else:
+        return
+
+
+
 PIXEL_PER_METER = 10.0/0.15 #10 픽셀당 30cm로 설정
 
 RUN_SPEED_KMPH = 20.0 #시속 20km로 설정
