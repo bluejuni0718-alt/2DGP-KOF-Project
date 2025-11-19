@@ -130,6 +130,18 @@ def update():
             if dx <= 0 or dy <= 0:
                 continue
 
+            try:
+                a_tag = getattr(a, 'tag', None)
+                b_tag = getattr(b, 'tag', None)
+                a_attacking = getattr(getattr(a, 'owner', None), 'is_attacking', False)
+                b_attacking = getattr(getattr(b, 'owner', None), 'is_attacking', False)
+                if (a_tag == 'attack' and a_attacking) or (b_tag == 'attack' and b_attacking):
+                    # 공격 히트박스가 포함된 충돌은 연출을 위해 위치/속도 보정 없이 그대로 둠
+                    continue
+            except Exception:
+                # 안전하게 넘어감(기존 로직 계속)
+                pass
+
             A = a.owner
             B = b.owner
 
@@ -228,9 +240,25 @@ def update():
                     bot_width = (r_bot - l_bot) if (r_bot - l_bot) > 0 else 0.0
                     allow_pass_through = False
                     try:
-                        if getattr(top_owner, 'vy', 0.0) < 0.0 and bot_width > 0.0:
-                            if overlap_x >= (bot_width * 0.5):
+                        # 공격 히트박스 통과 허용:
+                        # 한쪽 히트박스가 tag == 'attack' 이고 그 소유자가 is_attacking 이면 통과 허용
+                        try:
+                            if (getattr(a, 'tag', None) == 'attack' and getattr(a.owner, 'is_attacking', False)) or \
+                                    (getattr(b, 'tag', None) == 'attack' and getattr(b.owner, 'is_attacking', False)):
                                 allow_pass_through = True
+                        except Exception:
+                            # 안전하게 아무 변경 없이 진행
+                            pass
+
+                        # 기존 속도/겹침 기반 통과 판정은 공격 판정이 아닐 때만 적용
+                        if not allow_pass_through:
+                            try:
+                                # 기존 로직에서 사용하던 vy_top, bot_width, overlap_x 변수를 그대로 사용
+                                if getattr(top_owner, 'vy', 0.0) < 0.0 and bot_width > 0.0:
+                                    if overlap_x >= (bot_width * 0.5):
+                                        allow_pass_through = True
+                            except Exception:
+                                allow_pass_through = False
                     except Exception:
                         allow_pass_through = False
 
