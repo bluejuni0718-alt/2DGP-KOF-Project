@@ -126,10 +126,10 @@ def _register_extra_attack_hitboxes(character, manager, kind):
     kind = (kind or '').lower()
     if kind == 'normal':
         w = max(8.0, scaled_w * 0.28)
-        h = max(16.0, scaled_h * 1.2)
+        h = max(16.0, scaled_h * 0.6)
         cx_off = face * (scaled_w / 2.0 + (w / 2.0) + forward_gap)
         left = cx + cx_off - (w / 2.0)
-        bottom = cy - (h / 2.0)
+        bottom = cy #- (h / 4.0)
         reg(f'attack_normal_front_{id(character)}', (left, bottom, w, h), tag='attack')
     elif kind == 'sit':
         w = max(20.0, scaled_w * 1.0)
