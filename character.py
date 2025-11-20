@@ -1288,10 +1288,8 @@ class Character:
             self.state_machine.handle_state_event(('INPUT', event))
 
     def _is_facing_input(self, e, sdl_type, param):
-        # 파라미터 이름을 명확히 하고 사용
-        if not (e[0] == 'INPUT' and e[1].type == sdl_type and e[1].key in (self.keymap['left'], self.keymap['right'])):
-            return False
-        key_const = e[1].key
-        key_dir = 1 if key_const == self.keymap['right'] else -1
-        return (key_dir == self.face_dir) if param == 'fwd' else (key_dir != self.face_dir)
+        if self.face_dir ==1:
+            return e[0] == 'INPUT' and e[1].type == sdl_type and (e[1].key == self.keymap['right'] if param == 'fwd' else e[1].key == self.keymap['left'])
+        else:
+            return e[0] == 'INPUT' and e[1].type == sdl_type and (e[1].key == self.keymap['left'] if param == 'fwd' else e[1].key == self.keymap['right'])
 
