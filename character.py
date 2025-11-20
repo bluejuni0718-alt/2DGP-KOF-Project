@@ -544,41 +544,28 @@ class SitDown:
     def __init__(self, character):
         self.character = character
         # 내부 sticky 상태: SitAttack에서 돌아와서 마지막 프레임을 유지해야 할 때 True
-        self._sticky_last_frame = False
+        self.fix_last_frame = False
 
     def enter(self, e):
-        # SitAttack에서 돌아온 경우에만 마지막 프레임으로 고정
-        if getattr(self.character, '_keep_sit_down_last_frame', False):
-            total = max(1, getattr(self.character.image, 'sit_down_frames', 1))
-            self.character.frame = total - 1
-            # 플래그 사용 후 해제
-            self.character._keep_sit_down_last_frame = False
-            self._sticky_last_frame = True
+        # SitAttack에서 돌아올 때 마지막 프레임 고정
+        if self.character.keep_sit_down_last_frame:
+            self.character.frame = 2
+            self.character.keep_sit_down_last_frame = False
+            self.fix_last_frame = True
         else:
             self.character.frame = 0
-            self._sticky_last_frame = False
-
-        # SitDown은 자체적으로 y 보정(예: y - 6 * frame)을 사용하므로
-        # 이전 공격에서 설정된 delXPos/delYPos는 무조건 초기화
-        if hasattr(self.character.image, 'delXPos'):
-            self.character.image.delXPos = 0
-            self.character.image.delYPos = 0
-
+            self.fix_last_frame = False
     def exit(self, e):
         self.character.frame = 0
-        self._sticky_last_frame = False
+        self.fix_last_frame = False
 
     def do(self):
         # sticky이면 프레임을 증가시키지 않고 마지막 프레임에 고정
-        if self._sticky_last_frame:
-            total = max(1, getattr(self.character.image, 'sit_down_frames', 1))
-            self.character.frame = total - 1
-            return
-
-        # 정상적인 앉기 애니 진행 및 상한 클램프
-        self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % max(1, getattr(self.character.image, 'sit_down_frames', 1))
-        if int(self.character.frame) >= getattr(self.character.image, 'sit_down_frames', 1) - 1:
-            self.character.frame = getattr(self.character.image, 'sit_down_frames', 1) - 1
+        if self.fix_last_frame:
+            self.character.frame=2
+        else:
+            if self.character.frame <2:
+                self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.sit_down_frames
 
     def draw(self):
         self.character.image.draw_by_frame_num(
@@ -864,15 +851,10 @@ class SitAttack:
         except Exception:
             self.character.attack_buffer = []
         # SitDown으로 복귀 시 마지막 프레임 유지 요청 (있으면 SitDown에서 처리됨)
-        try:
-            self.character._keep_sit_down_last_frame = True
-        except Exception:
-            pass
-        try:
-            self.character.is_attacking = False
-        except Exception:
-            pass
-
+        if self.character.down_pressed:
+            self.character.keep_sit_down_last_frame = True
+        else:
+            self.character.keep_sit_down_last_frame = False
 
     def _consume_buffered_attack(self):
         now = get_time()
@@ -963,14 +945,6 @@ class Guard:
             self.character.state_machine.draw()
 
 class Character:
-    @property
-    def keep_sit_down_last_frame(self):
-        return getattr(self, '_keep_sit_down_last_frame', False)
-
-    @keep_sit_down_last_frame.setter
-    def keep_sit_down_last_frame(self, value):
-        self._keep_sit_down_last_frame = bool(value)
-
     def __init__(self, image_data,keymap=None, manager=None, x = 400, y = 120):
         default = {'left': SDLK_a, 'right': SDLK_d, 'up': SDLK_w,'down':SDLK_s,'lp':SDLK_f,'rp':SDLK_g,'rk':SDLK_b,'lk':SDLK_c}
         self.font = load_font('ENCR10B.TTF', 16)
@@ -998,10 +972,9 @@ class Character:
         self.back_pressed = False
         self.down_pressed = False
 
-        self._keep_sit_down_last_frame = False
+        self.keep_sit_down_last_frame = False
         self._deferred_facing = None  # <-- 추가
         # 외부 코드에서 self._keep_sit_down_last_frame와 self.keep_sit_down_last_frame 둘다 참조할 수 있게 동기화
-        self.keep_sit_down_last_frame = self._keep_sit_down_last_frame
         self.time_out_and_down = lambda e: (e[0] == 'TIME_OUT') and self.down_pressed
         self.time_out_and_not_down = lambda e: (e[0] == 'TIME_OUT') and (not self.down_pressed)
 
