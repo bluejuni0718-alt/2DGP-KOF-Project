@@ -6,7 +6,6 @@ import intro_mode
 from interaction import *
 
 
-
 running = True
 characters =[]
 KEYMAP_P1 ={
