@@ -505,7 +505,7 @@ class SitUp:
         self.character = character
 
     def enter(self, e):
-        self.character.frame = max(0.0, getattr(self.character.image, 'sit_down_frames', 1) - 1.0)
+        self.character.frame = self.character.image.sit_down_frames - 1
         pass
     def exit(self,e):
         self.character.frame = 0
