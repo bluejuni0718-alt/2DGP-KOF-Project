@@ -161,6 +161,12 @@ def _register_extra_attack_hitboxes(character, manager, kind):
 
 PIXEL_PER_METER = 10.0/0.15 #10 픽셀당 30cm로 설정
 
+GRAVITY_MPS2 = -9.8 * 5
+GRAVITY_PPS2 = GRAVITY_MPS2 * PIXEL_PER_METER  # px/s^2 (음수)
+
+MAX_JUMP_HEIGHT = 4.0 #최대 점프 높이 4미터
+MAX_JUMP_HEIGHT_PX = MAX_JUMP_HEIGHT * PIXEL_PER_METER #픽셀로 환산
+
 RUN_SPEED_KMPH = 20.0 #시속 20km로 설정
 RUN_SPEED_MPS = (RUN_SPEED_KMPH * 1000.0 / 3600.0) #초속미터 환산
 RUN_SPEED_PPS = (RUN_SPEED_MPS*PIXEL_PER_METER) #초속 픽셀로 환산
@@ -625,7 +631,6 @@ class NormalAttack:
     def draw(self):
         self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)], self.character.xPos,
                                                self.character.yPos, self.character.face_dir)
-
 
 class AirAttack:
     def __init__(self, character):
