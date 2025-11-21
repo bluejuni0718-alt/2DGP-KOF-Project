@@ -298,19 +298,16 @@ class Jump:
         self.character.image.draw_by_frame_num(
             self.character.image.jump_frame_start + int(self.character.frame),
             self.character.xPos, self.character.yPos, self.character.face_dir)
+
 class MoveJump:
     def __init__(self, character):
         self.character = character
-        self.gravity = -3000.0
-        self.desired_jump_height = 240
-
     def enter(self, e):
-        self.character.frame = self.character.jump_frame
-        # 기준 바닥을 기본값으로 고정
+        self.character.frame = 0
         self.character.ground_y = self.character.default_ground_y
         if not (e and e[0] == 'TIME_OUT'):
-            g_abs = -self.gravity if self.gravity < 0 else self.gravity
-            self.character.vy = (2 * g_abs * self.desired_jump_height) ** 0.5
+            g_abs = abs(GRAVITY_PPS2)
+            self.character.vy = (2 * g_abs * MAX_JUMP_HEIGHT_PX) ** 0.5
             if self.character.vy < 0:
                 self.character.vy = -self.character.vy
         # 방향 결정 (기존 로직 유지)
@@ -326,41 +323,20 @@ class MoveJump:
                 self.character.dir = 1
 
     def exit(self, e):
-        self.character.jump_frame = self.character.frame
-        def _is_attack_transition(ev):
-            if not ev:
-                return False
-            if ev[0] == 'ATTACK':
-                return True
-            if ev[0] == 'INPUT' and getattr(ev[1], 'type', None) == SDL_KEYDOWN:
-                atk_keys = (
-                    self.character.keymap.get('lp'),
-                    self.character.keymap.get('rp'),
-                    self.character.keymap.get('lk'),
-                    self.character.keymap.get('rk'),
-                )
-                return ev[1].key in atk_keys
-            return False
-
-        if not _is_attack_transition(e):
-            self.character.dir = 0
+        self.character.frame = 0
+        self.character.dir = 0
 
     def do(self):
         if self.character.dir == 1:
-            self.character.frame = (self.character.frame +
-                                    self.character.face_dir * FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
-                                   % max(1, getattr(self.character.image, 'jump_move_frames', 1))
+            self.character.frame += self.character.face_dir * FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time
         else:
-            self.character.frame = (self.character.frame -
-                                    self.character.face_dir * FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time) \
-                                   % max(1, getattr(self.character.image, 'jump_move_frames', 1))
+            self.character.frame -= self.character.face_dir * FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time
 
-        self.character.vy += self.gravity * game_framework.frame_time
+        self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
         self.character.yPos += self.character.vy * game_framework.frame_time
         self.character.xPos += self.character.dir * WALK_SPEED_PPS * game_framework.frame_time
 
         if self.character.yPos <= self.character.ground_y:
-            # 착지 시 기본 바닥으로 복원
             self.character.ground_y = self.character.default_ground_y
             self.character.yPos = self.character.default_ground_y
             if self.character.fwd_pressed or self.character.back_pressed:
