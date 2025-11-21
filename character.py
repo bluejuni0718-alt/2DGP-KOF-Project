@@ -238,7 +238,6 @@ class Walk:
         self.character=character
     def enter(self, e):
         self.character.frame = 0
-        self.character.jump_frame = 0
         if self.character.face_dir ==1:
             if self.character.fwd_down(e) or self.character.fwd_pressed:
                 self.character.dir = 1
@@ -310,6 +309,7 @@ class MoveJump:
             self.character.vy = (2 * g_abs * MAX_JUMP_HEIGHT_PX) ** 0.5
             if self.character.vy < 0:
                 self.character.vy = -self.character.vy
+
         # 방향 결정 (기존 로직 유지)
         if self.character.face_dir == 1:
             if self.character.fwd_down(e) or self.character.fwd_pressed:
@@ -321,10 +321,10 @@ class MoveJump:
                 self.character.dir = -1
             elif self.character.back_down(e) or self.character.back_pressed:
                 self.character.dir = 1
+        self.character.vx = self.character.dir * WALK_SPEED_PPS
 
     def exit(self, e):
         self.character.frame = 0
-        self.character.dir = 0
 
     def do(self):
         if self.character.dir == 1:
@@ -334,7 +334,7 @@ class MoveJump:
 
         self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
         self.character.yPos += self.character.vy * game_framework.frame_time
-        self.character.xPos += self.character.dir * WALK_SPEED_PPS * game_framework.frame_time
+        self.character.xPos += self.character.vx * game_framework.frame_time
 
         if self.character.yPos <= self.character.ground_y:
             self.character.ground_y = self.character.default_ground_y
@@ -397,10 +397,9 @@ class RunJump:
             self.character.dir = 1
         else:
             self.character.dir = -1
-
+        self.character.vx = self.character.dir * RUN_SPEED_PPS
     def exit(self, e):
         self.character.frame = 0
-        self.character.dir = 0
 
     def do(self):
         if int(self.character.frame)< len(self.character.image.jump_move_motion_list)-1:
@@ -413,7 +412,7 @@ class RunJump:
         self.character.yPos += self.character.vy * game_framework.frame_time
 
         # horizontal
-        self.character.xPos += self.character.dir * RUN_SPEED_PPS * game_framework.frame_time
+        self.character.xPos += self.character.vx * game_framework.frame_time
 
         if self.character.yPos <= self.character.ground_y:
             # 착지 시 기본 바닥으로 복원
@@ -556,68 +555,31 @@ class AirAttack:
     def __init__(self, character):
         self.character = character
         self.attack_key = None
-        self.combo_accept_last_frames = 2
-        self.gravity = -3000.0
+        self.frames = None
+        self.frame_count =0
 
     def enter(self, e):
         self.character.frame = 0.0
-        self.attack_key = None
-        if e and e[0] == 'ATTACK':
-            self.attack_key = e[1]
-        elif e and e[0] == 'INPUT':
-            ev = e[1]
-            try:
-                for k in ('rp', 'lp', 'rk', 'lk'):
-                    if ev.key == self.character.keymap.get(k):
-                        self.attack_key = k
-                        break
-            except Exception:
-                pass
-        if not self.attack_key:
-            self.attack_key = 'rp'
-        now = get_time()
-        try:
-            self.character.attack_buffer = [(k, t) for (k, t) in self.character.attack_buffer if
-                                            now - t <= self.character.attack_buffer_window]
-        except Exception:
-            self.character.attack_buffer = []
-        try:
-            self.character.is_attacking = True
-        except Exception:
-            pass
+        for k in ('rp', 'lp', 'rk', 'lk'):
+            if e[1].key == self.character.keymap.get(k):
+                self.attack_key = k
+                break
+        if self.character.dir != 0:
+            self.frames = self.character.image.move_jump_attacks.get(self.attack_key, {}).get('frames', [])
+        else:
+            self.frames = self.character.image.jump_attacks.get(self.attack_key, {}).get('frames', [])
+        self.frame_count = len(self.frames)
 
     def exit(self, e):
         self.character.frame = 0.0
         self.attack_key = None
-        try:
-            self.character.attack_buffer.clear()
-        except Exception:
-            self.character.attack_buffer = []
-        # 점프공격에서 보존한 vx 초기화
-        try:
-            if hasattr(self.character, 'vx'):
-                self.character.vx = 0.0
-        except Exception:
-            pass
-        try:
-            self.character.is_attacking = False
-        except Exception:
-            pass
-
-    def _consume_buffered_attack(self):
-        now = get_time()
-        for i, (k, t) in enumerate(self.character.attack_buffer):
-            if now - t <= self.character.attack_buffer_window:
-                return self.character.attack_buffer.pop(i)
-        return None
 
     def do(self):
         dt = game_framework.frame_time
         # 애니 진행 및 중력 처리
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * dt
-        self.character.vy += self.gravity * dt
+        self.character.vy += GRAVITY_PPS2 * dt
         self.character.yPos += self.character.vy * dt
-
         # 착지 처리
         if self.character.yPos <= self.character.ground_y:
             self.character.ground_y = self.character.default_ground_y
@@ -628,9 +590,8 @@ class AirAttack:
             self.character.state_machine.handle_state_event(('LAND', None))
             return
 
-        vx = getattr(self.character, 'vx', 0.0)
-        if vx and abs(vx) > 0.0:
-            self.character.xPos += vx * dt
+        if self.character.vx > 0.0:
+            self.character.xPos += self.character.vx * dt
         elif getattr(self.character, 'dir', 0) != 0:
             # 런에서 온 경우에는 RunJump.exit에서 vx를 세팅했으므로 여기서는 보통 WALK 속도로 처리
             self.character.xPos += self.character.dir * WALK_SPEED_PPS * dt
