@@ -599,96 +599,40 @@ class SitAttack:
     def __init__(self, character):
         self.character = character
         self.attack_key = None
-        self.combo_accept_last_frames = 2
+        self.frames=[]
+        self.offset = None
+        self.frame_count = 0
 
     def enter(self, e):
         self.character.frame = 0.0
-        self.attack_key = None
-        if e and e[0] == 'ATTACK':
-            self.attack_key = e[1]
-        elif e and e[0] == 'INPUT':
-            ev = e[1]
-            try:
-                for k in ('rp', 'lp', 'rk', 'lk'):
-                    if ev.key == self.character.keymap.get(k):
-                        self.attack_key = k
-                        break
-            except Exception:
-                pass
-        if not self.attack_key:
-            self.attack_key = 'rp'
-        now = get_time()
-        try:
-            self.character.attack_buffer = [(k, t) for (k, t) in self.character.attack_buffer if
-                                            now - t <= self.character.attack_buffer_window]
-        except Exception:
-            self.character.attack_buffer = []
-        try:
-            self.character.is_attacking = True
-        except Exception:
-            pass
+        for k in ('rp', 'lp', 'rk', 'lk'):
+            if e[1].key == self.character.keymap.get(k):
+                self.attack_key = k
+                break
 
     def exit(self, e):
         self.character.frame = 0.0
         self.attack_key = None
-        try:
-            self.character.attack_buffer.clear()
-        except Exception:
-            self.character.attack_buffer = []
-        # SitDown으로 복귀 시 마지막 프레임 유지 요청 (있으면 SitDown에서 처리됨)
+
         if self.character.down_pressed:
             self.character.keep_sit_down_last_frame = True
         else:
             self.character.keep_sit_down_last_frame = False
 
-    def _consume_buffered_attack(self):
-        now = get_time()
-        for i, (k, t) in enumerate(self.character.attack_buffer):
-            if now - t <= self.character.attack_buffer_window:
-                return self.character.attack_buffer.pop(i)
-        return None
-
     def do(self):
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
-        info = getattr(self.character.image, 'sit_attacks', {}).get(self.attack_key, {})
-        frames = info.get('frames', [])
-        frame_count = len(frames)
-        if frame_count == 0:
+        self.frames = self.character.image.sit_attacks.get(self.attack_key, {}).get('frames', [])
+        self.offset = self.character.image.sit_attacks.get(self.attack_key, {}).get('offsets', [])
+        self.frame_count = len(self.frames)
+
+        if int(self.character.frame) >= self.frame_count:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
-            return
-
-        current_idx = min(int(self.character.frame), frame_count - 1)
-        accept_from = max(0, frame_count - self.combo_accept_last_frames)
-        if current_idx >= accept_from:
-            consumed = self._consume_buffered_attack()
-            if consumed:
-                next_attack_key, _ = consumed
-                self.attack_key = next_attack_key
-                self.character.frame = 0.0
-                return
-
-        if int(self.character.frame) >= frame_count:
-            self.character.state_machine.handle_state_event(('TIME_OUT', None))
-
-    def register_hitboxes(self, manager):
-        info = getattr(self.character.image, 'sit_attacks', {}).get(self.attack_key or 'rp', {})
-        _register_hitboxes_from_info(self.character, manager, info, self.character.frame, name_prefix='sit_attack')
-        # 보조 전방 히트박스 등록
-        _register_extra_attack_hitboxes(self.character, manager, 'sit')
 
     def draw(self):
-        info = getattr(self.character.image, 'sit_attacks', {}).get(self.attack_key, {})
-        frames = info.get('frames', [])
-        offsets = info.get('offsets', [(0, 0)] * len(frames))
-        if not frames:
-            return
-        idx = max(0, min(int(self.character.frame), len(frames) - 1))
-        frame_num = frames[idx]
-        ox, oy = offsets[idx] if idx < len(offsets) else (0, 0)
-        ox = ox * -self.character.face_dir
-        self.character.image.delXPos = ox
-        self.character.image.delYPos = oy
-        self.character.image.draw_by_frame_num(frame_num, self.character.xPos, self.character.yPos, self.character.face_dir)
+        ox, oy = self.offset[int(self.character.frame)]
+        self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)],
+                                               self.character.xPos + (self.character.face_dir*ox),
+                                               self.character.yPos + oy, self.character.face_dir)
 
 class Guard:
     def __init__(self, character):
