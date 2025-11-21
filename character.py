@@ -600,84 +600,32 @@ class SitUp:
 class NormalAttack:
     def __init__(self, character):
         self.character = character
-        self.attack_key = None   # 'rp'|'lp'|'rk'|'lk'
-        self.combo_accept_last_frames = 2  # 마지막 N프레임에서 콤보 허용
+        self.attack_key = None
+        self.frames = None
+        self.frame_count = 0
 
     def enter(self, e):
         self.character.frame = 0.0
-        self.attack_key = None
-        if e and e[0] == 'ATTACK':
-            self.attack_key = e[1]
-        elif e and e[0] == 'INPUT':
-            ev = e[1]
-            for k in ('rp', 'lp', 'rk', 'lk'):
-                if ev.key == self.character.keymap.get(k):
-                    self.attack_key = k
-                    break
-        if not self.attack_key:
-            self.attack_key = 'rp'
-        # 엔터 시 오래된 버퍼는 제거
-        now = get_time()
-        self.character.attack_buffer = [(k, t) for (k, t) in self.character.attack_buffer if now - t <= self.character.attack_buffer_window]
-        try:
-            self.character.is_attacking = True
-        except Exception:
-            pass
+        for k in ('rp', 'lp', 'rk', 'lk'):
+            if e[1].key == self.character.keymap.get(k):
+                self.attack_key = k
+                break
+        self.frames = self.character.image.normal_attacks.get(self.attack_key, {}).get('frames', [])
+        self.frame_count = len(self.frames)
     def exit(self, e):
         self.character.frame = 0.0
         self.attack_key = None
-        # 엔터/종료 시 버퍼 정리(원하면)
-        self.character.attack_buffer.clear()
-        try:
-            self.character.is_attacking = False
-        except Exception:
-            pass
-
-    def _consume_buffered_attack(self):
-        now = get_time()
-        for i, (k, t) in enumerate(self.character.attack_buffer):
-            if now - t <= self.character.attack_buffer_window:
-                # 간단히 아무 공격키나 허용하거나, 특정 체인만 허용하도록 검사 가능
-                return self.character.attack_buffer.pop(i)  # (k, t)
-        return None
 
     def do(self):
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
-        frames = getattr(self.character.image, 'normal_attacks', {}).get(self.attack_key, {}).get('frames', [])
-        frame_count = len(frames)
-        if frame_count == 0:
+
+        if int(self.character.frame) >= self.frame_count:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
-            return
-
-        # 콤보 허용 구간 검사: 마지막 N프레임 이내일 때만 체인 허용
-        current_idx = min(int(self.character.frame), frame_count - 1)
-        accept_from = max(0, frame_count - self.combo_accept_last_frames)
-        if current_idx >= accept_from:
-            consumed = self._consume_buffered_attack()
-            if consumed:
-                next_attack_key, _ = consumed
-                # 체인 로직: 다음 공격키로 교체하고 애니메이션 리셋
-                self.attack_key = next_attack_key
-                self.character.frame = 0.0
-                return
-
-        if int(self.character.frame) >= frame_count:
-            self.character.state_machine.handle_state_event(('TIME_OUT', None))
-
-    def register_hitboxes(self, manager):
-        info = getattr(self.character.image, 'normal_attacks', {}).get(self.attack_key or 'rp', {})
-        _register_hitboxes_from_info(self.character, manager, info, self.character.frame,
-                                     name_prefix=f'normal_{self.attack_key or "rp"}')
-        # 보조 전방/아래 히트박스 등록
-        _register_extra_attack_hitboxes(self.character, manager, 'normal')
 
     def draw(self):
-        frames = getattr(self.character.image, 'normal_attacks', {}).get(self.attack_key, {}).get('frames', [])
-        if not frames:
-            return
-        idx = min(int(self.character.frame), len(frames) - 1)
-        self.character.image.draw_normal_attack(self.attack_key, idx,
-                                                self.character.xPos, self.character.yPos, self.character.face_dir)
+        self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)], self.character.xPos,
+                                               self.character.yPos, self.character.face_dir)
+
 
 class AirAttack:
     def __init__(self, character):
