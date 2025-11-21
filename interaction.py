@@ -6,3 +6,5 @@ class HitBox:
         self.hb_kind = hb_kind
         self.rect = rect
 
+class HitBoxManager:
+    pass
