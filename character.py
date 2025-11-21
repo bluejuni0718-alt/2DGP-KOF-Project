@@ -113,6 +113,7 @@ class Jump:
 
     def enter(self, e):
         self.character.frame = 0
+        self.character.dir=0
         self.character.ground_y = self.character.default_ground_y
         # 처음 점프일 때만 vy 설정 (TIME_OUT으로 다시 들어올 때 재설정하지 않음)
         if not (e and e[0] == 'TIME_OUT'):
