@@ -575,74 +575,25 @@ class AirAttack:
         self.attack_key = None
 
     def do(self):
-        dt = game_framework.frame_time
         # 애니 진행 및 중력 처리
-        self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * dt
-        self.character.vy += GRAVITY_PPS2 * dt
-        self.character.yPos += self.character.vy * dt
+        if int(self.character.frame)<self.frame_count - 1:
+            self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
+        else:
+            self.character.state_machine.handle_state_event(('TIME_OUT', None))
+
+        self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
+        self.character.yPos += self.character.vy * game_framework.frame_time
+
         # 착지 처리
         if self.character.yPos <= self.character.ground_y:
             self.character.ground_y = self.character.default_ground_y
             self.character.yPos = self.character.default_ground_y
-            # 착지 시 vx 초기화
-            if hasattr(self.character, 'vx'):
-                self.character.vx = 0.0
+            self.character.vx = 0.0
             self.character.state_machine.handle_state_event(('LAND', None))
-            return
-
-        if self.character.vx > 0.0:
-            self.character.xPos += self.character.vx * dt
-        elif getattr(self.character, 'dir', 0) != 0:
-            # 런에서 온 경우에는 RunJump.exit에서 vx를 세팅했으므로 여기서는 보통 WALK 속도로 처리
-            self.character.xPos += self.character.dir * WALK_SPEED_PPS * dt
-
-        # dir 기반으로 프레임셋 선택
-        if getattr(self.character, 'dir', 0) != 0:
-            info = getattr(self.character.image, 'move_jump_attacks', {}).get(self.attack_key, {})
-        else:
-            info = getattr(self.character.image, 'jump_attacks', {}).get(self.attack_key, {})
-
-        frames = info.get('frames', [])
-        frame_count = len(frames)
-        if frame_count == 0:
-            self.character.state_machine.handle_state_event(('TIME_OUT', None))
-            return
-
-        current_idx = min(int(self.character.frame), frame_count - 1)
-        accept_from = max(0, frame_count - self.combo_accept_last_frames)
-        if current_idx >= accept_from:
-            consumed = self._consume_buffered_attack()
-            if consumed:
-                next_attack_key, _ = consumed
-                self.attack_key = next_attack_key
-                self.character.frame = 0.0
-                return
-
-        if int(self.character.frame) >= frame_count:
-            self.character.state_machine.handle_state_event(('TIME_OUT', None))
-
-    def register_hitboxes(self, manager):
-        info = getattr(self.character.image, 'air_attacks', {}).get(self.attack_key or 'rp', {})
-        _register_hitboxes_from_info(self.character, manager, info, self.character.frame, name_prefix='air_attack')
-        # 보조 전방/아래 히트박스 등록
-        _register_extra_attack_hitboxes(self.character, manager, 'air')
-
+        self.character.xPos += self.character.vx * game_framework.frame_time
     def draw(self):
-        # 오직 dir != 0 일 때만 move_jump_attacks 사용, 아니면 jump_attacks 사용
-        if getattr(self.character, 'dir', 0) != 0:
-            info = getattr(self.character.image, 'move_jump_attacks', {}).get(self.attack_key, {})
-            frames = info.get('frames', []) if info else []
-            if frames:
-                idx = max(0, min(int(self.character.frame), len(frames) - 1))
-                frame_num = frames[idx]
-                self.character.image.draw_by_frame_num(frame_num, self.character.xPos, self.character.yPos, self.character.face_dir)
-                return
-
-        frames = getattr(self.character.image, 'jump_attacks', {}).get(self.attack_key, {}).get('frames', [])
-        if not frames:
-            return
-        idx = max(0, min(int(self.character.frame), len(frames) - 1))
-        self.character.image.draw_jump_attack(self.attack_key, idx, self.character.xPos, self.character.yPos, self.character.face_dir)
+        self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)], self.character.xPos,
+                                               self.character.yPos, self.character.face_dir)
 
 class SitAttack:
     def __init__(self, character):
