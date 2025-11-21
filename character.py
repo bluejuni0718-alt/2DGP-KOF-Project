@@ -382,78 +382,38 @@ class Run:
 class RunJump:
     def __init__(self, character):
         self.character = character
-        self.gravity = -3000.0
-        self.desired_jump_height = 240
 
     def enter(self, e):
-        self.character.frame = self.character.jump_frame
         # 기준 바닥 고정
         self.character.ground_y = self.character.default_ground_y
         # 초기 수직속도를 캐릭터 속성으로 설정 (모든 상태가 동일한 vy를 보게 됨)
-        g_abs = -self.gravity if self.gravity < 0 else self.gravity
-        vy = (2 * g_abs * self.desired_jump_height) ** 0.5
+        g_abs = abs(GRAVITY_PPS2)
+        vy = (2 * g_abs * MAX_JUMP_HEIGHT_PX) ** 0.5
         if vy < 0:
             vy = -vy
         self.character.vy = vy
-
         # 방향 결정 (기존)
         if self.character.face_dir == 1:
-            if self.character.fwd_down(e) or self.character.fwd_pressed:
-                self.character.dir = 1
-            elif self.character.back_down(e) or self.character.back_pressed:
-                self.character.dir = -1
+            self.character.dir = 1
         else:
-            if self.character.fwd_down(e) or self.character.fwd_pressed:
-                self.character.dir = -1
-            elif self.character.back_down(e) or self.character.back_pressed:
-                self.character.dir = 1
+            self.character.dir = -1
 
     def exit(self, e):
-        self.character.jump_frame = self.character.frame
-
-        def _is_attack_transition(ev):
-            if not ev:
-                return False
-            if ev[0] == 'ATTACK':
-                return True
-            if ev[0] == 'INPUT' and getattr(ev[1], 'type', None) == SDL_KEYDOWN:
-                atk_keys = (
-                    self.character.keymap.get('lp'),
-                    self.character.keymap.get('rp'),
-                    self.character.keymap.get('lk'),
-                    self.character.keymap.get('rk'),
-                )
-                return ev[1].key in atk_keys
-            return False
-
-        if _is_attack_transition(e):
-            # 런에서 점프한 상태에서 공격으로 전환될 때 현재 런 속도를 vx로 보존
-            if getattr(self.character, 'dir', 0) != 0:
-                self.character.vx = self.character.dir * RUN_SPEED_PPS
-        else:
-            # 공격이 아닌 전환이면 방향 초기화 및 vx 삭제
-            self.character.dir = 0
-            if hasattr(self.character, 'vx'):
-                self.character.vx = 0.0
+        self.character.frame = 0
+        self.character.dir = 0
 
     def do(self):
-        dt = game_framework.frame_time
-        # 프레임 진행 (기존 로직 유지)
-        if self.character.dir == 1:
-            self.character.frame = (self.character.frame +
-                                    self.character.face_dir * FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * dt) \
-                                   % max(1, getattr(self.character.image, 'jump_move_frames', 1))
+        if int(self.character.frame)< len(self.character.image.jump_move_motion_list)-1:
+            self.character.frame += FRAMES_PER_JUMP_ACTION * JUMP_ACTION_PER_TIME * game_framework.frame_time
         else:
-            self.character.frame = (self.character.frame -
-                                    self.character.face_dir * FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * dt) \
-                                   % max(1, getattr(self.character.image, 'jump_move_frames', 1))
+            self.character.frame = len(self.character.image.jump_move_motion_list) - 1
 
         # vertical: 항상 character.vy 사용
-        self.character.vy += self.gravity * dt
-        self.character.yPos += self.character.vy * dt
+        self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
+        self.character.yPos += self.character.vy * game_framework.frame_time
 
         # horizontal
-        self.character.xPos += self.character.dir * RUN_SPEED_PPS * dt
+        self.character.xPos += self.character.dir * RUN_SPEED_PPS * game_framework.frame_time
 
         if self.character.yPos <= self.character.ground_y:
             # 착지 시 기본 바닥으로 복원
