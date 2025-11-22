@@ -743,3 +743,12 @@ class Character:
         else:
             return e[0] == 'INPUT' and e[1].type == sdl_type and (e[1].key == self.keymap['left'] if param == 'fwd' else e[1].key == self.keymap['right'])
 
+    def register_hitbox(self,hb_kind:str,frame_num):
+        ox,oy,w,h = self.image.frame_list[frame_num]
+        hitbox = HitBox(self, hb_kind, (self.xPos + ox, self.yPos + oy, w, h))
+        self.manager.register_hitbox(hitbox)
+        return hitbox
+
+    def update_hitbox(self, hitbox:HitBox,frame_num):
+        ox, oy, w, h = self.image.frame_list[frame_num]
+        hitbox.update((self.xPos - w, self.yPos - h, CHARACTER_WIDTH_SCALE*w, CHARACTER_HEIGHT_SCALE*h))
