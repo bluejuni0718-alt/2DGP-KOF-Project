@@ -1,12 +1,13 @@
 from pico2d import *
 import game_framework
-from character import Character, KimFrameInfo
+from character import Character, KimFrameInfo, hitbox_manager
 import game_world
 import intro_mode
 from interaction import *
 
 
 running = True
+debug_hitbox = False
 characters =[]
 KEYMAP_P1 ={
     'left' :SDLK_a,
@@ -40,6 +41,9 @@ def handle_events():
             running = False
         elif event.type==SDL_KEYDOWN and event.key==SDLK_r:
             game_framework.change_mode(intro_mode)
+        elif event.type==SDL_KEYDOWN and event.key == SDLK_F1:
+            global debug_hitbox
+            debug_hitbox = not debug_hitbox
         else:
             for c in characters:
                 c.handle_event(event)
@@ -63,9 +67,12 @@ def init():
 def update():
     game_world.update()
 
+
 def draw():
     clear_canvas()
     game_world.render()
+    if debug_hitbox:
+        hitbox_manager.debug_draw()
     update_canvas()
 
 def finish():
