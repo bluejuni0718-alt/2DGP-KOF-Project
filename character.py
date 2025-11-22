@@ -1,10 +1,14 @@
 from pico2d import *
 
 import game_framework
-from frame import *
+from interaction import *
 from state_machine import *
 from character_frame import *
 from character_frame import CHARACTER_WIDTH_SCALE, CHARACTER_HEIGHT_SCALE
+
+hitbox_manager = HitBoxManager()
+
+
 
 PIXEL_PER_METER = 10.0/0.15 #10 픽셀당 30cm로 설정
 
@@ -77,6 +81,7 @@ class Idle:
         self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME*game_framework.frame_time) % self.character.image.idle_frames
         pass
     def draw(self):
+        self.character.update_hitbox(self.character.body_hitbox, int(self.character.frame))
         self.character.image.draw_idle_by_frame_num(int(self.character.frame), self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
@@ -104,6 +109,7 @@ class Walk:
         self.character.xPos +=self.character.dir * WALK_SPEED_PPS * game_framework.frame_time
         pass
     def draw(self):
+        self.character.update_hitbox(self.character.body_hitbox, self.character.image.walk_frame_start + int(self.character.frame))
         self.character.image.draw_by_frame_num(self.character.image.walk_frame_start + int(self.character.frame),self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
@@ -141,7 +147,9 @@ class Jump:
             else:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
+
     def draw(self):
+        self.character.update_hitbox(self.character.body_hitbox, self.character.image.jump_frame_start + int(self.character.frame))
         self.character.image.draw_by_frame_num(
             self.character.image.jump_frame_start + int(self.character.frame),
             self.character.xPos, self.character.yPos, self.character.face_dir)
@@ -195,6 +203,7 @@ class MoveJump:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
     def draw(self):
+        self.character.update_hitbox(self.character.body_hitbox, self.character.image.jump_move_motion_list[int(self.character.frame)])
         self.character.image.draw_by_frame_num(
             self.character.image.jump_move_motion_list[int(self.character.frame)],
             self.character.xPos, self.character.yPos, self.character.face_dir)
@@ -224,6 +233,7 @@ class Run:
         self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.run_frames
         self.character.xPos += self.character.dir * RUN_SPEED_PPS * game_framework.frame_time
     def draw(self):
+        self.character.update_hitbox(self.character.body_hitbox, self.character.image.run_frame_start + int(self.character.frame))
         self.character.image.draw_by_frame_num(self.character.image.run_frame_start + int(self.character.frame),self.character.xPos, self.character.yPos,self.character.face_dir)
         pass
 
@@ -250,8 +260,8 @@ class RunJump:
         self.character.frame = 0
 
     def do(self):
-        if int(self.character.frame)< len(self.character.image.jump_move_motion_list)-1:
-            self.character.frame += FRAMES_PER_JUMP_ACTION * JUMP_ACTION_PER_TIME * game_framework.frame_time
+        if int(self.character.frame)< len(self.character.image.jump_move_motion_list) - 1:
+            self.character.frame += FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time
         else:
             self.character.frame = len(self.character.image.jump_move_motion_list) - 1
 
@@ -274,6 +284,7 @@ class RunJump:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
     def draw(self):
+        self.character.update_hitbox(self.character.body_hitbox, self.character.image.jump_move_motion_list[int(self.character.frame)])
         self.character.image.draw_by_frame_num(self.character.image.jump_move_motion_list[int(self.character.frame)],
                                                self.character.xPos, self.character.yPos, self.character.face_dir)
 
@@ -310,6 +321,7 @@ class BackDash:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
     def draw(self):
+        self.character.update_hitbox(self.character.body_hitbox, self.character.image.back_dash_frame_start)
         self.character.image.draw_by_frame_num(self.character.image.back_dash_frame_start,
                                                self.character.xPos, self.character.yPos, self.character.face_dir)
 
@@ -341,6 +353,7 @@ class SitDown:
                 self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.sit_down_frames
 
     def draw(self):
+        self.character.update_hitbox(self.character.body_hitbox, self.character.image.sit_down_frame_start + int(self.character.frame))
         self.character.image.draw_by_frame_num(
             self.character.image.sit_down_frame_start + int(self.character.frame),
             self.character.xPos,
@@ -367,6 +380,7 @@ class SitUp:
             self.character.frame = 0.0
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
     def draw(self):
+        self.character.update_hitbox(self.character.body_hitbox,self.character.image.sit_down_frame_start + int(self.character.frame))
         self.character.image.draw_by_frame_num(self.character.image.sit_down_frame_start + int(self.character.frame), self.character.xPos, self.character.yPos - 6 * int(self.character.frame),self.character.face_dir)
         pass
 
@@ -522,7 +536,7 @@ class Guard:
             self.character.state_machine.draw()
 
 class Character:
-    def __init__(self, image_data,keymap=None, manager=None, x = 400, y = 120):
+    def __init__(self, image_data,keymap=None, x = 400, y = 120, manager = None):
         default = {'left': SDLK_a, 'right': SDLK_d, 'up': SDLK_w,'down':SDLK_s,'lp':SDLK_f,'rp':SDLK_g,'rk':SDLK_b,'lk':SDLK_c}
         self.font = load_font('ENCR10B.TTF', 16)
         self.keymap = default if keymap is None else {**default, **keymap}
@@ -542,8 +556,8 @@ class Character:
         self._last_down = {}  # key_const -> 마지막 다운 시각
         self._last_up = {}  # key_const -> 마지막 업 시각
 
-        self.manager = manager
-        self.hitbox_ids = []
+        self.manager = hitbox_manager
+        self.body_hitbox = self.register_hitbox('body', 0)
 
         self.fwd_pressed = False
         self.back_pressed = False
