@@ -5,6 +5,9 @@ class HitBox:
         self.owner = owner
         self.hb_kind = hb_kind
         self.rect = rect
+    def update(self, new_rect:tuple[float, float, float, float]):
+        self.rect = new_rect
+
 
 class HitBoxManager:
     def __init__(self):
@@ -15,4 +18,4 @@ class HitBoxManager:
 
     def debug_draw(self):
         for hb in self.hitboxes:
-            draw_rectangle(hb[0], hb[1], hb[0] + hb[2], hb[1] + hb[3])
+            draw_rectangle(hb.rect[0], hb.rect[1], hb.rect[0] + hb.rect[2], hb.rect[1] + hb.rect[3])
