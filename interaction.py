@@ -44,3 +44,15 @@ class HitBoxManager:
                     overlap_x = min(box_1.rect[0] + box_1.rect[2], box_2.rect[0] + box_2.rect[2]) - max(box_1.rect[0], box_2.rect[0])
                     ch_1.xPos += overlap_x//2
                     ch_2.xPos -= overlap_x//2
+
+    def update_face_dir(self, ch1, ch2):
+        if ch1.xPos < ch2.xPos:
+            if ch1.vy ==0:
+                ch1.face_dir = 1
+            if ch2.vy ==0:
+                ch2.face_dir = -1
+        else:
+            if ch1.vy ==0:
+                ch1.face_dir = -1
+            if ch2.vy ==0:
+                ch2.face_dir = 1
