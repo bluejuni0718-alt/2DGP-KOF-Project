@@ -185,7 +185,6 @@ class MoveJump:
 
     def exit(self, e):
         self.character.frame = 0
-        self.character.vy = 0.0
     def do(self):
         if self.character.dir == 1:
             self.character.frame += self.character.face_dir * FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time
@@ -441,7 +440,6 @@ class AirAttack:
 
     def exit(self, e):
         self.character.dir = 0
-        self.character.vy = 0.0
         self.character.frame = 0.0
         self.attack_key = None
 
