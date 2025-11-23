@@ -281,6 +281,7 @@ class RunJump:
             # 착지 시 기본 바닥으로 복원
             self.character.ground_y = self.character.default_ground_y
             self.character.yPos = self.character.default_ground_y
+            self.character.vy = 0.0
             if self.character.fwd_pressed or self.character.back_pressed:
                 self.character.state_machine.handle_state_event(('Pressing_Key', None))
             elif self.character.down_pressed:
