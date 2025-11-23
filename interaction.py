@@ -19,9 +19,28 @@ class HitBoxManager:
     def debug_draw(self):
         for hb in self.hitboxes:
             draw_rectangle(hb.rect[0], hb.rect[1], hb.rect[0] + hb.rect[2], hb.rect[1] + hb.rect[3])
+
     def collision_check(self, hb1: HitBox, hb2: HitBox) -> bool:
         r1 = hb1.rect
         r2 = hb2.rect
         x1, y1, w1, h1 = r1
         x2, y2, w2, h2 = r2
         return x1 < x2 + w2 and x1 + w1 > x2 and y1 < y2 + h2 and y1 + h1 > y2
+
+    def detect_body_overlaps(self):
+        boxes = [hb for hb in self.hitboxes if hb.hb_kind == 'body']
+        box_1 = boxes[0]
+        box_2 = boxes[1]
+        ch_1 = box_1.owner
+        ch_2 = box_2.owner
+
+        if self.collision_check(box_1, box_2):
+            if ch_1.vy ==0 or ch_1.vy ==0:
+                if ch_1.xPos < ch_2.xPos:
+                    overlap_x = min(box_1.rect[0] + box_1.rect[2], box_2.rect[0] + box_2.rect[2]) - max(box_1.rect[0], box_2.rect[0])
+                    ch_1.xPos -= overlap_x//2
+                    ch_2.xPos += overlap_x//2
+                else:
+                    overlap_x = min(box_1.rect[0] + box_1.rect[2], box_2.rect[0] + box_2.rect[2]) - max(box_1.rect[0], box_2.rect[0])
+                    ch_1.xPos += overlap_x//2
+                    ch_2.xPos -= overlap_x//2
