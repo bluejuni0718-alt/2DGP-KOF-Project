@@ -67,12 +67,13 @@ def init():
 def update():
     game_world.update()
 
-
 def draw():
     clear_canvas()
     game_world.render()
     if debug_hitbox:
         hitbox_manager.debug_draw()
+    hitbox_manager.detect_body_overlaps()
+    hitbox_manager.update_face_dir(characters[0], characters[1])
     update_canvas()
 
 def finish():
