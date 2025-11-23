@@ -90,6 +90,7 @@ class Walk:
         self.character=character
     def enter(self, e):
         self.character.frame = 0
+
         if self.character.face_dir ==1:
             if self.character.fwd_down(e) or self.character.fwd_pressed:
                 self.character.dir = 1
@@ -100,9 +101,11 @@ class Walk:
                 self.character.dir = -1
             elif self.character.back_down(e) or self.character.back_pressed:
                 self.character.dir = 1
+        self.character.vx = self.character.dir * WALK_SPEED_PPS
         pass
     def exit(self,e):
         self.character.dir=0
+        self.character.vx = 0
         pass
     def do(self):
         self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.walk_frames
@@ -138,6 +141,7 @@ class Jump:
         self.character.yPos += self.character.vy * game_framework.frame_time
 
         if self.character.yPos <= self.character.ground_y:
+            self.character.vy = 0.0
             self.character.ground_y = self.character.default_ground_y
             self.character.yPos = self.character.default_ground_y
             if self.character.fwd_pressed or self.character.back_pressed:
@@ -181,7 +185,7 @@ class MoveJump:
 
     def exit(self, e):
         self.character.frame = 0
-
+        self.character.vy = 0.0
     def do(self):
         if self.character.dir == 1:
             self.character.frame += self.character.face_dir * FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time
@@ -195,6 +199,7 @@ class MoveJump:
         if self.character.yPos <= self.character.ground_y:
             self.character.ground_y = self.character.default_ground_y
             self.character.yPos = self.character.default_ground_y
+            self.character.vy = 0.0
             if self.character.fwd_pressed or self.character.back_pressed:
                 self.character.state_machine.handle_state_event(('Pressing_Key', None))
             elif self.character.down_pressed:
@@ -212,9 +217,8 @@ class Run:
     def __init__(self, character):
         self.character=character
     def enter(self, e):
-        self.character.anim_tick = 0
         self.character.frame = 0
-        self.character.jump_frame = 0
+
         if self.character.face_dir == 1:
             if self.character.fwd_down(e) or self.character.fwd_pressed:
                 self.character.dir = 1
@@ -225,9 +229,11 @@ class Run:
                 self.character.dir = -1
             elif self.character.back_down(e) or self.character.back_pressed:
                 self.character.dir = 1
+        self.character.vx = self.character.dir * RUN_SPEED_PPS
         pass
     def exit(self,e):
         self.character.dir = 0
+        self.character.vx = 0
         pass
     def do(self):
         self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.run_frames
@@ -313,6 +319,7 @@ class BackDash:
 
         if self.character.yPos <= self.character.ground_y:
             self.character.yPos = self.character.ground_y
+            self.character.vy = 0.0
             if self.character.fwd_pressed or self.character.back_pressed:
                 self.character.state_machine.handle_state_event(('Pressing_Key', None))
             elif self.character.down_pressed:
@@ -433,6 +440,8 @@ class AirAttack:
         self.frame_count = len(self.frames)
 
     def exit(self, e):
+        self.character.dir = 0
+        self.character.vy = 0.0
         self.character.frame = 0.0
         self.attack_key = None
 
@@ -441,6 +450,7 @@ class AirAttack:
         if int(self.character.frame)<self.frame_count - 1:
             self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
         else:
+            self.character.dir = 0
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
         self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
@@ -451,6 +461,8 @@ class AirAttack:
             self.character.ground_y = self.character.default_ground_y
             self.character.yPos = self.character.default_ground_y
             self.character.vx = 0.0
+            self.character.vy = 0.0
+            self.character.dir = 0
             self.character.state_machine.handle_state_event(('LAND', None))
         self.character.xPos += self.character.vx * game_framework.frame_time
     def draw(self):
