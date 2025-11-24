@@ -400,6 +400,8 @@ class NormalAttack:
 
     def enter(self, e):
         self.character.frame = 0.0
+        self.character.is_attacking = True
+
         for k in ('rp', 'lp', 'rk', 'lk'):
             if e[1].key == self.character.keymap.get(k):
                 self.attack_key = k
@@ -408,11 +410,14 @@ class NormalAttack:
         self.frame_count = len(self.frames)
     def exit(self, e):
         self.character.frame = 0.0
+        self.character.is_attacking = False
+        self.character.attack_hitbox.rect = (0, 0, 0, 0)
         self.attack_key = None
 
     def do(self):
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
-
+        #TODO: 공격 판정 박스 설정 로직 개선 필요
+        self.character.attack_hitbox.rect = (self.character.xPos, self.character.yPos, 50, 100)
         if int(self.character.frame) >= self.frame_count:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
@@ -429,6 +434,7 @@ class AirAttack:
 
     def enter(self, e):
         self.character.frame = 0.0
+        self.character.is_attacking = True
         for k in ('rp', 'lp', 'rk', 'lk'):
             if e[1].key == self.character.keymap.get(k):
                 self.attack_key = k
@@ -441,6 +447,7 @@ class AirAttack:
 
     def exit(self, e):
         self.character.dir = 0
+        self.character.is_attacking = False
         self.character.frame = 0.0
         self.attack_key = None
 
@@ -569,6 +576,8 @@ class Character:
 
         self.manager = hitbox_manager
         self.body_hitbox = self.register_hitbox('body', 0)
+        self.attack_hitbox = HitBox(self, 'attack', (0, 0, 0, 0))
+        self.manager.register_hitbox(self.attack_hitbox)
 
         self.fwd_pressed = False
         self.back_pressed = False
@@ -770,10 +779,14 @@ class Character:
 
     def register_hitbox(self,hb_kind:str,frame_num):
         ox,oy,w,h = self.image.frame_list[frame_num]
-        hitbox = HitBox(self, hb_kind, (self.xPos + ox, self.yPos + oy, w, h))
+        hitbox = HitBox(self, hb_kind, (self.xPos, self.yPos, w, h))
         self.manager.register_hitbox(hitbox)
         return hitbox
 
     def update_hitbox(self, hitbox:HitBox,frame_num):
         ox, oy, w, h = self.image.frame_list[frame_num]
-        hitbox.update((self.xPos - w, self.yPos - h, CHARACTER_WIDTH_SCALE*w, CHARACTER_HEIGHT_SCALE*h))
+        offset_width = 20
+        if self.face_dir == 1:
+            hitbox.update((self.xPos - w, self.yPos - h, CHARACTER_WIDTH_SCALE * w - offset_width, CHARACTER_HEIGHT_SCALE*h))
+        else:
+            hitbox.update((self.xPos - w + offset_width, self.yPos - h, CHARACTER_WIDTH_SCALE * w - offset_width, CHARACTER_HEIGHT_SCALE*h))
