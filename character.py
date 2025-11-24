@@ -124,6 +124,7 @@ class Jump:
         self.character.frame = 0
         self.character.dir=0
         self.character.ground_y = self.character.default_ground_y
+
         # 처음 점프일 때만 vy 설정 (TIME_OUT으로 다시 들어올 때 재설정하지 않음)
         if not (e and e[0] == 'TIME_OUT'):
             g_abs = abs(GRAVITY_PPS2)
@@ -448,6 +449,7 @@ class AirAttack:
         self.character.dir = 0
         self.character.is_attacking = False
         self.character.frame = 0.0
+        self.character.attack_hitbox.rect = (0, 0, 0, 0)
         self.attack_key = None
 
     def do(self):
@@ -456,13 +458,16 @@ class AirAttack:
             self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
         else:
             self.character.dir = 0
+            self.character.attack_hitbox.rect = (0, 0, 0, 0)
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
-
+            return
+        self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir), self.character.yPos - 100, 75 * self.character.face_dir, 200)
         self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
         self.character.yPos += self.character.vy * game_framework.frame_time
 
         # 착지 처리
         if self.character.yPos <= self.character.ground_y:
+            self.character.attack_hitbox.rect = (0, 0, 0, 0)
             self.character.ground_y = self.character.default_ground_y
             self.character.yPos = self.character.default_ground_y
             self.character.vx = 0.0
@@ -471,6 +476,8 @@ class AirAttack:
             self.character.state_machine.handle_state_event(('LAND', None))
         self.character.xPos += self.character.vx * game_framework.frame_time
     def draw(self):
+        self.character.update_hitbox(self.character.body_hitbox,
+                                     self.character.image.jump_move_motion_list[int(self.character.frame)])
         self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)], self.character.xPos,
                                                self.character.yPos, self.character.face_dir)
 
