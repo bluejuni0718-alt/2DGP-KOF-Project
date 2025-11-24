@@ -417,7 +417,7 @@ class NormalAttack:
     def do(self):
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
         #TODO: 공격 판정 박스 설정 로직 개선 필요
-        self.character.attack_hitbox.rect = (self.character.xPos, self.character.yPos, 50, 100)
+        self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir), self.character.yPos, 75 * self.character.face_dir, 100)
         if int(self.character.frame) >= self.frame_count:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
