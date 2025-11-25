@@ -27,6 +27,21 @@ class HitBoxManager:
         x2, y2, w2, h2 = r2
         return x1 < x2 + w2 and x1 + w1 > x2 and y1 < y2 + h2 and y1 + h1 > y2
 
+    def detect_is_opponent_attacking(self):
+        main_boxes = [hb for hb in self.hitboxes if hb.hb_kind == 'body']
+        box_1 = main_boxes[0]
+        box_2 = main_boxes[1]
+        ch_1 = box_1.owner
+        ch_2 = box_2.owner
+        if ch_1.is_attacking :
+            ch_2.is_opponent_attacking = True
+        else:
+            ch_2.is_opponent_attacking = False
+        if ch_2.is_attacking :
+            ch_1.is_opponent_attacking = True
+        else:
+            ch_1.is_opponent_attacking = False
+
     def detect_body_overlaps(self):
         boxes = [hb for hb in self.hitboxes if hb.hb_kind == 'body']
         box_1 = boxes[0]
@@ -44,6 +59,7 @@ class HitBoxManager:
                     overlap_x = min(box_1.rect[0] + box_1.rect[2], box_2.rect[0] + box_2.rect[2]) - max(box_1.rect[0], box_2.rect[0])
                     ch_1.xPos += overlap_x//2
                     ch_2.xPos -= overlap_x//2
+
 
     def update_face_dir(self, ch1, ch2):
         if ch1.xPos < ch2.xPos:
