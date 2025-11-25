@@ -66,6 +66,9 @@ def pressing_down(e):
 def land(e):
     return e[0] == 'LAND'
 
+def in_air(e):
+    return e[0] == 'IN_AIR'
+
 def guard(e):
     return e[0] == 'GUARD'
 
@@ -201,6 +204,9 @@ class MoveJump:
     def exit(self, e):
         self.character.frame = 0
     def do(self):
+        if self.character.is_opponent_attacking and self.character.back_pressed:
+            self.character.state_machine.handle_state_event(('GUARD', None))
+            return
         if self.character.dir == 1:
             self.character.frame += self.character.face_dir * FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time
         else:
@@ -280,6 +286,9 @@ class RunJump:
         self.character.frame = 0
 
     def do(self):
+        if self.character.is_opponent_attacking and self.character.back_pressed:
+            self.character.state_machine.handle_state_event(('GUARD', None))
+            return
         if int(self.character.frame)< len(self.character.image.jump_move_motion_list) - 1:
             self.character.frame += FRAMES_PER_MOVE_JUMP_ACTION * MOVE_JUMP_ACTION_PER_TIME * game_framework.frame_time
         else:
@@ -355,6 +364,7 @@ class SitDown:
 
     def enter(self, e):
         # SitAttack에서 돌아올 때 마지막 프레임 고정
+        self.character.is_sit = True
         if self.character.keep_sit_down_last_frame:
             self.character.frame = 2
             self.character.keep_sit_down_last_frame = False
@@ -364,10 +374,13 @@ class SitDown:
             self.fix_last_frame = False
     def exit(self, e):
         self.character.frame = 0
+        self.character.is_sit = False
         self.fix_last_frame = False
 
     def do(self):
-        # sticky이면 프레임을 증가시키지 않고 마지막 프레임에 고정
+        if self.character.is_opponent_attacking and self.character.back_pressed:
+            self.character.state_machine.handle_state_event(('GUARD', None))
+            return
         if self.fix_last_frame:
             self.character.frame=2
         else:
@@ -504,6 +517,7 @@ class SitAttack:
         self.frame_count = 0
 
     def enter(self, e):
+        self.character.is_sit = True
         self.character.frame = 0.0
         for k in ('rp', 'lp', 'rk', 'lk'):
             if e[1].key == self.character.keymap.get(k):
@@ -547,9 +561,9 @@ class Guard:
         self.character.frame = 0
         if self.character.vy != 0:
             self.state = 'air_guard'
-        elif self.character.vy == 0 and self.character.is_sit == False:
+        if self.character.vy == 0 and self.character.is_sit == False:
             self.state = 'ground_guard'
-        elif self.character.vy == 0 and self.character.is_sit == True:
+        if self.character.back_pressed and self.character.down_pressed:
             self.state = 'sit_guard'
         self.frames = self.character.image.guards.get(self.state, {}).get('frames', [])
         self.frame_count = len(self.frames)
@@ -564,21 +578,24 @@ class Guard:
     def do(self):
         if not self.character.is_opponent_attacking or not self.character.back_pressed:
             if self.character.fwd_pressed or self.character.back_pressed:
-                self.character.state_machine.handle_state_event(('Pressing_Key', None))
+                if self.character.vy == 0 and self.state != 'sit_guard':
+                    self.character.state_machine.handle_state_event(('Pressing_Key', None))
+                else:
+                    self.character.state_machine.handle_state_event(('TIME_OUT', None))
+            if self.state == 'air_guard':
+                self.character.state_machine.handle_state_event(('TIME_OUT', None))
+            if self.character.back_pressed and self.character.down_pressed:
+                self.character.keep_sit_down_last_frame = True
+                self.character.state_machine.handle_state_event(('Pressing_Down', None))
 
         if self.character.vy !=0 and int(self.character.frame) >= self.frame_count - 1:
             self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
             self.character.yPos += self.character.vy * game_framework.frame_time
-            self.character.state_machine.handle_state_event(('TIME_OUT', None))
-
 
         if int(self.character.frame) >= self.frame_count - 1:
             self.character.frame = self.frame_count - 1  # 마지막 프레임에 고정
 
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
-
-
-
 
     def draw(self):
         self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)],
@@ -617,8 +634,6 @@ class Character:
         self.down_pressed = False
 
         self.keep_sit_down_last_frame = False
-        self._deferred_facing = None  # <-- 추가
-        # 외부 코드에서 self._keep_sit_down_last_frame와 self.keep_sit_down_last_frame 둘다 참조할 수 있게 동기화
         self.time_out_and_down = lambda e: (e[0] == 'TIME_OUT') and self.down_pressed
         self.time_out_and_not_down = lambda e: (e[0] == 'TIME_OUT') and (not self.down_pressed)
 
@@ -722,14 +737,17 @@ class Character:
                     self.lp_down: self.AIR_ATTACK, self.rp_down: self.AIR_ATTACK, self.lk_down: self.AIR_ATTACK, self.rk_down: self.AIR_ATTACK
                     },
                 self.MOVE_JUMP: {
+                    guard:self.GUARD,
                     time_out:self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN,
                     self.lp_down: self.AIR_ATTACK, self.rp_down: self.AIR_ATTACK, self.lk_down: self.AIR_ATTACK, self.rk_down: self.AIR_ATTACK
                 },
                 self.RUN:{
+
                     self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.RUN_JUMP,
                     self.lp_down: self.NORMAL_ATTACK, self.rp_down: self.NORMAL_ATTACK, self.lk_down: self.NORMAL_ATTACK, self.rk_down: self.NORMAL_ATTACK
                 },
                 self.RUN_JUMP:{
+                    guard: self.GUARD,
                     time_out:self.IDLE,pressing_key:self.RUN, pressing_down:self.SIT_DOWN,
                     self.lp_down: self.AIR_ATTACK, self.rp_down: self.AIR_ATTACK, self.lk_down: self.AIR_ATTACK, self.rk_down: self.AIR_ATTACK
                 },
@@ -737,6 +755,7 @@ class Character:
                     time_out:self.IDLE,pressing_key:self.WALK,pressing_down:self.SIT_DOWN
                 },
                 self.SIT_DOWN:{
+                    guard : self.GUARD,
                     self.down_up: self.SIT_UP,
                     self.lp_down: self.SIT_ATTACK, self.rp_down: self.SIT_ATTACK, self.lk_down: self.SIT_ATTACK, self.rk_down: self.SIT_ATTACK
                     },
@@ -754,7 +773,7 @@ class Character:
                     self.time_out_and_not_down: self.SIT_UP,  # 애니 끝났고 아래키 놓여있으면 IDLE
                 },
                 self.GUARD:{
-                    time_out:self.JUMP, self.back_up:self.IDLE, pressing_key : self.WALK,
+                    time_out:self.JUMP ,pressing_key:self.WALK, pressing_down:self.SIT_DOWN,
                 }
 
             }
