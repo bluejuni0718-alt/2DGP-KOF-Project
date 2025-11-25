@@ -66,6 +66,9 @@ def pressing_down(e):
 def land(e):
     return e[0] == 'LAND'
 
+def guard(e):
+    return e[0] == 'GUARD'
+
 class Idle:
     def __init__(self, character):
         self.character =character
@@ -78,6 +81,9 @@ class Idle:
     def exit(self,e):
         pass
     def do(self):
+        if self.character.is_opponent_attacking and self.character.back_pressed:
+            self.character.state_machine.handle_state_event(('GUARD', None))
+            return
         self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME*game_framework.frame_time) % self.character.image.idle_frames
         pass
     def draw(self):
@@ -108,6 +114,11 @@ class Walk:
         self.character.vx = 0
         pass
     def do(self):
+        if self.character.is_opponent_attacking and self.character.back_pressed:
+            self.character.state_machine.handle_state_event(('GUARD', None))
+            return
+
+
         self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.walk_frames
         self.character.xPos +=self.character.dir * WALK_SPEED_PPS * game_framework.frame_time
         pass
@@ -141,6 +152,9 @@ class Jump:
         self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
         self.character.yPos += self.character.vy * game_framework.frame_time
 
+        if self.character.is_opponent_attacking and self.character.back_pressed:
+            self.character.state_machine.handle_state_event(('GUARD', None))
+            return
         if self.character.yPos <= self.character.ground_y:
             self.character.vy = 0.0
             self.character.ground_y = self.character.default_ground_y
