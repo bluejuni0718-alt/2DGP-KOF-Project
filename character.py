@@ -586,7 +586,7 @@ class Guard:
                                                self.character.yPos, self.character.face_dir)
 
 class Character:
-    def __init__(self, image_data,keymap=None, x = 400, y = 120, manager = None):
+    def __init__(self, image_data,keymap=None, x = 400, y = 120):
         default = {'left': SDLK_a, 'right': SDLK_d, 'up': SDLK_w,'down':SDLK_s,'lp':SDLK_f,'rp':SDLK_g,'rk':SDLK_b,'lk':SDLK_c}
         self.font = load_font('ENCR10B.TTF', 16)
         self.keymap = default if keymap is None else {**default, **keymap}
@@ -602,6 +602,7 @@ class Character:
         self.default_ground_y = self.yPos
         self.ground_y = self.default_ground_y
         self.double_tap_interval=0.3
+        self.is_sit = False
 
         self._last_down = {}  # key_const -> 마지막 다운 시각
         self._last_up = {}  # key_const -> 마지막 업 시각
@@ -621,8 +622,12 @@ class Character:
         self.time_out_and_down = lambda e: (e[0] == 'TIME_OUT') and self.down_pressed
         self.time_out_and_not_down = lambda e: (e[0] == 'TIME_OUT') and (not self.down_pressed)
 
+        self.is_attacking = False
+        self.is_opponent_attacking = False
         self.attack_buffer = []  # list of (attack_key_str, timestamp)
         self.attack_buffer_window = 0.35  # 버퍼 유효 시간(초)
+
+        self.is_guarding = False
 
         self.IDLE=Idle(self)
         self.WALK=Walk(self)
@@ -636,6 +641,7 @@ class Character:
         self.NORMAL_ATTACK = NormalAttack(self)
         self.AIR_ATTACK = AirAttack(self)
         self.SIT_ATTACK = SitAttack(self)
+        self.GUARD = Guard(self)
 
         def mk_key_pred(key_const, sdl_type):
             def pred(e):
@@ -702,14 +708,16 @@ class Character:
             self.IDLE,{
                 self.IDLE:{
                     self.double_fwd: self.RUN,self.double_back: self.BACK_DASH,
-                    self.fwd_down: self.WALK,self.back_down: self.WALK,self.up_down: self.JUMP,self.down_down: self.SIT_DOWN,
+                    self.fwd_down: self.WALK, self.back_down: self.WALK, self.up_down: self.JUMP,self.down_down: self.SIT_DOWN,
                     self.lp_down: self.NORMAL_ATTACK,self.rp_down: self.NORMAL_ATTACK,self.lk_down: self.NORMAL_ATTACK,self.rk_down: self.NORMAL_ATTACK
                     },
                 self.WALK:{
+                    guard : self.GUARD,
                     self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.MOVE_JUMP,self.down_down:self.SIT_DOWN,
                     self.lp_down: self.NORMAL_ATTACK, self.rp_down: self.NORMAL_ATTACK,self.lk_down: self.NORMAL_ATTACK, self.rk_down: self.NORMAL_ATTACK
                     },
                 self.JUMP:{
+                    guard: self.GUARD,
                     time_out: self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN,
                     self.lp_down: self.AIR_ATTACK, self.rp_down: self.AIR_ATTACK, self.lk_down: self.AIR_ATTACK, self.rk_down: self.AIR_ATTACK
                     },
@@ -744,6 +752,9 @@ class Character:
                 self.SIT_ATTACK:{
                     self.time_out_and_down: self.SIT_DOWN,  # 애니 끝났고 아래키 눌러져 있으면 SIT_DOWN
                     self.time_out_and_not_down: self.SIT_UP,  # 애니 끝났고 아래키 놓여있으면 IDLE
+                },
+                self.GUARD:{
+                    time_out:self.JUMP, self.back_up:self.IDLE, pressing_key : self.WALK,
                 }
 
             }
@@ -753,7 +764,7 @@ class Character:
         self.state_machine.update()
     def draw(self):
         self.state_machine.draw()
-        self.font.draw(self.xPos - 60, self.yPos + 150, f'(Time: {get_time():.2f}, Dir : {self.dir})', (255, 255, 0))
+        self.font.draw(self.xPos - 60, self.yPos + 150, f'(Time: {get_time():.2f}, Dir : {self.dir}, opnt_atk : {self.is_opponent_attacking})', (255, 255, 0))
 
 
     def handle_event(self, event):
