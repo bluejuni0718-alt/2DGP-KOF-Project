@@ -47,6 +47,11 @@ class KimFrameInfo:
             'lk': {'frames': [294,295,296,297,298,299], 'offsets': [(0,-10),(0,-10),(0,-10),(0,-10),(0,-10),(0,-10)]},
             'rk': {'frames': [278,279,280,281,280,279,278], 'offsets': [(0,0),(25,30),(35,40),(35,40),(35,40),(25,30),(10,25)]},
         }
+        self.guards ={
+            'air_guard':{'frames':[10,103],'offsets':[(0,0),(0,0)]},
+            'ground_guard':{'frames':[79,80,81],'offsets':[(0,0),(0,0),(0,0)]},
+            'sit_guard':{'frames':[82,83,84],'offsets':[(0,0),(0,0),(0,0)]},
+        }
         self.delXPos=0
         self.delYPos=0
     def draw_idle_by_frame_num(self,frame, x, y,face_dir):
