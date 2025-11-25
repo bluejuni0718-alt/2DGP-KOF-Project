@@ -48,7 +48,7 @@ class KimFrameInfo:
             'rk': {'frames': [278,279,280,281,280,279,278], 'offsets': [(0,0),(25,30),(35,40),(35,40),(35,40),(25,30),(10,25)]},
         }
         self.guards ={
-            'air_guard':{'frames':[10,103],'offsets':[(0,0),(0,0)]},
+            'air_guard':{'frames':[102,103],'offsets':[(0,0),(0,0)]},
             'ground_guard':{'frames':[79,80,81],'offsets':[(0,0),(0,0),(0,0)]},
             'sit_guard':{'frames':[82,83,84],'offsets':[(0,0),(0,0),(0,0)]},
         }
