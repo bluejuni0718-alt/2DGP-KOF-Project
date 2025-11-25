@@ -512,6 +512,7 @@ class SitAttack:
 
     def exit(self, e):
         self.character.frame = 0.0
+        self.character.is_sit = False
         self.attack_key = None
 
         if self.character.down_pressed:
@@ -534,44 +535,55 @@ class SitAttack:
                                                self.character.xPos + (self.character.face_dir*ox),
                                                self.character.yPos + oy, self.character.face_dir)
 
+
+#TODO: 점프, 앉기 상태일 경우 가드 애니메이션 처리 필요
 class Guard:
     def __init__(self, character):
         self.character = character
-        self.frame_count = max(1, getattr(self.character.image, 'guard_stand_frames', 1))
-
+        self.state = 'ground_guard'
+        self.frames = []
+        self.frame_count = 0
     def enter(self, e):
-        self.character.frame = 0.0
+        self.character.frame = 0
+        if self.character.vy != 0:
+            self.state = 'air_guard'
+        elif self.character.vy == 0 and self.character.is_sit == False:
+            self.state = 'ground_guard'
+        elif self.character.vy == 0 and self.character.is_sit == True:
+            self.state = 'sit_guard'
+        self.frames = self.character.image.guards.get(self.state, {}).get('frames', [])
+        self.frame_count = len(self.frames)
         # 가드 진입 시 공격 플래그 해제하고 가드 상태 설정
         self.character.is_attacking = False
-        self.character.guard_stance = True
+        self.character.is_guarding = True
 
     def exit(self, e):
-        self.character.guard_stance = False
+        self.character.is_guarding= False
         self.character.frame = 0.0
 
     def do(self):
-        # 가드 애니 진행
-        dt = game_framework.frame_time
-        self.frame_count = max(1, getattr(self.character.image, 'guard_stand_frames', 1))
-        self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * dt) % self.frame_count
+        if not self.character.is_opponent_attacking or not self.character.back_pressed:
+            if self.character.fwd_pressed or self.character.back_pressed:
+                self.character.state_machine.handle_state_event(('Pressing_Key', None))
 
-        # 가드 유지 조건 실패 시 상태 전환
-        # (예: 지면이 아니거나 백 버튼이 해제되었거나 공격중인 경우)
-        can_guard = getattr(self.character, '_can_guard', lambda: False)()
-        if not can_guard or not self.character.back_pressed:
-            # TIME_OUT으로 빠져나가도록 함 (상황에 맞게 다른 이벤트로 변경 가능)
-            try:
-                self.character.state_machine.handle_state_event(('TIME_OUT', None))
-            except Exception:
-                pass
+        if self.character.vy !=0 and int(self.character.frame) >= self.frame_count - 1:
+            self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
+            self.character.yPos += self.character.vy * game_framework.frame_time
+            self.character.state_machine.handle_state_event(('TIME_OUT', None))
+
+
+        if int(self.character.frame) >= self.frame_count - 1:
+            self.character.frame = self.frame_count - 1  # 마지막 프레임에 고정
+
+        self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
+
+
+
 
     def draw(self):
-        # draw_guard를 활용하도록 통합
-        if hasattr(self.character, 'draw_guard'):
-            self.character.draw_guard()
-        else:
-            # 최소 페일백: 기본 상태머신 그리기
-            self.character.state_machine.draw()
+        self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)],
+                                               self.character.xPos,
+                                               self.character.yPos, self.character.face_dir)
 
 class Character:
     def __init__(self, image_data,keymap=None, x = 400, y = 120, manager = None):
