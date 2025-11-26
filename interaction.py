@@ -60,6 +60,25 @@ class HitBoxManager:
                     ch_1.xPos += overlap_x//2
                     ch_2.xPos -= overlap_x//2
 
+    def detect_attack_hits(self):
+        body_boxes = [hb for hb in self.hitboxes if hb.hb_kind == 'body']
+        body_box_1 = body_boxes[0]
+        body_box_2 = body_boxes[1]
+        attack_boxes = [hb for hb in self.hitboxes if hb.hb_kind == 'attack']
+        if attack_boxes[0].owner == body_box_1.owner:
+            attack_box_1 = attack_boxes[0]
+            attack_box_2 = attack_boxes[1]
+        else:
+            attack_box_1 = attack_boxes[1]
+            attack_box_2 = attack_boxes[0]
+        # TODO: 데미지 처리 및 콤보 가능 구간 설정 필요
+        if self.collision_check(attack_box_1, body_box_2) and body_box_2.owner.is_guarding == False:
+            body_box_2.owner.is_hitted = True
+
+        if self.collision_check(attack_box_2, body_box_1) and body_box_1.owner.is_guarding == False:
+            body_box_1.owner.is_hitted = True
+
+
 
     def update_face_dir(self, ch1, ch2):
         if ch1.xPos < ch2.xPos:
