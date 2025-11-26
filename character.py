@@ -549,12 +549,10 @@ class SitAttack:
                                                self.character.xPos + (self.character.face_dir*ox),
                                                self.character.yPos + oy, self.character.face_dir)
 
-
-#TODO: 점프, 앉기 상태일 경우 가드 애니메이션 처리 필요
 class Guard:
     def __init__(self, character):
         self.character = character
-        self.state = 'ground_guard'
+        self.state = None
         self.frames = []
         self.frame_count = 0
     def enter(self, e):
@@ -563,7 +561,7 @@ class Guard:
             self.state = 'air_guard'
         if self.character.vy == 0 and self.character.is_sit == False:
             self.state = 'ground_guard'
-        if self.character.back_pressed and self.character.down_pressed:
+        if self.character.back_pressed and self.character.down_pressed and self.character.vy == 0:
             self.state = 'sit_guard'
         self.frames = self.character.image.guards.get(self.state, {}).get('frames', [])
         self.frame_count = len(self.frames)
@@ -580,8 +578,6 @@ class Guard:
             if self.character.fwd_pressed or self.character.back_pressed:
                 if self.character.vy == 0 and self.state != 'sit_guard':
                     self.character.state_machine.handle_state_event(('Pressing_Key', None))
-                else:
-                    self.character.state_machine.handle_state_event(('TIME_OUT', None))
             if self.state == 'air_guard':
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
             if self.character.back_pressed and self.character.down_pressed:
