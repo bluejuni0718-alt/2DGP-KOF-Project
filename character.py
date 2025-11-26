@@ -72,6 +72,9 @@ def in_air(e):
 def guard(e):
     return e[0] == 'GUARD'
 
+def hitted(e):
+    return e[0] == 'HITTED'
+
 class Idle:
     def __init__(self, character):
         self.character =character
@@ -88,7 +91,10 @@ class Idle:
             self.character.state_machine.handle_state_event(('GUARD', None))
             return
         self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME*game_framework.frame_time) % self.character.image.idle_frames
-        pass
+        if self.character.is_hitted :
+            self.character.state_machine.handle_state_event(('HITTED', None))
+            return
+
     def draw(self):
         self.character.update_hitbox(self.character.body_hitbox, int(self.character.frame))
         self.character.image.draw_idle_by_frame_num(int(self.character.frame), self.character.xPos, self.character.yPos,self.character.face_dir)
@@ -562,6 +568,7 @@ class Guard:
         if self.character.vy == 0 and self.character.is_sit == False:
             self.state = 'ground_guard'
         if self.character.back_pressed and self.character.down_pressed and self.character.vy == 0:
+            self.character.is_low_guard = True
             self.state = 'sit_guard'
         self.frames = self.character.image.guards.get(self.state, {}).get('frames', [])
         self.frame_count = len(self.frames)
@@ -571,6 +578,7 @@ class Guard:
 
     def exit(self, e):
         self.character.is_guarding= False
+        self.is_low_guard = False
         self.character.frame = 0.0
 
     def do(self):
@@ -598,6 +606,43 @@ class Guard:
                                                self.character.xPos,
                                                self.character.yPos, self.character.face_dir)
 
+class GetHit:
+    def __init__(self, character):
+        self.character = character
+        self.state = None
+        self.frames = []
+        self.frame_count = 0
+    def enter(self,e):
+        self.character.frame = 0.0
+        if self.character.vy == 0:
+            if self.character.is_sit:
+                self.state = 'low_hitted'
+            else:
+                self.state = 'middle_hitted'
+        else:
+            self.state = 'air_hitted'
+        self.frames = self.character.image.hitted_motions.get(self.state, {}).get('frames', [])
+        self.frame_count = len(self.frames)
+        pass
+    def exit(self,e):
+        self.character.frame = 0
+        self.character.is_hitted = False
+        pass
+    def do(self):
+        self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
+        if self.character.vy !=0 and int(self.character.frame) >= self.frame_count - 1:
+            self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
+            self.character.yPos += self.character.vy * game_framework.frame_time
+
+        if int(self.character.frame) >= self.frame_count - 1:
+            self.character.state_machine.handle_state_event(('TIME_OUT', None))
+        pass
+    def draw(self):
+        self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)],
+                                               self.character.xPos,
+                                               self.character.yPos, self.character.face_dir)
+        pass
+
 class Character:
     def __init__(self, image_data,keymap=None, x = 400, y = 120):
         default = {'left': SDLK_a, 'right': SDLK_d, 'up': SDLK_w,'down':SDLK_s,'lp':SDLK_f,'rp':SDLK_g,'rk':SDLK_b,'lk':SDLK_c}
@@ -616,6 +661,7 @@ class Character:
         self.ground_y = self.default_ground_y
         self.double_tap_interval=0.3
         self.is_sit = False
+        self.is_low_guard = False
 
         self._last_down = {}  # key_const -> 마지막 다운 시각
         self._last_up = {}  # key_const -> 마지막 업 시각
@@ -639,6 +685,7 @@ class Character:
         self.attack_buffer_window = 0.35  # 버퍼 유효 시간(초)
 
         self.is_guarding = False
+        self.is_hitted = False
 
         self.IDLE=Idle(self)
         self.WALK=Walk(self)
@@ -653,6 +700,7 @@ class Character:
         self.AIR_ATTACK = AirAttack(self)
         self.SIT_ATTACK = SitAttack(self)
         self.GUARD = Guard(self)
+        self.GET_HIT = GetHit(self)
 
         def mk_key_pred(key_const, sdl_type):
             def pred(e):
@@ -718,7 +766,7 @@ class Character:
         self.state_machine = StateMachine(
             self.IDLE,{
                 self.IDLE:{
-                    self.double_fwd: self.RUN,self.double_back: self.BACK_DASH,
+                    self.double_fwd: self.RUN,self.double_back: self.BACK_DASH, hitted: self.GET_HIT,
                     self.fwd_down: self.WALK, self.back_down: self.WALK, self.up_down: self.JUMP,self.down_down: self.SIT_DOWN,
                     self.lp_down: self.NORMAL_ATTACK,self.rp_down: self.NORMAL_ATTACK,self.lk_down: self.NORMAL_ATTACK,self.rk_down: self.NORMAL_ATTACK
                     },
@@ -738,7 +786,6 @@ class Character:
                     self.lp_down: self.AIR_ATTACK, self.rp_down: self.AIR_ATTACK, self.lk_down: self.AIR_ATTACK, self.rk_down: self.AIR_ATTACK
                 },
                 self.RUN:{
-
                     self.fwd_up:self.IDLE,self.back_up:self.IDLE,self.up_down:self.RUN_JUMP,
                     self.lp_down: self.NORMAL_ATTACK, self.rp_down: self.NORMAL_ATTACK, self.lk_down: self.NORMAL_ATTACK, self.rk_down: self.NORMAL_ATTACK
                 },
@@ -770,8 +817,10 @@ class Character:
                 },
                 self.GUARD:{
                     time_out:self.JUMP ,pressing_key:self.WALK, pressing_down:self.SIT_DOWN,
+                },
+                self.GET_HIT:{
+                    time_out:self.IDLE,
                 }
-
             }
         )
 
@@ -779,7 +828,8 @@ class Character:
         self.state_machine.update()
     def draw(self):
         self.state_machine.draw()
-        self.font.draw(self.xPos - 60, self.yPos + 150, f'(Time: {get_time():.2f}, Dir : {self.dir}, opnt_atk : {self.is_opponent_attacking})', (255, 255, 0))
+        #self.font.draw(self.xPos - 60, self.yPos + 150, f'(Time: {get_time():.2f}, Dir : {self.dir}, is_hitted : {self.is_hitted})', (255, 255, 0))
+        self.font.draw(self.xPos - 60, self.yPos + 150, f'(is_hitted : {self.is_hitted})', (255, 255, 0))
 
 
     def handle_event(self, event):
