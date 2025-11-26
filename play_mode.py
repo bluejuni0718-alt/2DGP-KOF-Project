@@ -75,6 +75,7 @@ def draw():
     hitbox_manager.detect_body_overlaps()
     hitbox_manager.detect_is_opponent_attacking()
     hitbox_manager.update_face_dir(characters[0], characters[1])
+    hitbox_manager.detect_attack_hits()
     update_canvas()
 
 def finish():
