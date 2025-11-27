@@ -438,7 +438,6 @@ class NormalAttack:
     def enter(self, e):
         self.character.frame = 0.0
         self.character.is_attacking = True
-
         for k in ('rp', 'lp', 'rk', 'lk'):
             if e[1].key == self.character.keymap.get(k):
                 self.attack_key = k
@@ -710,6 +709,9 @@ class Character:
         self.double_tap_interval=0.3
         self.is_sit = False
         self.is_low_guard = False
+        self.is_succeeded_attack = False
+        self.is_enable_combo = False
+        self.combo_count = 0
 
         self._last_down = {}  # key_const -> 마지막 다운 시각
         self._last_up = {}  # key_const -> 마지막 업 시각
@@ -722,10 +724,12 @@ class Character:
         self.fwd_pressed = False
         self.back_pressed = False
         self.down_pressed = False
+        self.rk_pressed = False
 
         self.keep_sit_down_last_frame = False
         self.time_out_and_down = lambda e: (e[0] == 'TIME_OUT') and self.down_pressed
         self.time_out_and_not_down = lambda e: (e[0] == 'TIME_OUT') and (not self.down_pressed)
+        self.can_combo = lambda e: (e[0] == 'ENABLE_COMBO') and self.is_enable_combo
 
         self.is_attacking = False
         self.is_opponent_attacking = False
@@ -749,6 +753,7 @@ class Character:
         self.SIT_ATTACK = SitAttack(self)
         self.GUARD = Guard(self)
         self.GET_HIT = GetHit(self)
+        self.COMBO_ATTACK = ComboAttack(self)
 
         def mk_key_pred(key_const, sdl_type):
             def pred(e):
