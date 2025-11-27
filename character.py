@@ -148,7 +148,6 @@ class Jump:
         self.character.frame = 0
         self.character.dir=0
         self.character.ground_y = self.character.default_ground_y
-
         # 처음 점프일 때만 vy 설정 (TIME_OUT으로 다시 들어올 때 재설정하지 않음)
         if not (e and e[0] == 'TIME_OUT'):
             g_abs = abs(GRAVITY_PPS2)
@@ -646,6 +645,45 @@ class GetHit:
                                                self.character.xPos,
                                                self.character.yPos, self.character.face_dir)
         pass
+
+class ComboAttack:
+    def __init__(self, character):
+        self.character = character
+        self.attack_key = None
+        self.frames = []
+        self.frame_count = 0
+    def enter(self, e):
+        self.character.frame = 0
+        self.character.is_attacking = True
+        self.attack_key = e[1]
+        self.character.combo_count += 1
+        if self.character.combo_count == 1:
+            self.frames = self.character.image.combo_motions.get('combo_1', {}).get('frames', [])
+        elif self.character.combo_count == 2:
+            self.frames = self.character.image.combo_motions.get('combo_2', {}).get('frames', [])
+        else:
+            self.frames = self.character.image.combo_motions.get('combo_3', {}).get('frames', [])
+        self.frame_count = len(self.frames)
+
+    def exit(self,e):
+        self.character.frame = 0
+        self.character.combo_count = 0
+        self.character.is_attacking = False
+        self.character.attack_hitbox.rect = (0, 0, 0, 0)
+    def do(self):
+        self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
+        self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir), self.character.yPos,
+                                             75 * self.character.face_dir, 100)
+        if int(self.character.frame) >= self.frame_count:
+            self.character.state_machine.handle_state_event(('TIME_OUT', None))
+        elif self.character.rk_pressed and self.character.is_succeeded_attack and (self.character._last_down[self.character.keymap['rk']] - get_time() < 0.3):
+            self.character.is_enable_combo = True
+            self.character.state_machine.handle_state_event(('ENABLE_COMBO', None))#TODO: 콤보 모션 끝난 후 다시 진입하게 변경 필요
+            return
+    def draw(self):
+        self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)],
+                                               self.character.xPos,
+                                               self.character.yPos, self.character.face_dir)
 
 class Character:
     def __init__(self, image_data,keymap=None, x = 400, y = 120):
