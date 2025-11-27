@@ -859,7 +859,7 @@ class Character:
                     time_out: self.IDLE,self.down_down:self.SIT_DOWN,self.fwd_down:self.WALK,self.back_down:self.WALK,self.up_down:self.JUMP
                 },
                 self.NORMAL_ATTACK:{
-                    time_out:self.IDLE,
+                    time_out:self.IDLE, self.can_combo: self.COMBO_ATTACK
                 },
                 self.AIR_ATTACK:{
                     time_out:self.JUMP, land : self.IDLE, self.land_moving: self.WALK,
@@ -873,12 +873,16 @@ class Character:
                 },
                 self.GET_HIT:{
                     time_out:self.IDLE,
+                },
+                self.COMBO_ATTACK:{
+                    time_out:self.IDLE, self.can_combo: self.COMBO_ATTACK
                 }
             }
         )
 
     def update(self):
         self.state_machine.update()
+
     def draw(self):
         self.state_machine.draw()
         #self.font.draw(self.xPos - 60, self.yPos + 150, f'(Time: {get_time():.2f}, Dir : {self.dir}, is_hitted : {self.is_hitted})', (255, 255, 0))
