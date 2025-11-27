@@ -57,6 +57,11 @@ class KimFrameInfo:
             'middle_hitted':{'frames':[5,6,7,6,5],'offsets':[(0,0),(0,0),(0,0),(0,0),(0,0)]},
             'low_hitted'   :{'frames':[9,10,11,10,9],'offsets':[(0,0),(0,0),(0,0),(0,0),(0,0)]}
         }
+        self.combo_motions={
+            'combo_1':{'frames':[391,392,393,394]},
+            'combo_2':{'frames':[395,396,397,398,399,400,401,402]},
+            'combo_3':{'frames':[191,192,193,194,195]},
+        }
         self.delXPos=0
         self.delYPos=0
     def draw_idle_by_frame_num(self,frame, x, y,face_dir):
