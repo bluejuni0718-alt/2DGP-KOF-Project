@@ -75,6 +75,10 @@ def guard(e):
 def hitted(e):
     return e[0] == 'HITTED'
 
+def enable_combo(e):
+    return e[0] == 'ENABLE_COMBO'
+
+
 class Idle:
     def __init__(self, character):
         self.character =character
