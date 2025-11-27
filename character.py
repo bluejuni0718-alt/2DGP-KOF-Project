@@ -899,6 +899,9 @@ class Character:
                 self.face_dir *= -1
             if event.key == self.keymap['down']:
                 self.down_pressed = True
+            if event.key == self.keymap['rk']:
+                self._last_down[event.key] = get_time()
+                self.rk_pressed = True
 
             # 상태머신에 INPUT 이벤트 먼저 전달
             self.state_machine.handle_state_event(('INPUT', event))
@@ -924,11 +927,14 @@ class Character:
                     # 마지막 업 시각 갱신 (좌/우)
                     self._last_up[event.key] = get_time()
 
+
             if event.key == self.keymap['down']:
                 self.down_pressed = False
                 # 업 시각 기록 (아래키)
                 self._last_up[event.key] = get_time()
-
+            if event.key == self.keymap['rk']:
+                self.rk_pressed = False
+                self._last_up[event.key] = get_time()
             # KEYUP는 INPUT 이벤트로 전달
             self.state_machine.handle_state_event(('INPUT', event))
 
