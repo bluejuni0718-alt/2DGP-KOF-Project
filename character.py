@@ -455,7 +455,13 @@ class NormalAttack:
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
         self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir), self.character.yPos, 75 * self.character.face_dir, 100)
         if int(self.character.frame) >= self.frame_count:
-            self.character.state_machine.handle_state_event(('TIME_OUT', None))
+            if self.character.rk_pressed and self.character.is_succeeded_attack and (self.character._last_down[self.character.keymap['rk']] - get_time() < 0.3):#TODO: 콤보 가능 구간 처리 보완 필요(조건 보정)
+                self.character.is_enable_combo = True
+                self.character.state_machine.handle_state_event(('ENABLE_COMBO', None))
+            else:
+                self.character.state_machine.handle_state_event(('TIME_OUT', None))
+
+
 
     def draw(self):
         self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)], self.character.xPos,
