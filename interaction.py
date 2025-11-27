@@ -21,11 +21,25 @@ class HitBoxManager:
             draw_rectangle(hb.rect[0], hb.rect[1], hb.rect[0] + hb.rect[2], hb.rect[1] + hb.rect[3])
 
     def collision_check(self, hb1: HitBox, hb2: HitBox) -> bool:
-        r1 = hb1.rect
-        r2 = hb2.rect
-        x1, y1, w1, h1 = r1
-        x2, y2, w2, h2 = r2
-        return x1 < x2 + w2 and x1 + w1 > x2 and y1 < y2 + h2 and y1 + h1 > y2
+        x1, y1, w1, h1 = hb1.rect
+        x2, y2, w2, h2 = hb2.rect
+
+        # 너비/높이가 음수일 수인 경우도 고려
+        left1 = min(x1, x1 + w1)
+        right1 = max(x1, x1 + w1)
+        bottom1 = min(y1, y1 + h1)
+        top1 = max(y1, y1 + h1)
+
+        left2 = min(x2, x2 + w2)
+        right2 = max(x2, x2 + w2)
+        bottom2 = min(y2, y2 + h2)
+        top2 = max(y2, y2 + h2)
+
+        # 두 사각형이 서로 겹치지 않는 조건을 먼저 검사
+        no_overlap = (right1 < left2) or (left1 > right2) or (top1 < bottom2) or (bottom1 > top2)
+
+        # no_overlap 가 False 이면 충돌(테두리 맞닿음 포함)
+        return not no_overlap
 
     def detect_is_opponent_attacking(self):
         main_boxes = [hb for hb in self.hitboxes if hb.hb_kind == 'body']
@@ -74,9 +88,11 @@ class HitBoxManager:
         # TODO: 데미지 처리 및 콤보 가능 구간 설정 필요
         if self.collision_check(attack_box_1, body_box_2) and body_box_2.owner.is_guarding == False:
             body_box_2.owner.is_hitted = True
+            body_box_1.owner.is_succeeded_attack = True
 
         if self.collision_check(attack_box_2, body_box_1) and body_box_1.owner.is_guarding == False:
             body_box_1.owner.is_hitted = True
+            body_box_2.owner.is_succeeded_attack = True
 
 
 
