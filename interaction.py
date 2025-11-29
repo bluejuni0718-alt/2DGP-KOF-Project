@@ -67,7 +67,7 @@ class HitBoxManager:
         ch_1 = box_1.owner
         ch_2 = box_2.owner
 
-        if self.collision_check(box_1, box_2) and ch_1.is_hitted == False and ch_2.is_hitted == False:
+        if self.collision_check(box_1, box_2) and ch_1.is_hitted == False and ch_2.is_hitted == False and ch_1.is_attacking == False and ch_2.is_attacking == False:
             if ch_1.vy ==0 or ch_2.vy ==0:
                 if ch_1.xPos < ch_2.xPos:
                     overlap_x = min(box_1.rect[0] + box_1.rect[2], box_2.rect[0] + box_2.rect[2]) - max(box_1.rect[0], box_2.rect[0])
@@ -80,15 +80,7 @@ class HitBoxManager:
 
     def detect_attack_hits(self):
         body_boxes = [hb for hb in self.hitboxes if hb.hb_kind == 'body']
-        attack_boxes = [hb for hb in self.hitboxes if hb.hb_kind == 'attack']
         body_box_1, body_box_2 = body_boxes[0], body_boxes[1]
-
-        if attack_boxes[0].owner == body_box_1.owner:
-            attack_box_1 = attack_boxes[0]
-            attack_box_2 = attack_boxes[1]
-        else:
-            attack_box_1 = attack_boxes[1]
-            attack_box_2 = attack_boxes[0]
 
         def handle(ch_1, ch_2):
             target = ch_2
