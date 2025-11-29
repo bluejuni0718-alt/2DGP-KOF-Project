@@ -1,4 +1,6 @@
 from pico2d import draw_rectangle
+from sdl2.sdlttf import TTF_RenderUNICODE
+
 
 class HitBox:
     def __init__(self, owner, hb_kind:str, rect:tuple[float, float, float, float]):
@@ -7,7 +9,8 @@ class HitBox:
         self.rect = rect
     def update(self, new_rect:tuple[float, float, float, float]):
         self.rect = new_rect
-
+    def reset_rect(self):
+        self.rect = (0,0,0,0)
 
 class HitBoxManager:
     def __init__(self):
@@ -77,24 +80,37 @@ class HitBoxManager:
 
     def detect_attack_hits(self):
         body_boxes = [hb for hb in self.hitboxes if hb.hb_kind == 'body']
-        body_box_1 = body_boxes[0]
-        body_box_2 = body_boxes[1]
         attack_boxes = [hb for hb in self.hitboxes if hb.hb_kind == 'attack']
+        body_box_1, body_box_2 = body_boxes[0], body_boxes[1]
+
         if attack_boxes[0].owner == body_box_1.owner:
             attack_box_1 = attack_boxes[0]
             attack_box_2 = attack_boxes[1]
         else:
             attack_box_1 = attack_boxes[1]
             attack_box_2 = attack_boxes[0]
-        # TODO: 데미지 처리 및 콤보 가능 구간 설정 필요
-        if self.collision_check(attack_box_1, body_box_2) and body_box_2.owner.is_guarding == False:
-            body_box_2.owner.is_hitted = True
-            body_box_1.owner.is_succeeded_attack = True
 
-        if self.collision_check(attack_box_2, body_box_1) and body_box_1.owner.is_guarding == False:
-            body_box_1.owner.is_hitted = True
-            body_box_2.owner.is_succeeded_attack = True
+        def handle(ch_1, ch_2):
+            target = ch_2
+            attacker = ch_1
+            if not self.collision_check(ch_1.attack_hitbox,ch_2.body_hitbox):
+                return
 
+            if target.is_guarding == True:
+                return
+
+            if target.get_damage == False:
+                return
+
+            target.is_hitted = True
+            attacker.is_succeeded_attack = True
+            target.hp -= attacker.atk
+            target.get_damage = False
+
+            target.state_machine.handle_state_event(('HITTED', None))
+
+        handle(body_box_1.owner, body_box_2.owner)
+        handle(body_box_2.owner, body_box_1.owner)
 
 
     def update_face_dir(self, ch1, ch2):
