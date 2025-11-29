@@ -458,8 +458,9 @@ class NormalAttack:
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
         self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir), self.character.yPos, 75 * self.character.face_dir, 100)
         if int(self.character.frame) >= self.frame_count:
-            if self.character.rk_pressed and self.character.is_succeeded_attack and (self.character._last_down[self.character.keymap['rk']] - get_time() < 0.3):#TODO: 콤보 가능 구간 처리 보완 필요(조건 보정)
+            if self.character.rk_pressed and self.character.is_succeeded_attack and (get_time() - self.character._last_down[self.character.keymap['rk']] < 0.2):
                 self.character.is_enable_combo = True
+                self.character.combo_count += 1
                 self.character.state_machine.handle_state_event(('ENABLE_COMBO', None))
             else:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
@@ -501,23 +502,23 @@ class AirAttack:
         # 애니 진행 및 중력 처리
         if int(self.character.frame)<self.frame_count - 1:
             self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
+            self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir),
+                                                 self.character.yPos - 100, 75 * self.character.face_dir, 200)
+            self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
+            self.character.yPos += self.character.vy * game_framework.frame_time
         else:
+            self.character.attack_hitbox.rect = (0,0,0,0)
             self.character.dir = 0
-            self.character.attack_hitbox.rect = (0, 0, 0, 0)
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
-            return
-        self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir), self.character.yPos - 100, 75 * self.character.face_dir, 200)
-        self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
-        self.character.yPos += self.character.vy * game_framework.frame_time
-
         # 착지 처리
         if self.character.yPos <= self.character.ground_y:
             self.character.attack_hitbox.rect = (0, 0, 0, 0)
+            self.character.dir = 0
+            self.character.attack_hitbox.rect = (0,0,0,0)
             self.character.ground_y = self.character.default_ground_y
             self.character.yPos = self.character.default_ground_y
             self.character.vx = 0.0
             self.character.vy = 0.0
-            self.character.dir = 0
             self.character.state_machine.handle_state_event(('LAND', None))
         self.character.xPos += self.character.vx * game_framework.frame_time
     def draw(self):
