@@ -51,6 +51,7 @@ class HitBoxManager:
             ch_2.is_opponent_attacking = True
         else:
             ch_2.is_opponent_attacking = False
+
         if ch_2.is_attacking :
             ch_1.is_opponent_attacking = True
         else:
@@ -63,8 +64,8 @@ class HitBoxManager:
         ch_1 = box_1.owner
         ch_2 = box_2.owner
 
-        if self.collision_check(box_1, box_2):
-            if ch_1.vy ==0 or ch_1.vy ==0:
+        if self.collision_check(box_1, box_2) and ch_1.is_hitted == False and ch_2.is_hitted == False:
+            if ch_1.vy ==0 or ch_2.vy ==0:
                 if ch_1.xPos < ch_2.xPos:
                     overlap_x = min(box_1.rect[0] + box_1.rect[2], box_2.rect[0] + box_2.rect[2]) - max(box_1.rect[0], box_2.rect[0])
                     ch_1.xPos -= overlap_x//2
