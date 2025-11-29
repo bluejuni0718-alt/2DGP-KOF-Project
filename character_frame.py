@@ -59,8 +59,8 @@ class KimFrameInfo:
         }
         self.combo_motions={
             'combo_1':{'frames':[391,392,393,394]},
-            'combo_2':{'frames':[395,396,397,398,399,400,401,402]},
-            'combo_3':{'frames':[191,192,193,194,195]},
+            'combo_2':{'frames':[395,396,397,398,399,400,401,402,403,404]},
+            'combo_3':{'frames':[191,192,193,194,195,196,197]},
         }
         self.delXPos=0
         self.delYPos=0
