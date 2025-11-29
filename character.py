@@ -734,6 +734,11 @@ class Character:
         self._last_down = {}  # key_const -> 마지막 다운 시각
         self._last_up = {}  # key_const -> 마지막 업 시각
 
+        for k in ('left', 'right', 'up', 'down', 'lp', 'rp', 'lk', 'rk'):
+            key_const = self.keymap[k]
+            self._last_down[key_const] = 0.0
+            self._last_up[key_const] = 0.0
+
         self.manager = hitbox_manager
         self.body_hitbox = self.register_hitbox('body', 0)
         self.attack_hitbox = HitBox(self, 'attack', (0, 0, 0, 0))
