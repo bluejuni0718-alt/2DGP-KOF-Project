@@ -512,7 +512,6 @@ class AirAttack:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
         # 착지 처리
         if self.character.yPos <= self.character.ground_y:
-            self.character.attack_hitbox.rect = (0, 0, 0, 0)
             self.character.dir = 0
             self.character.attack_hitbox.rect = (0,0,0,0)
             self.character.ground_y = self.character.default_ground_y
@@ -646,7 +645,6 @@ class GetHit:
         if self.character.vy !=0 and int(self.character.frame) >= self.frame_count - 1:
             self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
             self.character.yPos += self.character.vy * game_framework.frame_time
-
         if int(self.character.frame) >= self.frame_count - 1:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
         pass
@@ -662,34 +660,49 @@ class ComboAttack:
         self.attack_key = None
         self.frames = []
         self.frame_count = 0
+        self.enable_combo_time = 0
     def enter(self, e):
         self.character.frame = 0
         self.character.is_attacking = True
         self.attack_key = e[1]
-        self.character.combo_count += 1
+        self.enable_combo_time = get_time() - self.character._last_down[self.character.keymap['rk']]
         if self.character.combo_count == 1:
             self.frames = self.character.image.combo_motions.get('combo_1', {}).get('frames', [])
         elif self.character.combo_count == 2:
             self.frames = self.character.image.combo_motions.get('combo_2', {}).get('frames', [])
-        else:
+        elif self.character.combo_count == 3:
             self.frames = self.character.image.combo_motions.get('combo_3', {}).get('frames', [])
+        else:
+            self.character.state_machine.handle_state_event(('TIME_OUT', None))
+            self.character.combo_count = 0
+            return
         self.frame_count = len(self.frames)
 
     def exit(self,e):
         self.character.frame = 0
-        self.character.combo_count = 0
         self.character.is_attacking = False
         self.character.attack_hitbox.rect = (0, 0, 0, 0)
+        self.character.is_succeeded_attack = False
+        if self.character.combo_count > 3 or not self.character.is_enable_combo:
+            self.character.combo_count = 0
     def do(self):
-        self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
+        self.character.frame += FRAMES_PER_COMBO_ACTION * COMBO_ACTION_PER_TIME * game_framework.frame_time
         self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir), self.character.yPos,
                                              75 * self.character.face_dir, 100)
-        if int(self.character.frame) >= self.frame_count:
-            self.character.state_machine.handle_state_event(('TIME_OUT', None))
-        elif self.character.rk_pressed and self.character.is_succeeded_attack and (self.character._last_down[self.character.keymap['rk']] - get_time() < 0.3):
-            self.character.is_enable_combo = True
-            self.character.state_machine.handle_state_event(('ENABLE_COMBO', None))#TODO: 콤보 모션 끝난 후 다시 진입하게 변경 필요
-            return
+        if int(self.character.frame) >= self.frame_count and self.character.combo_count < 4:
+            if self.character.is_succeeded_attack and self.enable_combo_time < 0.1: #todo: 2번째 콤보 조건 고려
+                self.character.is_enable_combo = True
+                self.character.combo_count += 1
+                self.character.state_machine.handle_state_event(('ENABLE_COMBO', None))
+            else:
+                self.character.state_machine.handle_state_event(('TIME_OUT', None))
+                self.character.combo_count = 0
+                self.character.frame = 0
+                self.character.is_attacking = False
+                self.character.attack_hitbox.rect = (0, 0, 0, 0)
+                self.character.is_succeeded_attack = False
+
+
     def draw(self):
         self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)],
                                                self.character.xPos,
