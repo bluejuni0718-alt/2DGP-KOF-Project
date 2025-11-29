@@ -929,22 +929,14 @@ class Character:
             if event.key == self.keymap['down']:
                 self.down_pressed = True
             if event.key == self.keymap['rk']:
-                self._last_down[event.key] = get_time()
                 self.rk_pressed = True
 
             # 상태머신에 INPUT 이벤트 먼저 전달
             self.state_machine.handle_state_event(('INPUT', event))
 
-            # 공격키면 명시적 ATTACK 이벤트도 발행
-            atk = None
-            for k in ('lp', 'rp', 'lk', 'rk'):
-                if event.key == self.keymap.get(k):
-                    atk = k
-                    break
-            if atk:
-                self.state_machine.handle_state_event(('ATTACK', atk))
+
             # 마지막 다운 시각 갱신 (좌/우)
-            if event.key in (self.keymap['left'], self.keymap['right']):
+            if event.key in (self.keymap['left'], self.keymap['right'], self.keymap['rk']):
                     self._last_down[event.key] = get_time()
         elif event.type == SDL_KEYUP:
             if event.key in (self.keymap['left'], self.keymap['right']):
