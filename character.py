@@ -451,12 +451,16 @@ class NormalAttack:
     def exit(self, e):
         self.character.frame = 0.0
         self.character.is_attacking = False
+        self.character.is_succeeded_attack = False
         self.character.attack_hitbox.rect = (0, 0, 0, 0)
         self.attack_key = None
 
     def do(self):
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
-        self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir), self.character.yPos, 75 * self.character.face_dir, 100)
+        if self.character.is_succeeded_attack == False:
+            self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir), self.character.yPos, 75 * self.character.face_dir, 100)
+        else:
+            self.character.attack_hitbox.reset_rect()
         if int(self.character.frame) >= self.frame_count:
             if self.character.rk_pressed and self.character.is_succeeded_attack and (get_time() - self.character._last_down[self.character.keymap['rk']] < 0.2):
                 self.character.is_enable_combo = True
@@ -464,8 +468,6 @@ class NormalAttack:
                 self.character.state_machine.handle_state_event(('ENABLE_COMBO', None))
             else:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
-
-
 
     def draw(self):
         self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)], self.character.xPos,
@@ -590,7 +592,7 @@ class Guard:
 
     def exit(self, e):
         self.character.is_guarding= False
-        self.is_low_guard = False
+        self.character.is_low_guard = False
         self.character.frame = 0.0
 
     def do(self):
@@ -626,6 +628,7 @@ class GetHit:
         self.frame_count = 0
     def enter(self,e):
         self.character.frame = 0.0
+        self.character.get_damage = True
         if self.character.vy == 0:
             if self.character.is_sit:
                 self.state = 'low_hitted'
@@ -645,6 +648,7 @@ class GetHit:
         if self.character.vy !=0 and int(self.character.frame) >= self.frame_count - 1:
             self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
             self.character.yPos += self.character.vy * game_framework.frame_time
+
         if int(self.character.frame) >= self.frame_count - 1:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
         pass
@@ -664,6 +668,7 @@ class ComboAttack:
     def enter(self, e):
         self.character.frame = 0
         self.character.is_attacking = True
+        self.character.is_succeeded_attack = False
         self.attack_key = e[1]
         self.enable_combo_time = get_time() - self.character._last_down[self.character.keymap['rk']]
         if self.character.combo_count == 1:
@@ -687,13 +692,17 @@ class ComboAttack:
             self.character.combo_count = 0
     def do(self):
         self.character.frame += FRAMES_PER_COMBO_ACTION * COMBO_ACTION_PER_TIME * game_framework.frame_time
-        self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir), self.character.yPos,
-                                             75 * self.character.face_dir, 100)
+        if self.character.is_succeeded_attack == False:
+            self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir), self.character.yPos,
+                                                    75 * self.character.face_dir, 100)
+        else:
+            self.character.attack_hitbox.reset_rect()
         if int(self.character.frame) >= self.frame_count and self.character.combo_count < 4:
-            if self.character.is_succeeded_attack and self.enable_combo_time < 0.1: #todo: 2번째 콤보 조건 고려
+            if self.character.is_succeeded_attack and self.enable_combo_time < 0.1:
                 self.character.is_enable_combo = True
                 self.character.combo_count += 1
                 self.character.state_machine.handle_state_event(('ENABLE_COMBO', None))
+                self.character.is_succeeded_attack = False
             else:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
                 self.character.combo_count = 0
@@ -701,7 +710,6 @@ class ComboAttack:
                 self.character.is_attacking = False
                 self.character.attack_hitbox.rect = (0, 0, 0, 0)
                 self.character.is_succeeded_attack = False
-
 
     def draw(self):
         self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)],
@@ -732,6 +740,7 @@ class Character:
         self.is_succeeded_attack = False
         self.is_enable_combo = False
         self.combo_count = 0
+        self.get_damage = True
 
         self._last_down = {}  # key_const -> 마지막 다운 시각
         self._last_up = {}  # key_const -> 마지막 업 시각
@@ -758,8 +767,6 @@ class Character:
 
         self.is_attacking = False
         self.is_opponent_attacking = False
-        self.attack_buffer = []  # list of (attack_key_str, timestamp)
-        self.attack_buffer_window = 0.35  # 버퍼 유효 시간(초)
 
         self.is_guarding = False
         self.is_hitted = False
@@ -897,7 +904,7 @@ class Character:
                     time_out:self.JUMP ,pressing_key:self.WALK, pressing_down:self.SIT_DOWN,
                 },
                 self.GET_HIT:{
-                    time_out:self.IDLE,
+                    time_out:self.IDLE, hitted:self.GET_HIT
                 },
                 self.COMBO_ATTACK:{
                     time_out:self.IDLE, self.can_combo: self.COMBO_ATTACK
@@ -911,9 +918,9 @@ class Character:
     def draw(self):
         self.state_machine.draw()
         #self.font.draw(self.xPos - 60, self.yPos + 150, f'(Time: {get_time():.2f}, Dir : {self.dir}, is_hitted : {self.is_hitted})', (255, 255, 0))
-        self.font.draw(self.xPos - 60, self.yPos + 150, f'(is_hitted : {self.is_hitted})', (255, 255, 0))
-
-
+        #self.font.draw(self.xPos - 60, self.yPos + 150, f'(is_hitted : {self.is_hitted}, combo_count : {self.combo_count})', (255, 255, 0))
+        #self.font.draw(self.xPos - 60, self.yPos + 150,f'(combo_count : {self.combo_count})', (255, 255, 0))
+        self.font.draw(self.xPos - 60, self.yPos + 150, f'(hp, atk : {self.hp, self.atk})', (255, 255, 0))
     def handle_event(self, event):
         # 키 입력 처리 및 마지막 up/down 시각 기록
         if event.type == SDL_KEYDOWN:
