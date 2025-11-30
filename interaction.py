@@ -98,7 +98,7 @@ class HitBoxManager:
             attacker.is_succeeded_attack = True
             target.hp -= attacker.atk
             target.get_damage = False
-
+            target.xPos += (40 * attacker.face_dir)  # 넉백 효과
             target.state_machine.handle_state_event(('HITTED', None))
 
         handle(body_box_1.owner, body_box_2.owner)
