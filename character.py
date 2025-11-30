@@ -535,7 +535,7 @@ class SitAttack:
         self.frames=[]
         self.offset = None
         self.frame_count = 0
-
+        self.character.attack_hitbox.rect = (0, 0, 0, 0)
     def enter(self, e):
         self.character.is_sit = True
         self.character.frame = 0.0
@@ -543,12 +543,15 @@ class SitAttack:
             if e[1].key == self.character.keymap.get(k):
                 self.attack_key = k
                 break
-
+        self.frames = self.character.image.sit_attacks.get(self.attack_key, {}).get('frames', [])
+        self.offset = self.character.image.sit_attacks.get(self.attack_key, {}).get('offsets', [])
+        self.frame_count = len(self.frames)
     def exit(self, e):
         self.character.frame = 0.0
         self.character.is_sit = False
         self.attack_key = None
-
+        self.character.attack_hitbox.rect = (0, 0, 0, 0)
+        self.character.is_succeeded_attack =False
         if self.character.down_pressed:
             self.character.keep_sit_down_last_frame = True
         else:
@@ -556,9 +559,11 @@ class SitAttack:
 
     def do(self):
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
-        self.frames = self.character.image.sit_attacks.get(self.attack_key, {}).get('frames', [])
-        self.offset = self.character.image.sit_attacks.get(self.attack_key, {}).get('offsets', [])
-        self.frame_count = len(self.frames)
+        if self.character.is_succeeded_attack == False:
+            self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir),
+                                                 self.character.yPos - 75, 75 * self.character.face_dir, 100)
+        else:
+            self.character.attack_hitbox.reset_rect()
 
         if int(self.character.frame) >= self.frame_count:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
