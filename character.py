@@ -647,6 +647,7 @@ class GetHit:
     def exit(self,e):
         self.character.frame = 0
         self.character.is_hitted = False
+        self.character.get_damage = True
         pass
     def do(self):
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
@@ -655,7 +656,10 @@ class GetHit:
             self.character.yPos += self.character.vy * game_framework.frame_time
 
         if int(self.character.frame) >= self.frame_count - 1:
+            self.character.is_hitted = False
+            self.character.get_damage = True
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
+            self.character.frame = 0.0
         pass
     def draw(self):
         self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)],
