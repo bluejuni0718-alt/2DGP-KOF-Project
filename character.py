@@ -686,9 +686,13 @@ class ComboAttack:
         self.enable_combo_time = get_time() - self.character._last_down[self.character.keymap['rk']]
         if self.character.combo_count == 1:
             self.frames = self.character.image.combo_motions.get('combo_1', {}).get('frames', [])
+            self.character.xPos += 50 * self.character.face_dir
         elif self.character.combo_count == 2:
             self.frames = self.character.image.combo_motions.get('combo_2', {}).get('frames', [])
+            self.character.xPos += 50 * self.character.face_dir
         elif self.character.combo_count == 3:
+            self.character.atk = 10  # 마지막 콤보 공격의 공격력 증가
+            self.character.xPos += 75 * self.character.face_dir
             self.frames = self.character.image.combo_motions.get('combo_3', {}).get('frames', [])
         else:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
@@ -701,11 +705,12 @@ class ComboAttack:
         self.character.is_attacking = False
         self.character.attack_hitbox.rect = (0, 0, 0, 0)
         self.character.is_succeeded_attack = False
+        self.character.atk = 5  # 콤보 공격 후 기본 공격력으로 복원
         if self.character.combo_count > 3 or not self.character.is_enable_combo:
             self.character.combo_count = 0
     def do(self):
         self.character.frame += FRAMES_PER_COMBO_ACTION * COMBO_ACTION_PER_TIME * game_framework.frame_time
-        if self.character.is_succeeded_attack == False:
+        if self.character.is_succeeded_attack == False and int(self.character.frame) == self.frame_count // 2:
             self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir), self.character.yPos,
                                                     75 * self.character.face_dir, 100)
         else:
