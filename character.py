@@ -740,7 +740,7 @@ class Character:
         self.font = load_font('ENCR10B.TTF', 16)
         self.keymap = default if keymap is None else {**default, **keymap}
         self.hp = 100
-        self.atk = 10 #todo : 공격별 데미지 다르게 설정 고려
+        self.atk = 5
         self.xPos = x
         self.yPos = y
         self.vy = 0.0
