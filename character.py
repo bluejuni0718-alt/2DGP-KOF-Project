@@ -496,6 +496,7 @@ class AirAttack:
     def exit(self, e):
         self.character.dir = 0
         self.character.is_attacking = False
+        self.character.is_succeeded_attack = False
         self.character.frame = 0.0
         self.character.attack_hitbox.rect = (0, 0, 0, 0)
         self.attack_key = None
@@ -504,8 +505,11 @@ class AirAttack:
         # 애니 진행 및 중력 처리
         if int(self.character.frame)<self.frame_count - 1:
             self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
-            self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir),
-                                                 self.character.yPos - 100, 75 * self.character.face_dir, 200)
+            if self.character.is_succeeded_attack == False:
+                self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir),
+                                                     self.character.yPos, 75 * self.character.face_dir, 100)
+            else:
+                self.character.attack_hitbox.reset_rect()
             self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
             self.character.yPos += self.character.vy * game_framework.frame_time
         else:
