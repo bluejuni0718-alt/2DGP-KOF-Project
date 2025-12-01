@@ -44,8 +44,8 @@ def init():
     pass
 
 def finish():
-    global image
-    del image
+    global image, p1_image, p2_image
+    del image, p1_image, p2_image
     pass
 
 def handle_events():
