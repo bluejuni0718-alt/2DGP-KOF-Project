@@ -56,10 +56,14 @@ def handle_events():
         elif event.type==SDL_KEYDOWN and event.key==SDLK_RETURN:
             game_framework.change_mode(play_mode)
     pass
-
+#0,35,67,100
 def draw():
+    global image, p1_image, p2_image
     clear_canvas()
     image.draw(400,300,800,600)
+    p1_image.clip_draw(0,0,32,33,p1_x,p1_y,100,115)
+    p2_image.clip_draw(67,0,32,33, p2_x, p2_y,100,115)
+    print(f'x: {p2_x}, y: {p2_y}')
     update_canvas()
     pass
 
