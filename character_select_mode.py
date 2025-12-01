@@ -35,8 +35,12 @@ p2_y = 50
 p_move_step = 175
 
 def init():
-    global image
-    image= load_image('GameMode_Image/Game_Character_Select.png')
+    global image, p1_image, p2_image, p1_x, p1_y, p2_x, p2_y
+    image = load_image('GameMode_Image/Game_Character_Select.png')
+    p1_image = load_image('GameMode_Image/Game_Character_Select_Player.png')
+    p2_image = load_image('GameMode_Image/Game_Character_Select_Player.png')
+    p1_x, p1_y = 228, 242
+    p2_x, p2_y = 575, 242
     pass
 
 def finish():
