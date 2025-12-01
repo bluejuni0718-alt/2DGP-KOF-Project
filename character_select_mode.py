@@ -2,7 +2,37 @@ from pico2d import*
 import game_framework
 import play_mode
 
-image =None
+
+image = None
+p1_image = None
+p2_image = None
+
+KEYMAP_P1 ={
+    'left' :SDLK_a,
+    'right':SDLK_d,
+    'up'   :SDLK_w,
+    'down' :SDLK_s,
+    'lp'   :SDLK_f,
+    'rp'   :SDLK_g,
+    'rk'   :SDLK_b,
+    'lk'   :SDLK_c
+}
+KEYMAP_P2 ={
+    'left'  :SDLK_LEFT,
+    'right' :SDLK_RIGHT,
+    'up'    :SDLK_UP,
+    'down'  :SDLK_DOWN,
+    'lp'    :SDLK_KP_4,
+    'rp'    :SDLK_KP_5,
+    'rk'    :SDLK_KP_2,
+    'lk'    :SDLK_KP_1
+}
+
+p1_x = 200
+p1_y = 50
+p2_x = 600
+p2_y = 50
+p_move_step = 175
 
 def init():
     global image
