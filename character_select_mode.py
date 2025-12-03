@@ -34,6 +34,8 @@ p2_x = 600
 p2_y = 50
 p1_rect = [0,0,32,33]
 p2_rect = [67,0,32,33]
+p1_selected = False
+p2_selected = False
 p_move_step = 175
 
 def init():
