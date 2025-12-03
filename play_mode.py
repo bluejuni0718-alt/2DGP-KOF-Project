@@ -3,32 +3,12 @@ import game_framework
 from character import Character, KimFrameInfo, hitbox_manager
 import game_world
 import intro_mode
+import common
 from interaction import *
 
 
 running = True
 debug_hitbox = False
-characters =[]
-KEYMAP_P1 ={
-    'left' :SDLK_a,
-    'right':SDLK_d,
-    'up'   :SDLK_w,
-    'down' :SDLK_s,
-    'lp'   :SDLK_f,
-    'rp'   :SDLK_g,
-    'rk'   :SDLK_b,
-    'lk'   :SDLK_c
-}
-KEYMAP_P2 ={
-    'left'  :SDLK_LEFT,
-    'right' :SDLK_RIGHT,
-    'up'    :SDLK_UP,
-    'down'  :SDLK_DOWN,
-    'lp'    :SDLK_KP_4,
-    'rp'    :SDLK_KP_5,
-    'rk'    :SDLK_KP_2,
-    'lk'    :SDLK_KP_1
-}
 
 
 def handle_events():
@@ -45,15 +25,14 @@ def handle_events():
             global debug_hitbox
             debug_hitbox = not debug_hitbox
         else:
-            for c in characters:
+            for c in common.characters:
                 c.handle_event(event)
     pass
 
 def init():
-    global characters
-    c1 = Character(KimFrameInfo(), keymap=KEYMAP_P1, x=100, y=120)
-    c2 = Character(KimFrameInfo(), keymap=KEYMAP_P2, x=400, y=120)
-    characters = [c1, c2]
+    c1 = Character(KimFrameInfo(), keymap=common.KEYMAP_P1, x=100, y=120)
+    c2 = Character(KimFrameInfo(), keymap=common.KEYMAP_P2, x=700, y=120)
+    common.characters = [c1, c2]
     if c1.xPos < c2.xPos:
         c1.face_dir = 1
         c2.face_dir = -1
@@ -61,7 +40,7 @@ def init():
         c1.face_dir = -1
         c2.face_dir = 1
 
-    for c in characters:
+    for c in common.characters:
         game_world.add_object(c)
 
 def update():
@@ -74,7 +53,7 @@ def draw():
         hitbox_manager.debug_draw()
     hitbox_manager.detect_body_overlaps()
     hitbox_manager.detect_is_opponent_attacking()
-    hitbox_manager.update_face_dir(characters[0], characters[1])
+    hitbox_manager.update_face_dir(common.characters[0], common.characters[1])
     hitbox_manager.detect_attack_hits()
     update_canvas()
 

@@ -1,3 +1,5 @@
+from pico2d import *
+import character_frame
 
 characters = []
 KEYMAP_P1 ={
