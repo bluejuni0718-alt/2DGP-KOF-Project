@@ -37,7 +37,8 @@ p2_rect = [67,0,32,33]
 p1_selected = False
 p2_selected = False
 p_move_step = 175
-
+min_x = 210
+max_x = 580
 def init():
     global image, p1_image, p2_image, p1_x, p1_y, p2_x, p2_y
     image = load_image('GameMode_Image/Game_Character_Select.png')
