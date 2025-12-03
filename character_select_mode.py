@@ -82,7 +82,7 @@ def handle_events():
                 p2_rect[0] = 100
                 p2_selected = True
                 pass
-        elif event.type==SDL_KEYDOWN and event.key==SDLK_RETURN:
+        elif p1_selected and p2_selected:
             game_framework.change_mode(play_mode)
     pass
 #0,35,67,100
