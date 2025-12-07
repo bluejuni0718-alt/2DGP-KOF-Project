@@ -5,6 +5,7 @@ from interaction import *
 from state_machine import *
 from character_frame import *
 from character_frame import CHARACTER_WIDTH_SCALE, CHARACTER_HEIGHT_SCALE
+import common
 
 hitbox_manager = HitBoxManager()
 
@@ -104,8 +105,9 @@ class Idle:
             return
 
     def draw(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.update_hitbox(self.character.body_hitbox, int(self.character.frame))
-        self.character.image.draw_idle_by_frame_num(int(self.character.frame), self.character.xPos, self.character.yPos,self.character.face_dir)
+        self.character.image.draw_idle_by_frame_num(int(self.character.frame), sx, self.character.yPos,self.character.face_dir)
         pass
 
 class Walk:
@@ -135,13 +137,13 @@ class Walk:
             self.character.state_machine.handle_state_event(('GUARD', None))
             return
 
-
         self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.walk_frames
         self.character.xPos +=self.character.dir * WALK_SPEED_PPS * game_framework.frame_time
         pass
     def draw(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.update_hitbox(self.character.body_hitbox, self.character.image.walk_frame_start + int(self.character.frame))
-        self.character.image.draw_by_frame_num(self.character.image.walk_frame_start + int(self.character.frame),self.character.xPos, self.character.yPos,self.character.face_dir)
+        self.character.image.draw_by_frame_num(self.character.image.walk_frame_start + int(self.character.frame),sx, self.character.yPos,self.character.face_dir)
         pass
 
 class Jump:
@@ -931,6 +933,7 @@ class Character:
         )
 
     def update(self):
+        #self.xPos = clamp(50, self.xPos, common.palace_map.cw - 1 - 50)
         self.state_machine.update()
 
     def draw(self):
@@ -998,8 +1001,9 @@ class Character:
 
     def update_hitbox(self, hitbox:HitBox,frame_num):
         ox, oy, w, h = self.image.frame_list[frame_num]
+        sx = self.xPos - common.palace_map.window_left - 50
         offset_width = 20
         if self.face_dir == 1:
-            hitbox.update((self.xPos - w, self.yPos - h, CHARACTER_WIDTH_SCALE * w - offset_width, CHARACTER_HEIGHT_SCALE*h))
+            hitbox.update((sx - w, self.yPos - h, CHARACTER_WIDTH_SCALE * w - offset_width, CHARACTER_HEIGHT_SCALE*h))
         else:
-            hitbox.update((self.xPos - w + offset_width, self.yPos - h, CHARACTER_WIDTH_SCALE * w - offset_width, CHARACTER_HEIGHT_SCALE*h))
+            hitbox.update((sx - w + offset_width, self.yPos - h, CHARACTER_WIDTH_SCALE * w - offset_width, CHARACTER_HEIGHT_SCALE*h))
