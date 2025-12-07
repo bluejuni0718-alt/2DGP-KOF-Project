@@ -1,12 +1,10 @@
 from pico2d import *
 import game_framework
-from character import Character, KimFrameInfo, hitbox_manager
+from character import Character, KimFrameInfo
 import game_world
 import intro_mode
 import common
-from map import PalaceMap, Timer, HpBar
-from interaction import *
-
+from map import PalaceMap, Timer, HpBar, WinCount
 
 running = True
 debug_hitbox = False
