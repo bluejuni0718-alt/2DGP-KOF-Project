@@ -8,6 +8,9 @@ p1_win_counter = None
 p2_win_counter = None
 p1_HpBar = None
 p2_HpBar = None
+c1 = None
+c2 = None
+hitbox_manager = None
 KEYMAP_P1 ={
     'left' :SDLK_a,
     'right':SDLK_d,
