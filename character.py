@@ -677,9 +677,15 @@ class GetHit:
         pass
     def do(self):
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
-        if self.character.vy !=0 and int(self.character.frame) >= self.frame_count - 1:
+        if self.state == 'air_hitted':
+            if self.frame_count > 0 and self.character.frame > (self.frame_count - 1):
+                self.character.frame = int(self.frame_count - 1)
+                if self.character.hp<=0:
+                    self.character.state_machine.handle_state_event(('DEAD', None))
+                    return
             self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
             self.character.yPos += self.character.vy * game_framework.frame_time
+            self.character.xPos += self.character.vx * game_framework.frame_time
 
         if int(self.character.frame) >= self.frame_count - 1:
             self.character.is_hitted = False
