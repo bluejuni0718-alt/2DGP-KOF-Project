@@ -946,12 +946,12 @@ class Character:
                     },
                 self.JUMP:{
                     guard: self.GUARD,
-                    time_out: self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN,
+                    time_out: self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN,hitted:self.GET_HIT,
                     self.lp_down: self.AIR_ATTACK, self.rp_down: self.AIR_ATTACK, self.lk_down: self.AIR_ATTACK, self.rk_down: self.AIR_ATTACK
                     },
                 self.MOVE_JUMP: {
                     guard:self.GUARD,
-                    time_out:self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN,
+                    time_out:self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN,hitted:self.GET_HIT,
                     self.lp_down: self.AIR_ATTACK, self.rp_down: self.AIR_ATTACK, self.lk_down: self.AIR_ATTACK, self.rk_down: self.AIR_ATTACK
                 },
                 self.RUN:{
@@ -960,7 +960,7 @@ class Character:
                 },
                 self.RUN_JUMP:{
                     guard: self.GUARD,
-                    time_out:self.IDLE,pressing_key:self.RUN, pressing_down:self.SIT_DOWN,
+                    time_out:self.IDLE,pressing_key:self.RUN, pressing_down:self.SIT_DOWN,hitted:self.GET_HIT,
                     self.lp_down: self.AIR_ATTACK, self.rp_down: self.AIR_ATTACK, self.lk_down: self.AIR_ATTACK, self.rk_down: self.AIR_ATTACK
                 },
                 self.BACK_DASH:{
