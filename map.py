@@ -94,11 +94,11 @@ class WinCount:
             self.Win_Count_1_image.clip_draw(0, 0, 30, 30, self.x, self.y, 30, 30)
             self.Win_Count_2_image.clip_draw(0, 0, 30, 30, self.x + 30, self.y, 30, 30)
         elif self.character.win_count ==1:
-            self.Win_Count_1_image.clip_draw(0, 0, 30, 30, self.x, self.y, 30, 30)
-            self.Win_Count_2_image.clip_draw(30, 0, 30, 30, self.x + 30, self.y, 30, 30)
+            self.Win_Count_1_image.clip_draw(60, 0, 30, 30, self.x, self.y, 30, 30)
+            self.Win_Count_2_image.clip_draw(0, 0, 30, 30, self.x + 30, self.y, 30, 30)
         elif self.character.win_count ==2:
-            self.Win_Count_1_image.clip_draw(30, 0, 30, 30, self.x, self.y, 30, 30)
-            self.Win_Count_2_image.clip_draw(30, 0, 30, 30, self.x + 30, self.y, 30, 30)
+            self.Win_Count_1_image.clip_draw(60, 0, 30, 30, self.x, self.y, 30, 30)
+            self.Win_Count_2_image.clip_draw(60, 0, 30, 30, self.x + 30, self.y, 30, 30)
 
 
 
