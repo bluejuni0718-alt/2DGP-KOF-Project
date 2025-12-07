@@ -8,6 +8,10 @@ from map import PalaceMap, Timer, HpBar, WinCount
 
 running = True
 debug_hitbox = False
+round_over = False
+
+ROUND_OVER_DELAY = 2.0
+round_over_timer = 0.0
 
 
 def handle_events():
