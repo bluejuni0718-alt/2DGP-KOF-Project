@@ -62,4 +62,23 @@ class Timer:
         one = seconds % 10
         self.image.clip_draw(ten * 20, 51 ,19, 50, 390, 565, 30, 70)
         self.image.clip_draw(one * 20, 51, 19, 50, 420,565,30,70)
-        print(f'Time: {int(self.total_time)}s')
+
+class HpBar:
+    def __init__(self, character, x, y):
+        self.character = character
+        self.x = x
+        self.y = y
+        self.Hp_Bar_image = load_image('GameMode_image/Game_Play_HPbar.png')
+        self.Hp_Bar_Cover_image = load_image('GameMode_image/Game_Play_HPbar_Cover.png')
+
+    def update(self):
+        pass
+
+    def draw(self):
+        self.Hp_Bar_Cover_image.clip_draw(0, 0, 100, 40, self.x, self.y, 300, 40)
+        self.Hp_Bar_image.clip_draw(0, 0, 300, 40, self.x - 3*(100 - self.character.hp)/2, self.y, 3 * self.character.hp, 40)
+
+
+
+
+
