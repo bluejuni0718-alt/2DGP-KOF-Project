@@ -186,10 +186,11 @@ class Jump:
 
 
     def draw(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.update_hitbox(self.character.body_hitbox, self.character.image.jump_frame_start + int(self.character.frame))
         self.character.image.draw_by_frame_num(
             self.character.image.jump_frame_start + int(self.character.frame),
-            self.character.xPos, self.character.yPos, self.character.face_dir)
+            sx, self.character.yPos, self.character.face_dir)
 
 class MoveJump:
     def __init__(self, character):
@@ -243,10 +244,11 @@ class MoveJump:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
     def draw(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.update_hitbox(self.character.body_hitbox, self.character.image.jump_move_motion_list[int(self.character.frame)])
         self.character.image.draw_by_frame_num(
             self.character.image.jump_move_motion_list[int(self.character.frame)],
-            self.character.xPos, self.character.yPos, self.character.face_dir)
+            sx, self.character.yPos, self.character.face_dir)
 
 class Run:
     def __init__(self, character):
@@ -274,8 +276,9 @@ class Run:
         self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.run_frames
         self.character.xPos += self.character.dir * RUN_SPEED_PPS * game_framework.frame_time
     def draw(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.update_hitbox(self.character.body_hitbox, self.character.image.run_frame_start + int(self.character.frame))
-        self.character.image.draw_by_frame_num(self.character.image.run_frame_start + int(self.character.frame),self.character.xPos, self.character.yPos,self.character.face_dir)
+        self.character.image.draw_by_frame_num(self.character.image.run_frame_start + int(self.character.frame),sx, self.character.yPos,self.character.face_dir)
         pass
 
 class RunJump:
@@ -329,9 +332,10 @@ class RunJump:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
     def draw(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.update_hitbox(self.character.body_hitbox, self.character.image.jump_move_motion_list[int(self.character.frame)])
         self.character.image.draw_by_frame_num(self.character.image.jump_move_motion_list[int(self.character.frame)],
-                                               self.character.xPos, self.character.yPos, self.character.face_dir)
+                                               sx, self.character.yPos, self.character.face_dir)
 
 class BackDash:
     def __init__(self, character):
@@ -367,9 +371,10 @@ class BackDash:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
     def draw(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.update_hitbox(self.character.body_hitbox, self.character.image.back_dash_frame_start)
         self.character.image.draw_by_frame_num(self.character.image.back_dash_frame_start,
-                                               self.character.xPos, self.character.yPos, self.character.face_dir)
+                                               sx, self.character.yPos, self.character.face_dir)
 
 class SitDown:
     def __init__(self, character):
@@ -403,10 +408,11 @@ class SitDown:
                 self.character.frame = (self.character.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % self.character.image.sit_down_frames
 
     def draw(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.update_hitbox(self.character.body_hitbox, self.character.image.sit_down_frame_start + int(self.character.frame))
         self.character.image.draw_by_frame_num(
             self.character.image.sit_down_frame_start + int(self.character.frame),
-            self.character.xPos,
+            sx,
             self.character.yPos - 6 * int(self.character.frame),
             self.character.face_dir)
 
@@ -430,8 +436,9 @@ class SitUp:
             self.character.frame = 0.0
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
     def draw(self):
-        self.character.update_hitbox(self.character.body_hitbox,self.character.image.sit_down_frame_start + int(self.character.frame))
-        self.character.image.draw_by_frame_num(self.character.image.sit_down_frame_start + int(self.character.frame), self.character.xPos, self.character.yPos - 6 * int(self.character.frame),self.character.face_dir)
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
+        self.character.update_hitbox(self.character.body_hitbox, self.character.image.sit_down_frame_start + int(self.character.frame))
+        self.character.image.draw_by_frame_num(self.character.image.sit_down_frame_start + int(self.character.frame), sx, self.character.yPos - 6 * int(self.character.frame),self.character.face_dir)
         pass
 
 class NormalAttack:
@@ -458,9 +465,10 @@ class NormalAttack:
         self.attack_key = None
 
     def do(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
         if self.character.is_succeeded_attack == False:
-            self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir), self.character.yPos, 75 * self.character.face_dir, 100)
+            self.character.attack_hitbox.rect = (sx + (25 * self.character.face_dir), self.character.yPos, 75 * self.character.face_dir, 100)
         else:
             self.character.attack_hitbox.reset_rect()
         if int(self.character.frame) >= self.frame_count:
@@ -472,7 +480,8 @@ class NormalAttack:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
     def draw(self):
-        self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)], self.character.xPos,
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
+        self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)], sx,
                                                self.character.yPos, self.character.face_dir)
 
 class AirAttack:
@@ -529,9 +538,10 @@ class AirAttack:
             self.character.state_machine.handle_state_event(('LAND', None))
         self.character.xPos += self.character.vx * game_framework.frame_time
     def draw(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.update_hitbox(self.character.body_hitbox,
                                      self.character.image.jump_move_motion_list[int(self.character.frame)])
-        self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)], self.character.xPos,
+        self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)], sx,
                                                self.character.yPos, self.character.face_dir)
 
 class SitAttack:
@@ -575,9 +585,10 @@ class SitAttack:
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
 
     def draw(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         ox, oy = self.offset[int(self.character.frame)]
         self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)],
-                                               self.character.xPos + (self.character.face_dir*ox),
+                                               sx + (self.character.face_dir*ox),
                                                self.character.yPos + oy, self.character.face_dir)
 
 class Guard:
@@ -627,8 +638,9 @@ class Guard:
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
 
     def draw(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)],
-                                               self.character.xPos,
+                                               sx,
                                                self.character.yPos, self.character.face_dir)
 
 class GetHit:
@@ -668,8 +680,9 @@ class GetHit:
             self.character.frame = 0.0
         pass
     def draw(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)],
-                                               self.character.xPos,
+                                               sx,
                                                self.character.yPos, self.character.face_dir)
         pass
 
@@ -711,9 +724,10 @@ class ComboAttack:
         if self.character.combo_count > 3 or not self.character.is_enable_combo:
             self.character.combo_count = 0
     def do(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.frame += FRAMES_PER_COMBO_ACTION * COMBO_ACTION_PER_TIME * game_framework.frame_time
         if self.character.is_succeeded_attack == False and int(self.character.frame) == self.frame_count // 2:
-            self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir), self.character.yPos,
+            self.character.attack_hitbox.rect = (sx + (25 * self.character.face_dir), self.character.yPos,
                                                     75 * self.character.face_dir, 100)
         else:
             self.character.attack_hitbox.reset_rect()
@@ -732,8 +746,9 @@ class ComboAttack:
                 self.character.is_succeeded_attack = False
 
     def draw(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)],
-                                               self.character.xPos,
+                                               sx,
                                                self.character.yPos, self.character.face_dir)
 
 class Character:
@@ -938,10 +953,11 @@ class Character:
 
     def draw(self):
         self.state_machine.draw()
+        sx = self.xPos - common.palace_map.window_left - 50 - 1
         #self.font.draw(self.xPos - 60, self.yPos + 150, f'(Time: {get_time():.2f}, Dir : {self.dir}, is_hitted : {self.is_hitted})', (255, 255, 0))
         #self.font.draw(self.xPos - 60, self.yPos + 150, f'(is_hitted : {self.is_hitted}, combo_count : {self.combo_count})', (255, 255, 0))
         #self.font.draw(self.xPos - 60, self.yPos + 150,f'(combo_count : {self.combo_count})', (255, 255, 0))
-        self.font.draw(self.xPos - 60, self.yPos + 150, f'(hp, atk : {self.hp, self.atk})', (255, 255, 0))
+        self.font.draw(sx - 60, self.yPos + 150, f'(hp, atk : {self.hp, self.atk})', (255, 255, 0))
     def handle_event(self, event):
         # 키 입력 처리 및 마지막 up/down 시각 기록
         if event.type == SDL_KEYDOWN:
