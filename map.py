@@ -78,7 +78,27 @@ class HpBar:
         self.Hp_Bar_Cover_image.clip_draw(0, 0, 100, 40, self.x, self.y, 300, 40)
         self.Hp_Bar_image.clip_draw(0, 0, 300, 40, self.x - 3*(100 - self.character.hp)/2, self.y, 3 * self.character.hp, 40)
 
+class WinCount:
+    def __init__(self, character, x, y):
+        self.character = character
+        self.x = x
+        self.y = y
+        self.Win_Count_1_image = load_image('GameMode_image/Game_Play_Win_Count.png')
+        self.Win_Count_2_image = load_image('GameMode_image/Game_Play_Win_Count.png')
 
+    def update(self):
+        pass
+
+    def draw(self):
+        if self.character.win_count == 0:
+            self.Win_Count_1_image.clip_draw(0, 0, 30, 30, self.x, self.y, 30, 30)
+            self.Win_Count_2_image.clip_draw(0, 0, 30, 30, self.x + 30, self.y, 30, 30)
+        elif self.character.win_count ==1:
+            self.Win_Count_1_image.clip_draw(0, 0, 30, 30, self.x, self.y, 30, 30)
+            self.Win_Count_2_image.clip_draw(30, 0, 30, 30, self.x + 30, self.y, 30, 30)
+        elif self.character.win_count ==2:
+            self.Win_Count_1_image.clip_draw(30, 0, 30, 30, self.x, self.y, 30, 30)
+            self.Win_Count_2_image.clip_draw(30, 0, 30, 30, self.x + 30, self.y, 30, 30)
 
 
 
