@@ -162,7 +162,7 @@ def change_color(input_path, output_path):
         for x in range(width):
             r, g, b, a = pixels[x, y]
             # 마젠타색(255, 0, 255)이거나 검정색(10, 10, 10)으로 변경
-            if r == 255 and g == 0 and b == 255:
+            if r == 63 and g == 72 and b == 204:
                 pixels[x, y] = (255, 255, 255, 1)
     # 새 파일로 저장
     img.save(output_path)
@@ -218,6 +218,6 @@ if __name__ == "__main__":
     #change_color(input_file, output_file_alpha)
     #process_image(input_file, output_file)
     #annotate_frames(output_file, output_file_numbered, start_index=0, font_scale=0.5, padding=2)
-    input_file = 'GameMode_Image/Game_Play_Map_Origin.png'
-    change_color(input_file, 'GameMode_Image/Game_Play_Map.png')
+    input_file = 'GameMode_Image/Game_Play_Timer_Origin.png'
+    change_color(input_file, 'GameMode_Image/Game_Play_Timer.png')
 
