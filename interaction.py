@@ -1,5 +1,4 @@
 from pico2d import draw_rectangle
-from sdl2.sdlttf import TTF_RenderUNICODE
 
 
 class HitBox:
