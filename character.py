@@ -869,6 +869,7 @@ class Character:
         self.GUARD = Guard(self)
         self.GET_HIT = GetHit(self)
         self.COMBO_ATTACK = ComboAttack(self)
+        self.DEAD = Dead(self)
 
         def mk_key_pred(key_const, sdl_type):
             def pred(e):
