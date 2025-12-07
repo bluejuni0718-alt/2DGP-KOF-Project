@@ -4,7 +4,7 @@ from character import Character, KimFrameInfo, hitbox_manager
 import game_world
 import intro_mode
 import common
-from map import PalaceMap,Timer
+from map import PalaceMap, Timer, HpBar
 from interaction import *
 
 
@@ -38,6 +38,10 @@ def init():
     c1 = Character(KimFrameInfo(), keymap=common.KEYMAP_P1, x=100, y=120)
     c2 = Character(KimFrameInfo(), keymap=common.KEYMAP_P2, x=700, y=120)
     common.characters = [c1, c2]
+    common.p1_HpBar = HpBar(c1, 175, 550)
+    common.p2_HpBar = HpBar(c2, 625, 550)
+    game_world.add_object(common.p1_HpBar, 1)
+    game_world.add_object(common.p2_HpBar, 1)
     if c1.xPos < c2.xPos:
         c1.face_dir = 1
         c2.face_dir = -1
