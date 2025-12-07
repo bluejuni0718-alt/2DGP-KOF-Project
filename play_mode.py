@@ -4,6 +4,7 @@ from character import Character, KimFrameInfo, hitbox_manager
 import game_world
 import intro_mode
 import common
+from map import PalaceMap
 from interaction import *
 
 
@@ -30,6 +31,8 @@ def handle_events():
     pass
 
 def init():
+    common.palace_map = PalaceMap()
+    game_world.add_object(common.palace_map)
     c1 = Character(KimFrameInfo(), keymap=common.KEYMAP_P1, x=100, y=120)
     c2 = Character(KimFrameInfo(), keymap=common.KEYMAP_P2, x=700, y=120)
     common.characters = [c1, c2]
