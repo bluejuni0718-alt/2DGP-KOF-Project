@@ -782,6 +782,22 @@ class ComboAttack:
                                                sx,
                                                self.character.yPos, self.character.face_dir)
 
+class Dead:
+    def __init__(self, character):
+        self.character = character
+    def enter(self, e):
+        self.character.frame = 0.0
+        pass
+    def exit(self,e):
+        self.character.frame = 0
+        pass
+    def do(self):
+            self.character.frame = self.character.image.dead_frame
+    def draw(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
+        self.character.image.draw_by_frame_num(self.character.image.dead_frame,sx, self.character.yPos,self.character.face_dir)
+        pass
+
 class Character:
     def __init__(self, image_data,keymap=None, x = 400, y = 120):
         default = {'left': SDLK_a, 'right': SDLK_d, 'up': SDLK_w,'down':SDLK_s,'lp':SDLK_f,'rp':SDLK_g,'rk':SDLK_b,'lk':SDLK_c}
