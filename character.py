@@ -687,11 +687,6 @@ class GetHit:
             self.character.yPos += self.character.vy * game_framework.frame_time
             self.character.xPos += self.character.vx * game_framework.frame_time
 
-        if int(self.character.frame) >= self.frame_count - 1:
-            self.character.is_hitted = False
-            self.character.get_damage = True
-            self.character.state_machine.handle_state_event(('TIME_OUT', None))
-            self.character.frame = 0.0
             if self.character.yPos <= self.character.ground_y:
                 # 착지 처리
                 self.character.yPos = self.character.ground_y
@@ -700,6 +695,17 @@ class GetHit:
                 self.character.get_damage = True
                 self.character.is_hitted = False
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
+                self.character.frame = 0.0
+        else:
+            # 지상 피격: 애니 끝나면 복귀
+            if int(self.character.frame) >= self.frame_count - 1:
+                self.character.is_hitted = False
+                self.character.get_damage = True
+                if self.character.hp<=0:
+                    self.character.state_machine.handle_state_event(('DEAD', None))
+                    return
+                else:
+                    self.character.state_machine.handle_state_event(('TIME_OUT', None))
                 self.character.frame = 0.0
         pass
     def draw(self):
