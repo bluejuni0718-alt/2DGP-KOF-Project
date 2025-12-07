@@ -710,6 +710,8 @@ class GetHit:
         pass
     def draw(self):
         sx = self.character.xPos - common.palace_map.window_left - 50 - 1
+        self.character.update_hitbox(self.character.body_hitbox,
+                                     self.character.image.jump_move_motion_list[int(self.character.frame)])
         self.character.image.draw_by_frame_num(self.frames[int(self.character.frame)],
                                                sx,
                                                self.character.yPos, self.character.face_dir)
