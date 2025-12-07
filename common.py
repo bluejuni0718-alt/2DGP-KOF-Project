@@ -2,6 +2,7 @@ from pico2d import *
 import character_frame
 
 characters = []
+palace_map = None
 KEYMAP_P1 ={
     'left' :SDLK_a,
     'right':SDLK_d,
@@ -23,4 +24,4 @@ KEYMAP_P2 ={
     'lk'    :SDLK_KP_1
 }
 
-#todo: 다른 캐릭터 이미지 프레임 정보 여기다 넣기
+#todo: 다른 캐릭터 이미지 프레임 정보 여기다 넣기?
