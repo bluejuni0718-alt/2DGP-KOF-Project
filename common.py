@@ -4,6 +4,8 @@ import character_frame
 characters = []
 palace_map = None
 game_timer = None
+p1_HpBar = None
+p2_HpBar = None
 KEYMAP_P1 ={
     'left' :SDLK_a,
     'right':SDLK_d,
