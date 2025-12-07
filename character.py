@@ -664,6 +664,11 @@ class GetHit:
             self.state = 'air_hitted'
         self.frames = self.character.image.hitted_motions.get(self.state, {}).get('frames', [])
         self.frame_count = len(self.frames)
+
+        # 공중 피격이면 즉시 약간의 상향 임펄스와 수평 넉백 적용 (튜닝 가능)
+        if self.state == 'air_hitted':
+            knockback_speed = 200  # 필요시 값 조정
+            self.character.vx = -self.character.face_dir * knockback_speed
         pass
     def exit(self,e):
         self.character.frame = 0
