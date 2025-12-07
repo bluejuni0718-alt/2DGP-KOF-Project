@@ -1004,6 +1004,35 @@ class Character:
             }
         )
 
+    def reset(self, x, y):
+        self.hp = 100
+        self.atk = 5
+        self.xPos = x
+        self.yPos = y
+        self.vy = 0.0
+        self.vx = 0.0
+        self.frame = 0
+        self.face_dir = 1
+        self.dir = 0
+        self.jump_frame = 0
+        self.ground_y = self.default_ground_y
+        self.is_sit = False
+        self.is_low_guard = False
+        self.is_succeeded_attack = False
+        self.is_enable_combo = False
+        self.combo_count = 0
+        self.get_damage = True
+
+        self.fwd_pressed = False
+        self.back_pressed = False
+        self.down_pressed = False
+        self.rk_pressed = False
+
+        self.keep_sit_down_last_frame = False
+        #todo: hitbox 초기화 필요?
+
+        self.state_machine.handle_state_event(('TIME_OUT', None))
+
     def update(self):
         #self.xPos = clamp(50, self.xPos, common.palace_map.cw - 1 - 50)
         self.state_machine.update()
