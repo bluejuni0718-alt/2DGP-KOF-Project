@@ -1046,6 +1046,9 @@ class Character:
         self.font.draw(sx - 60, self.yPos + 150, f'(hp, atk : {self.hp, self.atk})', (255, 255, 0))
     def handle_event(self, event):
         # 키 입력 처리 및 마지막 up/down 시각 기록
+        if self.hp <=0:
+            self.state_machine.handle_state_event(('DEAD', event))
+            return
         if event.type == SDL_KEYDOWN:
             if event.key in (self.keymap['left'], self.keymap['right']):
                 key_dir = 1 if event.key == self.keymap['right'] else -1
