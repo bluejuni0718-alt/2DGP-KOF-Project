@@ -1106,7 +1106,7 @@ class Character:
 
     def update_hitbox(self, hitbox:HitBox,frame_num):
         ox, oy, w, h = self.image.frame_list[frame_num]
-        sx = self.xPos - common.palace_map.window_left - 50
+        sx = self.xPos - common.palace_map.window_left - 50 - 1
         offset_width = 20
         if self.face_dir == 1:
             hitbox.update((sx - w, self.yPos - h, CHARACTER_WIDTH_SCALE * w - offset_width, CHARACTER_HEIGHT_SCALE*h))
