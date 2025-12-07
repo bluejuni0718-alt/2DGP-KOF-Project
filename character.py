@@ -692,6 +692,15 @@ class GetHit:
             self.character.get_damage = True
             self.character.state_machine.handle_state_event(('TIME_OUT', None))
             self.character.frame = 0.0
+            if self.character.yPos <= self.character.ground_y:
+                # 착지 처리
+                self.character.yPos = self.character.ground_y
+                self.character.vy = 0.0
+                self.character.vx = 0.0
+                self.character.get_damage = True
+                self.character.is_hitted = False
+                self.character.state_machine.handle_state_event(('TIME_OUT', None))
+                self.character.frame = 0.0
         pass
     def draw(self):
         sx = self.character.xPos - common.palace_map.window_left - 50 - 1
