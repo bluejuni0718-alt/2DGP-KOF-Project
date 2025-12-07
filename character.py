@@ -823,6 +823,7 @@ class Character:
         self.is_enable_combo = False
         self.combo_count = 0
         self.get_damage = True
+        self.win_count = 0
 
         self._last_down = {}  # key_const -> 마지막 다운 시각
         self._last_up = {}  # key_const -> 마지막 업 시각
