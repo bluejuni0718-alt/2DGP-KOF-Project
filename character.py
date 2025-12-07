@@ -7,9 +7,7 @@ from character_frame import *
 from character_frame import CHARACTER_WIDTH_SCALE, CHARACTER_HEIGHT_SCALE
 import common
 
-hitbox_manager = HitBoxManager()
-
-
+common.hitbox_manager = HitBoxManager()
 
 PIXEL_PER_METER = 10.0/0.15 #10 픽셀당 30cm로 설정
 
@@ -517,11 +515,12 @@ class AirAttack:
 
     def do(self):
         # 애니 진행 및 중력 처리
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         if int(self.character.frame)<self.frame_count - 1:
             self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
-            if self.character.is_succeeded_attack == False:
-                self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir),
-                                                     self.character.yPos, 75 * self.character.face_dir, 100)
+            if self.character.is_succeeded_attack == False and int(self.character.frame) > self.frame_count//2:
+                self.character.attack_hitbox.rect = (sx + (25 * self.character.face_dir),
+                                                     self.character.yPos - 90, 75 * self.character.face_dir, 200)
             else:
                 self.character.attack_hitbox.reset_rect()
             self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
@@ -577,9 +576,10 @@ class SitAttack:
             self.character.keep_sit_down_last_frame = False
 
     def do(self):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.frame += FRAMES_PER_ATTACK_ACTION * ATTACK_ACTION_PER_TIME * game_framework.frame_time
         if self.character.is_succeeded_attack == False:
-            self.character.attack_hitbox.rect = (self.character.xPos + (25 * self.character.face_dir),
+            self.character.attack_hitbox.rect = (sx + (25 * self.character.face_dir),
                                                  self.character.yPos - 75, 75 * self.character.face_dir, 100)
         else:
             self.character.attack_hitbox.reset_rect()
@@ -625,7 +625,7 @@ class Guard:
             if self.character.fwd_pressed or self.character.back_pressed:
                 if self.character.vy == 0 and self.state != 'sit_guard':
                     self.character.state_machine.handle_state_event(('Pressing_Key', None))
-            if self.state == 'air_guard':
+            if self.state == 'air_guard'and not self.character.back_pressed:
                 self.character.state_machine.handle_state_event(('TIME_OUT', None))
             if self.character.back_pressed and self.character.down_pressed:
                 self.character.keep_sit_down_last_frame = True
@@ -725,6 +725,7 @@ class ComboAttack:
         self.frame_count = 0
         self.enable_combo_time = 0
     def enter(self, e):
+        sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.frame = 0
         self.character.is_attacking = True
         self.character.is_succeeded_attack = False
@@ -792,7 +793,10 @@ class Dead:
         self.character.frame = 0
         pass
     def do(self):
-            self.character.frame = self.character.image.dead_frame
+        self.character.frame = self.character.image.dead_frame
+        if self.character.yPos >= 50:
+            self.character.vy += GRAVITY_PPS2 * game_framework.frame_time
+            self.character.yPos += self.character.vy * game_framework.frame_time
     def draw(self):
         sx = self.character.xPos - common.palace_map.window_left - 50 - 1
         self.character.image.draw_by_frame_num(self.character.image.dead_frame,sx, self.character.yPos,self.character.face_dir)
@@ -804,7 +808,8 @@ class Character:
         self.font = load_font('ENCR10B.TTF', 16)
         self.keymap = default if keymap is None else {**default, **keymap}
         self.hp = 100
-        self.atk = 5
+        #todo: 캐릭터 공격력 다시 수정 필요
+        self.atk = 100
         self.xPos = x
         self.yPos = y
         self.vy = 0.0
@@ -833,7 +838,7 @@ class Character:
             self._last_down[key_const] = 0.0
             self._last_up[key_const] = 0.0
 
-        self.manager = hitbox_manager
+        self.manager = common.hitbox_manager
         self.body_hitbox = self.register_hitbox('body', 0)
         self.attack_hitbox = HitBox(self, 'attack', (0, 0, 0, 0))
         self.manager.register_hitbox(self.attack_hitbox)
