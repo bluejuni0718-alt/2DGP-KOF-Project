@@ -83,6 +83,9 @@ def hitted(e):
 def enable_combo(e):
     return e[0] == 'ENABLE_COMBO'
 
+def dead(e):
+    return e[0] == 'DEAD'
+
 
 class Idle:
     def __init__(self, character):
