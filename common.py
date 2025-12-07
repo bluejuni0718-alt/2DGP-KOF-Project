@@ -4,6 +4,8 @@ import character_frame
 characters = []
 palace_map = None
 game_timer = None
+p1_win_counter = None
+p2_win_counter = None
 p1_HpBar = None
 p2_HpBar = None
 KEYMAP_P1 ={
