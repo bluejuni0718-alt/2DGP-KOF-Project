@@ -993,10 +993,13 @@ class Character:
                     time_out:self.JUMP ,pressing_key:self.WALK, pressing_down:self.SIT_DOWN,
                 },
                 self.GET_HIT:{
-                    time_out:self.IDLE, hitted:self.GET_HIT
+                    time_out:self.IDLE, hitted:self.GET_HIT,dead:self.DEAD
                 },
                 self.COMBO_ATTACK:{
                     time_out:self.IDLE, self.can_combo: self.COMBO_ATTACK
+                },
+                self.DEAD:{
+                    time_out:self.IDLE
                 }
             }
         )
