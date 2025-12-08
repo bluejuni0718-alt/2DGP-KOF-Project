@@ -33,5 +33,3 @@ KEYMAP_P2 ={
     'rk'    :SDLK_KP_2,
     'lk'    :SDLK_KP_1
 }
-
-#todo: 다른 캐릭터 이미지 프레임 정보 여기다 넣기?
