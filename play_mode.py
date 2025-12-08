@@ -5,6 +5,7 @@ import game_world
 import intro_mode
 import common
 from map import PalaceMap, Timer, HpBar, WinCount
+from ai_controller import AIController
 
 running = True
 debug_hitbox = False
@@ -64,6 +65,7 @@ def init():
     common.c1 = Character(KimFrameInfo(), keymap=common.KEYMAP_P1, x=100, y=120)
     common.c2 = Character(KimFrameInfo(), keymap=common.KEYMAP_P2, x=700, y=120)
     common.characters = [common.c1, common.c2]
+    common.ai_player = AIController(common.c2, common.c1)
     common.p1_HpBar = HpBar(common.c1, 175, 550)
     common.p2_HpBar = HpBar(common.c2, 625, 550)
     common.p1_win_counter = WinCount(common.c1, 280, 500)
@@ -90,6 +92,8 @@ def update():
     game_world.update()
 
     common.c1, common.c2 = common.characters
+    common.ai_player.update()
+    common.ai_player.run()
     if common.c1.hp <= 0 or common.c2.hp<=0 or common.game_timer.total_time >= 60.0:
         if not round_over:
             round_over = True
@@ -97,20 +101,20 @@ def update():
         else:
             round_over_timer -= game_framework.frame_time
             if round_over_timer <= 0.0:
-                if common.c1.win_count >= 1 or common.c2.win_count >= 1:
+                if common.c1.win_count >= 2 or common.c2.win_count >= 2:
                     game_framework.change_mode(intro_mode)
                 else:
                     reset_round()
+    common.hitbox_manager.detect_body_overlaps()
+    common.hitbox_manager.detect_is_opponent_attacking()
+    common.hitbox_manager.update_face_dir(common.characters[0], common.characters[1])
+    common.hitbox_manager.detect_attack_hits()
 
 def draw():
     clear_canvas()
     game_world.render()
     if debug_hitbox:
         common.hitbox_manager.debug_draw()
-    common.hitbox_manager.detect_body_overlaps()
-    common.hitbox_manager.detect_is_opponent_attacking()
-    common.hitbox_manager.update_face_dir(common.characters[0], common.characters[1])
-    common.hitbox_manager.detect_attack_hits()
     update_canvas()
 
 def finish():
