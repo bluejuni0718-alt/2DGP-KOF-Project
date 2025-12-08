@@ -50,7 +50,7 @@ class KimFrameInfo:
         }
         self.guards ={
             'air_guard'   :{'frames':[102,103],'offsets':[(0,0),(0,0)]},
-            'ground_guard':{'frames':[79,80,81],'offsets':[(0,0),(0,0),(0,0)]},
+            'ground_guard':{'frames':[79,79,80,81],'offsets':[(0,0),(0,0),(0,0),(0,0)]},
             'sit_guard'   :{'frames':[82,83,84],'offsets':[(0,0),(0,0),(0,0)]},
         }
         self.hitted_motions={
@@ -144,3 +144,10 @@ class KimFrameInfo:
         if not info:
             return True
         return frame_index >= (len(info['frames']) - 1)
+
+
+class ShingoFrameInfo:
+    pass
+
+class LeonaFrameInfo:
+    pass
