@@ -211,10 +211,10 @@ def annotate_frames(input_path: str, output_path: str, start_index: int = 0,
 
 
 if __name__ == "__main__":
-    input_file = "CharacterSpriteSheet_Origin/Neo Geo _ NGCD - The King of Fighters '98 - Fighters - Leona.png"
-    output_file = "CharacterSpriteSheet_Modified/Leona_frame_box.png"
-    output_file_alpha = "CharacterSpriteSheet_Modified/Leona_frames_alpha1.png"
-    output_file_numbered = "CharacterSpriteSheet_Modified/Leona_frame_box_numbered.png"
+    input_file = "CharacterSpriteSheet_Origin/Neo Geo _ NGCD - The King of Fighters '98 - Fighters - Shingo.png"
+    output_file = "CharacterSpriteSheet_Modified/Shingo_frame_box.png"
+    output_file_alpha = "CharacterSpriteSheet_Modified/Shingo_frames_alpha1.png"
+    output_file_numbered = "CharacterSpriteSheet_Modified/Shingo_frame_box_numbered.png"
     change_color(input_file, output_file_alpha)
     process_image(input_file, output_file)
     annotate_frames(output_file, output_file_numbered, start_index=0, font_scale=0.5, padding=2)
