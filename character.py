@@ -667,8 +667,7 @@ class GetHit:
 
         # 공중 피격이면 즉시 약간의 상향 임펄스와 수평 넉백 적용 (튜닝 가능)
         if self.state == 'air_hitted':
-            knockback_speed = 200  # 필요시 값 조정
-            self.character.vx = -self.character.face_dir * knockback_speed
+            self.character.vx = -self.character.face_dir * 200
         pass
     def exit(self,e):
         self.character.frame = 0
@@ -820,7 +819,7 @@ class Character:
         self.jump_frame=0
         self.default_ground_y = self.yPos
         self.ground_y = self.default_ground_y
-        self.double_tap_interval=0.3
+        self.double_tap_interval = 0.3
         self.is_sit = False
         self.is_low_guard = False
         self.is_succeeded_attack = False
