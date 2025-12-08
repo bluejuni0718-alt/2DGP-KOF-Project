@@ -4,6 +4,8 @@ import character_frame
 characters = []
 palace_map = None
 game_timer = None
+p1_character_num = None
+p2_character_num=None
 p1_win_counter = None
 p2_win_counter = None
 p1_HpBar = None
@@ -13,6 +15,7 @@ c2 = None
 game_mode = None
 hitbox_manager = None
 ai_player = None
+stage_num = 0
 KEYMAP_P1 ={
     'left' :SDLK_a,
     'right':SDLK_d,
