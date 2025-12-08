@@ -3,11 +3,9 @@ import game_framework
 import play_mode
 import common
 
-
 image = None
 p1_image = None
 p2_image = None
-
 
 p1_x = 200
 p1_y = 50
@@ -64,7 +62,8 @@ def handle_events():
                 p2_rect[0] = 100
                 p2_selected = True
                 pass
-        elif p1_selected and p2_selected:
+        elif (p1_selected and p2_selected and common.game_mode=='Two Player')\
+                or (p1_selected and common.game_mode=='Single Player'):
             game_framework.change_mode(play_mode)
     pass
 #0,35,67,100
