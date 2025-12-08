@@ -1,17 +1,19 @@
 from pico2d import *
 import game_framework
-from character import Character, KimFrameInfo
+from character import Character
 import game_world
 import intro_mode
 import common
 from map import PalaceMap, Timer, HpBar, WinCount
 from ai_controller import AIController
+from character_frame import *
+from interaction import HitBoxManager
 
 running = True
 debug_hitbox = False
 round_over = False
 
-ROUND_OVER_DELAY = 2.0
+ROUND_OVER_DELAY = 3.0
 round_over_timer = 0.0
 
 def reset_round():
@@ -59,13 +61,31 @@ def handle_events():
 def init():
     common.palace_map = PalaceMap()
     common.game_timer = Timer()
+    common.hitbox_manager = HitBoxManager()
 
     game_world.add_object(common.palace_map)
     game_world.add_object(common.game_timer, 1)
-    common.c1 = Character(KimFrameInfo(), keymap=common.KEYMAP_P1, x=100, y=120)
-    common.c2 = Character(KimFrameInfo(), keymap=common.KEYMAP_P2, x=700, y=120)
+    # p1의 캐릭터 생성
+    if common.p1_character_num == 0:
+        common.c1 = Character(ShingoFrameInfo(), keymap=common.KEYMAP_P1, x=100, y=120)
+    elif common.p1_character_num == 1:
+        common.c1 = Character(KimFrameInfo(), keymap=common.KEYMAP_P1, x=100, y=120)
+    elif common.p1_character_num == 2:
+        common.c1 = Character(YuriFrameInfo(), keymap=common.KEYMAP_P1, x=100, y=120)
+
+    # p2의 캐릭터 생성
+    if common.game_mode == 'Two Player':
+        if common.p2_character_num == 0:
+            common.c2 = Character(ShingoFrameInfo(), keymap=common.KEYMAP_P2, x=700, y=120)
+        elif common.p2_character_num == 1:
+            common.c2 = Character(KimFrameInfo(), keymap=common.KEYMAP_P2, x=700, y=120)
+        elif common.p2_character_num == 2:
+            common.c2 = Character(YuriFrameInfo(), keymap=common.KEYMAP_P2, x=700, y=120)
+
+    if common.stage_num == 0 and common.game_mode == 'Single Player':
+        common.c2 = Character(KimFrameInfo(), keymap=common.KEYMAP_P2, x=700, y=120)
+        common.ai_player = AIController(common.c2, common.c1)
     common.characters = [common.c1, common.c2]
-    common.ai_player = AIController(common.c2, common.c1)
     common.p1_HpBar = HpBar(common.c1, 175, 550)
     common.p2_HpBar = HpBar(common.c2, 625, 550)
     common.p1_win_counter = WinCount(common.c1, 280, 500)
@@ -92,8 +112,9 @@ def update():
     game_world.update()
 
     common.c1, common.c2 = common.characters
-    common.ai_player.update()
-    common.ai_player.run()
+    if common.game_mode == 'Single Player':
+        common.ai_player.update()
+        common.ai_player.run()
     if common.c1.hp <= 0 or common.c2.hp<=0 or common.game_timer.total_time >= 60.0:
         if not round_over:
             round_over = True
