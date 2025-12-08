@@ -1,6 +1,7 @@
 import game_framework
 import character_select_mode
-from pico2d import*
+import common
+from pico2d import *
 
 
 def init():
@@ -31,6 +32,10 @@ def handle_events():
     events = get_events()
     for event in events:
         if event.type== SDL_KEYDOWN:
-            if event.key== SDLK_RETURN:
+            if event.key== SDLK_1:
+                common.game_mode = 'Single Player'
+                running= False
+            elif event.key == SDLK_2:
+                common.game_mode = 'Two Player'
                 running= False
     pass
