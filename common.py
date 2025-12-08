@@ -10,7 +10,9 @@ p1_HpBar = None
 p2_HpBar = None
 c1 = None
 c2 = None
+game_mode = None
 hitbox_manager = None
+ai_player = None
 KEYMAP_P1 ={
     'left' :SDLK_a,
     'right':SDLK_d,
