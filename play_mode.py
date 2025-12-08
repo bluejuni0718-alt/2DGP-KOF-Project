@@ -13,6 +13,29 @@ round_over = False
 ROUND_OVER_DELAY = 2.0
 round_over_timer = 0.0
 
+def reset_round():
+    global round_over
+    round_over = False
+
+    common.c1, common.c2 = common.characters
+
+    if common.c1.hp <= 0 :
+        common.c2.win_count += 1
+    elif common.c2.hp <= 0 :
+        common.c1.win_count += 1
+    else:
+        round_over = False
+        return
+
+    #todo: 승리 애니메이션 넣기
+    common.game_timer.total_time = 0.0
+    common.c1.reset(100,120)
+    common.c2.reset(700,120)
+    common.c1.xPos = common.palace_map.w / 2 - 200
+    common.c2.xPos = common.palace_map.w / 2 + 300
+    common.palace_map.window_left = int(common.palace_map.w / 2 - common.palace_map.cw / 2)
+
+    pass
 
 def handle_events():
     event_list = get_events()
@@ -35,37 +58,59 @@ def handle_events():
 def init():
     common.palace_map = PalaceMap()
     common.game_timer = Timer()
+
     game_world.add_object(common.palace_map)
     game_world.add_object(common.game_timer, 1)
-    c1 = Character(KimFrameInfo(), keymap=common.KEYMAP_P1, x=100, y=120)
-    c2 = Character(KimFrameInfo(), keymap=common.KEYMAP_P2, x=700, y=120)
-    common.characters = [c1, c2]
-    common.p1_HpBar = HpBar(c1, 175, 550)
-    common.p2_HpBar = HpBar(c2, 625, 550)
+    common.c1 = Character(KimFrameInfo(), keymap=common.KEYMAP_P1, x=100, y=120)
+    common.c2 = Character(KimFrameInfo(), keymap=common.KEYMAP_P2, x=700, y=120)
+    common.characters = [common.c1, common.c2]
+    common.p1_HpBar = HpBar(common.c1, 175, 550)
+    common.p2_HpBar = HpBar(common.c2, 625, 550)
+    common.p1_win_counter = WinCount(common.c1, 280, 500)
+    common.p2_win_counter = WinCount(common.c2, 487, 500)
     game_world.add_object(common.p1_HpBar, 1)
     game_world.add_object(common.p2_HpBar, 1)
-    if c1.xPos < c2.xPos:
-        c1.face_dir = 1
-        c2.face_dir = -1
+    game_world.add_object(common.p1_win_counter, 1)
+    game_world.add_object(common.p2_win_counter, 1)
+    common.c1.xPos = common.palace_map.w/2 - 200
+    common.c2.xPos = common.palace_map.w/2 + 300
+    common.palace_map.window_left = int(common.palace_map.w/2 - common.palace_map.cw/2)
+    if common.c1.xPos < common.c2.xPos:
+        common.c1.face_dir = 1
+        common.c2.face_dir = -1
     else:
-        c1.face_dir = -1
-        c2.face_dir = 1
+        common.c1.face_dir = -1
+        common.c2.face_dir = 1
 
     for c in common.characters:
         game_world.add_object(c)
 
 def update():
+    global round_over, round_over_timer
     game_world.update()
+
+    common.c1, common.c2 = common.characters
+    if common.c1.hp <= 0 or common.c2.hp<=0 or common.game_timer.total_time >= 60.0:
+        if not round_over:
+            round_over = True
+            round_over_timer = ROUND_OVER_DELAY
+        else:
+            round_over_timer -= game_framework.frame_time
+            if round_over_timer <= 0.0:
+                if common.c1.win_count >= 1 or common.c2.win_count >= 1:
+                    game_framework.change_mode(intro_mode)
+                else:
+                    reset_round()
 
 def draw():
     clear_canvas()
     game_world.render()
     if debug_hitbox:
-        hitbox_manager.debug_draw()
-    hitbox_manager.detect_body_overlaps()
-    hitbox_manager.detect_is_opponent_attacking()
-    hitbox_manager.update_face_dir(common.characters[0], common.characters[1])
-    hitbox_manager.detect_attack_hits()
+        common.hitbox_manager.debug_draw()
+    common.hitbox_manager.detect_body_overlaps()
+    common.hitbox_manager.detect_is_opponent_attacking()
+    common.hitbox_manager.update_face_dir(common.characters[0], common.characters[1])
+    common.hitbox_manager.detect_attack_hits()
     update_canvas()
 
 def finish():
