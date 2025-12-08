@@ -24,9 +24,10 @@ def init():
     global image, p1_image, p2_image, p1_x, p1_y, p2_x, p2_y
     image = load_image('GameMode_Image/Game_Character_Select.png')
     p1_image = load_image('GameMode_Image/Game_Character_Select_Player.png')
-    p2_image = load_image('GameMode_Image/Game_Character_Select_Player.png')
     p1_x, p1_y = 228, 242
-    p2_x, p2_y = 575, 242
+    if common.game_mode=='Two Player':
+        p2_image = load_image('GameMode_Image/Game_Character_Select_Player.png')
+        p2_x, p2_y = 575, 242
     pass
 
 def finish():
@@ -48,7 +49,7 @@ def handle_events():
             elif event.key==common.KEYMAP_P1['right']:
                 if min_x < p1_x + p_move_step < max_x and p1_selected == False:
                     p1_x = p1_x + p_move_step
-            elif event.key==common.KEYMAP_P2['left']:
+            elif event.key==common.KEYMAP_P2['left'] and common.game_mode=='Two Player':
                 global p2_x
                 if min_x < p2_x - p_move_step < max_x and p2_selected == False:
                     p2_x = p2_x - p_move_step
@@ -72,8 +73,8 @@ def draw():
     clear_canvas()
     image.draw(400,300,800,600)
     p1_image.clip_draw(p1_rect[0],p1_rect[1],p1_rect[2],p1_rect[3],p1_x,p1_y,100,115)
-    p2_image.clip_draw(p2_rect[0],p2_rect[1],p2_rect[2],p2_rect[3], p2_x, p2_y,100,115)
-    print(f'x: {p2_x}, y: {p2_y}')
+    if common.game_mode=='Two Player':
+        p2_image.clip_draw(p2_rect[0],p2_rect[1],p2_rect[2],p2_rect[3], p2_x, p2_y,100,115)
     update_canvas()
     pass
 
