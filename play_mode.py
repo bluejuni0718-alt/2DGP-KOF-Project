@@ -39,7 +39,7 @@ def reset_round():
     common.palace_map.window_left = int(common.palace_map.w / 2 - common.palace_map.cw / 2)
 
     pass
-
+#todo: 플레이 중 특수 기능 키들 추가 필요
 def handle_events():
     event_list = get_events()
     global running
@@ -53,6 +53,11 @@ def handle_events():
         elif event.type==SDL_KEYDOWN and event.key == SDLK_F1:
             global debug_hitbox
             debug_hitbox = not debug_hitbox
+        elif event.type==SDL_KEYDOWN and event.key == SDLK_F2:
+            common.c1.atk = 0
+            common.c2.atk = 0
+        elif event.type==SDL_KEYDOWN and event.key==SDLK_F3:
+            common.game_timer.total_time = 60.0
         else:
             for c in common.characters:
                 c.handle_event(event)
@@ -115,13 +120,28 @@ def update():
     if common.game_mode == 'Single Player':
         common.ai_player.update()
         common.ai_player.run()
-    if common.c1.hp <= 0 or common.c2.hp<=0 or common.game_timer.total_time >= 60.0:
+    if common.c1.hp <= 0 or common.c2.hp<=0:
         if not round_over:
             round_over = True
             round_over_timer = ROUND_OVER_DELAY
         else:
             round_over_timer -= game_framework.frame_time
             if round_over_timer <= 0.0:
+                if common.c1.win_count >= 2 or common.c2.win_count >= 2:
+                    game_framework.change_mode(intro_mode)
+                else:
+                    reset_round()
+    elif common.game_timer.total_time >= 60.0:
+        if not round_over:
+            round_over = True
+            round_over_timer = ROUND_OVER_DELAY
+        else:
+            round_over_timer -= game_framework.frame_time
+            if round_over_timer <= 0.0:
+                if common.c1.hp > common.c2.hp:
+                    common.c1.win_count += 1
+                elif common.c2.hp > common.c1.hp:
+                    common.c2.win_count += 1
                 if common.c1.win_count >= 2 or common.c2.win_count >= 2:
                     game_framework.change_mode(intro_mode)
                 else:
