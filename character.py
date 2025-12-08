@@ -808,8 +808,7 @@ class Character:
         self.font = load_font('ENCR10B.TTF', 16)
         self.keymap = default if keymap is None else {**default, **keymap}
         self.hp = 100
-        #todo: 캐릭터 공격력 다시 수정 필요
-        self.atk = 100
+        self.atk = 5
         self.xPos = x
         self.yPos = y
         self.vy = 0.0
@@ -950,8 +949,8 @@ class Character:
                     self.lp_down: self.NORMAL_ATTACK, self.rp_down: self.NORMAL_ATTACK,self.lk_down: self.NORMAL_ATTACK, self.rk_down: self.NORMAL_ATTACK
                     },
                 self.JUMP:{
-                    guard: self.GUARD,
-                    time_out: self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN,hitted:self.GET_HIT,
+                    guard: self.GUARD,hitted:self.GET_HIT,
+                    time_out: self.IDLE, pressing_key:self.WALK, pressing_down:self.SIT_DOWN,
                     self.lp_down: self.AIR_ATTACK, self.rp_down: self.AIR_ATTACK, self.lk_down: self.AIR_ATTACK, self.rk_down: self.AIR_ATTACK
                     },
                 self.MOVE_JUMP: {
@@ -1029,7 +1028,6 @@ class Character:
         self.rk_pressed = False
 
         self.keep_sit_down_last_frame = False
-        #todo: hitbox 초기화 필요?
 
         self.state_machine.handle_state_event(('TIME_OUT', None))
 
@@ -1079,7 +1077,7 @@ class Character:
                 else:
                     self.back_pressed = False
                     # 마지막 업 시각 갱신 (좌/우)
-                    self._last_up[event.key] = get_time()
+                self._last_up[event.key] = get_time()
 
 
             if event.key == self.keymap['down']:
