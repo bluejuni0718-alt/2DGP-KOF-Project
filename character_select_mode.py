@@ -32,7 +32,7 @@ def init():
 
 def finish():
     global image, p1_image, p2_image
-    del image, p1_image, p2_image
+    image, p1_image, p2_image = None, None, None
     pass
 
 def handle_events():
@@ -76,7 +76,10 @@ def handle_events():
                 common.p2_character_num = 1
             else:
                 common.p2_character_num = 2
-
+            p1_selected = False
+            p2_selected = False
+            p1_rect[0] = 0
+            p2_rect[1] = 67
             game_framework.change_mode(play_mode)
         elif p1_selected and common.game_mode=='Single Player':
             if p1_x == 228:
@@ -85,6 +88,10 @@ def handle_events():
                 common.p1_character_num = 1
             else:
                 common.p1_character_num = 2
+            p1_selected = False
+            p2_selected = False
+            p1_rect[0] = 0
+            p2_rect[1] = 67
             game_framework.change_mode(play_mode)
     pass
 #228,403, 578
