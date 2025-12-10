@@ -15,9 +15,10 @@ round_over = False
 
 ROUND_OVER_DELAY = 3.0
 round_over_timer = 0.0
+round_reset_timer = 0.0
 
 def reset_round():
-    global round_over
+    global round_over, round_reset_timer
     round_over = False
 
     common.c1, common.c2 = common.characters
@@ -26,20 +27,17 @@ def reset_round():
         common.c2.win_count += 1
     elif common.c2.hp <= 0 :
         common.c1.win_count += 1
-    else:
-        round_over = False
-        return
 
-    #todo: 승리 애니메이션 넣기
     common.game_timer.total_time = 0.0
     common.c1.reset(100,120)
     common.c2.reset(700,120)
     common.c1.xPos = common.palace_map.w / 2 - 200
     common.c2.xPos = common.palace_map.w / 2 + 300
     common.palace_map.window_left = int(common.palace_map.w / 2 - common.palace_map.cw / 2)
+    if common.c1.win_count >=2 or common.c2.win_count >=2:
+        game_framework.change_mode(intro_mode)
 
     pass
-#todo: 플레이 중 특수 기능 키들 추가 필요
 def handle_events():
     event_list = get_events()
     global running
@@ -50,14 +48,15 @@ def handle_events():
             running = False
         elif event.type==SDL_KEYDOWN and event.key==SDLK_r:
             game_framework.change_mode(intro_mode)
-        elif event.type==SDL_KEYDOWN and event.key == SDLK_F1:
+        elif event.type==SDL_KEYDOWN and event.key == SDLK_F1: #히트박스 그리기
             global debug_hitbox
             debug_hitbox = not debug_hitbox
-        elif event.type==SDL_KEYDOWN and event.key == SDLK_F2:
-            common.c1.atk = 0
-            common.c2.atk = 0
-        elif event.type==SDL_KEYDOWN and event.key==SDLK_F3:
-            common.game_timer.total_time = 60.0
+        elif event.type==SDL_KEYDOWN and event.key == SDLK_F2: #플레이어 공격력 최대치로 조절
+            common.c1.atk = 100
+            common.c2.atk = 100
+            pass
+        elif event.type==SDL_KEYDOWN and event.key==SDLK_F4: #타이머 종료
+            common.game_timer.total_time = 117.0
         else:
             for c in common.characters:
                 c.handle_event(event)
@@ -113,7 +112,7 @@ def init():
         game_world.add_object(c)
 
 def update():
-    global round_over, round_over_timer
+    global round_over, round_over_timer,round_reset_timer
     game_world.update()
 
     common.c1, common.c2 = common.characters
