@@ -191,14 +191,14 @@ class ShingoFrameInfo:
             'rk': {'frames': [73,74], 'offsets': [(0,0),(0,-20)]},
         }
         self.guards ={
-            'air_guard'   :{'frames':[42,43],'offsets':[(0,0),(0,0)]},
+            'air_guard'   :{'frames':[21,22,23,27],'offsets':[(0,0),(0,0)]},
             'ground_guard':{'frames':[44,45,46,45,44],'offsets':[(0,0),(0,0),(0,0),(0,0)]},
             'sit_guard'   :{'frames':[47,48,49,48,47],'offsets':[(0,0),(0,0),(0,0)]},
         }
         self.hitted_motions={
-            'air_hitted'   :{'frames':[21,22,23,27],'offsets':[(0,0),(0,0),(0,0),(0,0)]},
-            'middle_hitted':{'frames':[44,45,46,45,44],'offsets':[(0,0),(0,0),(0,0),(0,0),(0,0)]},
-            'low_hitted'   :{'frames':[47,48,49,48,47],'offsets':[(0,0),(0,0),(0,0),(0,0),(0,0)]}
+            'air_hitted'   :{'frames':[240,241,241,241],'offsets':[(0,0),(0,0),(0,0),(0,0)]},
+            'middle_hitted':{'frames':[190,191,192,193,192],'offsets':[(0,0),(0,0),(0,0),(0,0),(0,0)]},
+            'low_hitted'   :{'frames':[190,191,192,193,192],'offsets':[(0,0),(0,0),(0,0),(0,0),(0,0)]}
         }
         self.combo_motions={
             'combo_1':{'frames':[114,114,115,115,115]},
@@ -275,12 +275,6 @@ class ShingoFrameInfo:
         self.delYPos = oy
         # 기존 헬퍼 재사용
         self.draw_by_frame_num(frame_num, x, y, face_dir)
-
-    def is_attack_finished(self, attack_key, frame_index):
-        info = self.normal_attacks.get(attack_key)
-        if not info:
-            return True
-        return frame_index >= (len(info['frames']) - 1)
 
 #0, 53
 class YuriFrameInfo:
