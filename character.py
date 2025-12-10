@@ -1040,7 +1040,7 @@ class Character:
         #self.font.draw(self.xPos - 60, self.yPos + 150, f'(Time: {get_time():.2f}, Dir : {self.dir}, is_hitted : {self.is_hitted})', (255, 255, 0))
         #self.font.draw(self.xPos - 60, self.yPos + 150, f'(is_hitted : {self.is_hitted}, combo_count : {self.combo_count})', (255, 255, 0))
         #self.font.draw(self.xPos - 60, self.yPos + 150,f'(combo_count : {self.combo_count})', (255, 255, 0))
-        self.font.draw(sx - 60, self.yPos + 150, f'(hp, atk : {self.hp, self.atk})', (255, 255, 0))
+        #self.font.draw(sx - 60, self.yPos + 150, f'(hp, atk : {self.hp, self.atk})', (255, 255, 0))
     def handle_event(self, event):
         # 키 입력 처리 및 마지막 up/down 시각 기록
         if self.hp <=0:
