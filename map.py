@@ -24,14 +24,14 @@ class PalaceMap:
             left, right = p2, p1
 
         #오른쪽으로 벗어나려 할 경우
-        if right.xPos > self.cw + self.window_left:# and right.back_pressed == True:
+        if right.xPos > self.cw + self.window_left:
             if left.xPos > self.window_left + self.margin * 2:
                 self.window_left = clamp(0, int(right.xPos - self.cw), self.w - self.cw)
                 right.xPos = clamp(0, right.xPos, self.w -1)
             else:
                 right.xPos = clamp(0, right.xPos, self.cw + self.window_left - 1)
         #왼쪽으로 벗어나려 할 경우
-        elif  left.xPos < self.window_left + 2*self.margin:# and left.back_pressed == True:
+        elif  left.xPos < self.window_left + 2 * self.margin:
             if right.xPos < self.cw + self.window_left:
                 self.window_left = clamp(0, int(left.xPos - 2*self.margin), self.w - self.cw)
                 left.xPos = clamp(self.window_left + 2*self.margin, left.xPos, self.w - self.margin - 1)
