@@ -146,10 +146,16 @@ def update():
                     game_framework.change_mode(intro_mode)
                 else:
                     reset_round()
-    common.hitbox_manager.detect_body_overlaps()
-    common.hitbox_manager.detect_is_opponent_attacking()
-    common.hitbox_manager.update_face_dir(common.characters[0], common.characters[1])
-    common.hitbox_manager.detect_attack_hits()
+
+    if common.hitbox_manager == None:
+        common.hitbox_manager = HitBoxManager()
+
+    # 이후 기존 호출들을 안전하게 호출
+    if common.hitbox_manager:
+        common.hitbox_manager.detect_body_overlaps()
+        common.hitbox_manager.detect_is_opponent_attacking()
+        common.hitbox_manager.update_face_dir(common.characters[0], common.characters[1])
+        common.hitbox_manager.detect_attack_hits()
 
 def draw():
     clear_canvas()
